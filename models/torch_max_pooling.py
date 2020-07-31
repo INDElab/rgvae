@@ -7,6 +7,7 @@ from numpy import array
 from scipy.optimize import linear_sum_assignment
 import torch
 from munkres import Munkres, print_matrix, make_cost_matrix
+from utils import torch_batch_dot
 
 
 class MPGM():
@@ -79,16 +80,6 @@ class MPGM():
             if inverse:
                 X[:,i,i,:,:] = 1
         return X
-    
-    def torch_batch_dot(self, M1, M2, dim1, dim2):
-        """
-        Torch implementation of the batch dot matrix multiplication.
-        """
-        M1_shape = M1.shape
-        M2_shape = M2.shape
-        bs = M1_shape[0]
-        M3 = torch.matmul(M1.view(bs,-1,M1_shape[dim1]),M2.view(bs,M2_shape[dim2],-1)).view(bs,M1_shape[1],M1_shape[2],M2_shape[1],M2_shape[2])
-        return M3
 
     def affinity(self, A, A_hat, E, E_hat, F, F_hat):
         """
@@ -122,7 +113,7 @@ class MPGM():
         A_hat_diag = (torch.diagonal(A_hat,dim1=-2,dim2=-1)).unsqueeze(-1)
         A_hat_diag_t = torch.transpose(A_hat_diag, 2, 1)
 
-        S11 = self.torch_batch_dot(E, E_hat, 3, 3)   # We aim for shape (batch_s,n,n,k,k).
+        S11 = torch_batch_dot(E, E_hat, 3, 3)   # We aim for shape (batch_s,n,n,k,k).
 
         # Now we need to get the second part into shape (batch_s,n,n,k,k).
         S121 = A_hat_diag @ A_hat_diag_t
@@ -130,7 +121,7 @@ class MPGM():
         S12 = self.torch_set_diag(S121).unsqueeze(-1)
 
         A = A.unsqueeze(-1)
-        S13 = self.torch_batch_dot(A, S12, -1, -1)
+        S13 = torch_batch_dot(A, S12, -1, -1)
 
         # Pointwise multiplication of E and A matrices
         S1 = S11 * S13

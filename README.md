@@ -1,6 +1,6 @@
 # Relational GraphVAE
 
-Implementation of a RGVAE for relational graphs, e.g knowledge Graphs.
+Implementation of a RGVAE for relational graphs, e.g knowledge graphs.
 
 ## Dependencies
 [![Python](https://img.shields.io/pypi/pyversions/pytorch.svg?style=plastic)](https://badge.fury.io/py/pytorch)

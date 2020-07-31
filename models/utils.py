@@ -1,9 +1,10 @@
 """
 Utility functions.
 """
-
 import numpy as np
-import tensorflow as tf
+import torch
+
+
 
 def mk_random_graph(n: int, d_e: int, d_n: int, batch_size: int=1, target: bool=True):
     """
@@ -38,19 +39,27 @@ def mk_random_graph_ds(n: int, d_e: int, d_n: int, batches: int=1, batch_size: i
         ds.append(mk_random_graph(n,d_e,d_n,batch_size,target))
     return ds
 
-
+def torch_batch_dot(M1, M2, dim1, dim2):
+    """
+    Torch implementation of the batch dot matrix multiplication.
+    """
+    M1_shape = M1.shape
+    M2_shape = M2.shape
+    bs = M1_shape[0]
+    M3 = torch.matmul(M1.view(bs,-1,M1_shape[dim1]),M2.view(bs,M2_shape[dim2],-1)).view(bs,M1_shape[1],M1_shape[2],M2_shape[1],M2_shape[2])
+    return M3
 
 def replace_nan(t):
     """
     Function to replace NaNs.
     """
-    return tf.where(tf.math.is_nan(t), tf.zeros_like(t), t)
+    return torch.where(torch.is_nan(t), torch.zeros_like(t), t)
 
 def add_e7(t):
     """
     Function to add a very small value to each element, to avoid inf errors when taking the logarithm.
     """
-    return t + tf.ones_like(t) * 1e-7
+    return t + torch.ones_like(t) * 1e-7
 
     
 
