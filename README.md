@@ -3,8 +3,8 @@
 Implementation of a RGVAE for relational graphs, e.g knowledge Graphs.
 
 ## Dependencies
-/github/pipenv/locked/python-version/:user/:repo
-/conda/pn/:channel/:package
+[![Python](https://img.shields.io/pypi/pyversions/pytorch.svg?style=plastic)](https://badge.fury.io/py/pytorch)
+[![PyPI](https://badge.fury.io/py/pytorch.svg)](https://badge.fury.io/py/pytorch)
 
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install the dependencies.
 
