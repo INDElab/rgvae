@@ -7,7 +7,7 @@ from numpy import array
 from scipy.optimize import linear_sum_assignment
 import torch
 from munkres import Munkres, print_matrix, make_cost_matrix
-from utils import torch_batch_dot
+from models.utils import *
 
 
 class MPGM():
@@ -62,7 +62,7 @@ class MPGM():
         X = np.zeros([bs,n,n,k,k])
         for i in range(n):
             the_diag = torch.diag_embed(S2[:,i,:])
-            X[:,i,i,:,:] = the_diag
+            X[:,i,i,:,:] = the_diag.detach().numpy()
         return X
     
 
@@ -240,9 +240,9 @@ class MPGM():
             # We are always given square Xs, but some may have unused columns (ground truth nodes are not there), so we can crop them for speedup. It's also then equivalent to the original non-batched version.
             row_ind, col_ind = linear_sum_assignment(X[i])
             M = np.zeros(X[i].shape, dtype=float)
-            M[row_ind, col_ind] = 1
+            M[row_ind, col_ind] = 1.
             X[i] = M
-        return X
+        return torch.tensor(X)
 
 
 

@@ -46,14 +46,32 @@ def torch_batch_dot(M1, M2, dim1, dim2):
     M1_shape = M1.shape
     M2_shape = M2.shape
     bs = M1_shape[0]
-    M3 = torch.matmul(M1.view(bs,-1,M1_shape[dim1]),M2.view(bs,M2_shape[dim2],-1)).view(bs,M1_shape[1],M1_shape[2],M2_shape[1],M2_shape[2])
+    M3 = torch.matmul(M1.view(bs,-1,M1_shape[dim1]), M2.view(bs,M2_shape[dim2],-1)).view(bs,M1_shape[1],M1_shape[2],M2_shape[1],M2_shape[2])
+    return M3
+
+def torch_batch_dot_v2(M1, M2, dim1, dim2, return_shape):
+    """
+    Torch implementation of the batch dot matrix multiplication.
+    Args:
+        return_shape: The shape of the returned matrix, including batch size.
+    """
+    M1_shape = M1.shape
+    M2_shape = M2.shape
+    bs = M1_shape[0]
+    M3 = torch.matmul(M1.view(bs,-1,M1_shape[dim1]), M2.view(bs,M2_shape[dim2],-1)).view(return_shape)
     return M3
 
 def replace_nan(t):
     """
     Function to replace NaNs.
     """
-    return torch.where(torch.is_nan(t), torch.zeros_like(t), t)
+    return torch.where(torch.isnan(t), torch.zeros_like(t), t)
+
+def replace_inf(t):
+    """
+    Function to replace NaNs.
+    """
+    return torch.where(torch.isinf(t), torch.zeros_like(t), t)
 
 def add_e7(t):
     """
