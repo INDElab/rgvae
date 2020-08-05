@@ -5,14 +5,41 @@ import numpy as np
 import torch
 
 
+def mk_cnstrnd_graph(n: int, e: int, d_e: int, d_n: int, batch_size: int=1):
+    """
+    Returns a random Graph constrained on the number of nodes and edges.
+    Args:
+        n: number of nodes. defines the shape of the adjacency matrix.
+        e: number of edges, this is the constrain
+        d_e: number of edge-attributes.
+        d_n: number of node-attributes.
+        batch_size: well.. the batch size.
+        target: generates a target graph when True, a prediction graph otherwise.
+    """
+    A = np.zeros((batch_size, n*n), dtype=int)
+    A[:,:e] = 1
+    rng = np.random.default_rng()
+    A = rng.permutation(A, axis=-1).reshape((batch_size,n,n))
+
+    # The idea here is that an edge attribute can only exist where an edge is. Further if there is an edge we want at leat one attribute to be 1.
+    E = np.zeros((batch_size,n,n,d_e), dtype=int)
+    E[:,:,:,0] = A.copy()
+    e_choice = np.append(np.ones(d_e, dtype=int), np.zeros(d_e-1, dtype=int))
+    lambda_choice = lambda x: np.random.choice(e_choice, x, replace=False)
+    print(*[lambda_choice(d_e) for n in range(batch_size*e)])
+    vector = np.vstack([lambda_choice(d_e) for n in range(batch_size*e)])
+    E[A==1,:] = np.vstack([lambda_choice(d_e) for n in range(batch_size*e)])
+
+    F = np.random.randint(2, size=(batch_size,n,d_n))
+    return A, E, F
 
 def mk_random_graph(n: int, d_e: int, d_n: int, batch_size: int=1, target: bool=True):
     """
-    This function creates a batch of random graphs.
-    Each graph is made of an adjacency, an edge-attribute and a node-attribute matrix.
+    This function creates a random relation graph.
+    Consisting of an adjacency, an edge-attribute and a node-attribute matrix.
     If we choose to generate a target graph, the graph values are deterministic.
     Otherwise we are generating a prediction graph with continuous values.
-    returns a list of 3 numpy matrices. TODO: make tf an option?
+    returns a list of 3 numpy matrices. TODO: F = A + 3rd dim
     Args:
         n: number of nodes. defines the shape of the adjacency matrix.
         d_e: number of edge-attributes.
@@ -30,13 +57,24 @@ def mk_random_graph(n: int, d_e: int, d_n: int, batch_size: int=1, target: bool=
         F = np.random.normal(size=(batch_size,k,d_n))
     return (A, E, F)
 
-def mk_random_graph_ds(n: int, d_e: int, d_n: int, batches: int=1, batch_size: int=1,target: bool=True):
+def mk_graph_ds(n: int, d_e: int, d_n: int, e: int, constrained: bool=True, batches: int=1, batch_size: int=1,target: bool=True):
     """
     Forbatches.
+    Args:
+        n: number of nodes. defines the shape of the adjacency matrix.
+        e: number of edges, if constrained.
+        d_e: number of edge-attributes.
+        d_n: number of node-attributes.
+        batch_size: well.. the batch size.
+        target: generates a target graph when True, a prediction graph otherwise.
     """
     ds = list()
-    for i in range(batches):
-        ds.append(mk_random_graph(n,d_e,d_n,batch_size,target))
+    if constrained:
+        for i in range(batches):
+            ds.append(mk_cnstrnd_graph(n,e,d_e,d_n,batch_size))
+    else:
+        for i in range(batches):
+            ds.append(mk_random_graph(n,d_e,d_n,batch_size,target))
     return ds
 
 def torch_batch_dot(M1, M2, dim1, dim2):
@@ -84,5 +122,5 @@ def add_e7(t):
 
 
 if __name__ == "__main__":
-    print(mk_random_graph(3,2,2,2))
-    print(mk_random_graph_ds(3,2,2,2,2)[0])
+    print(mk_cnstrnd_graph(5,10,3,3,11))
+    print(mk_graph_ds(5,3,3,11,constrained=True,batches=400,batch_size=64)[0])
