@@ -10,7 +10,7 @@ from models.torch_max_pooling import MPGM
 from models.utils import *
 
 
-def graph_loss(A, E, F, A_hat, E_hat, F_hat):
+def graph_loss(target, prediction, l_A=1., l_E=1., l_F=1.):
     """
     Loss function for the predicted graph. It takes each matrix separately into account.
     Goal is to solve the permutation invariance.
@@ -29,9 +29,8 @@ def graph_loss(A, E, F, A_hat, E_hat, F_hat):
     w4 = 1
 
     # Cast target vectors to tensors.
-    A = torch.tensor(A)
-    E = torch.tensor(E)
-    F = torch.tensor(F)
+    A, E, F = target
+    A_hat, E_hat, F_hat = prediction
 
     # Match number of nodes
     loss_n_nodes = torch.sqrt((torch.count_nonzero(A) - torch.count_nonzero(A_hat))**2)
@@ -48,7 +47,6 @@ def mpgm_loss(target, prediction, l_A=1., l_E=1., l_F=1.):
     A, E, F = target
 
     A_hat, E_hat, F_hat = prediction
-    A_hat, E_hat, F_hat = A_hat.detach(), E_hat.detach(), F_hat.detach()
     bs = A.shape[0]
     n = A.shape[1]
     k = A_hat.shape[1]
@@ -60,7 +58,7 @@ def mpgm_loss(target, prediction, l_A=1., l_E=1., l_F=1.):
     F = torch.tensor(F * 1.)
 
     mpgm = MPGM()
-    X = mpgm.call(A, A_hat, E, E_hat, F, F_hat)
+    X = mpgm.call(A, A_hat.detach(), E, E_hat.detach(), F, F_hat.detach())
 
     # now comes the loss part from the paper:s
     A_t = torch.transpose(X, 2, 1) @ A @ X     # shape (bs,k,n)
@@ -89,9 +87,10 @@ def mpgm_loss(target, prediction, l_A=1., l_E=1., l_F=1.):
     log_p_A = term_1 + term_2 + term_3
 
     # Man so many confusions: is the log over one or both Fs???
-    log_p_F = (1/n) * torch.sum(replace_inf(torch.log(torch.sum((F * F_hat_t), -1))), -1).unsqueeze(-1)
+    log_p_F = (1/n) * torch.sum(torch.log(add_e7(torch.sum((F * F_hat_t), -1))), -1).unsqueeze(-1)
 
-    log_p_E = ((1/(torch.norm(A, p='fro', dim=[-2,-1])-n)) * torch.sum(replace_inf(torch.log(torch.sum(E * E_hat_t, -1))), (-2,-1))).unsqueeze(-1)
+    ### TODO THIS IS WHERE THE BACKPROP CRASHES ###
+    log_p_E = ((1/(torch.norm(A, p='fro', dim=[-2,-1])-n)) * torch.sum(torch.log(add_e7(torch.sum(E * E_hat_t, -1))), (-2,-1))).unsqueeze(-1)
 
     log_p = - l_A * log_p_A - l_F * log_p_F - l_E * log_p_E
     return log_p

@@ -26,7 +26,6 @@ def mk_cnstrnd_graph(n: int, e: int, d_e: int, d_n: int, batch_size: int=1):
     E[:,:,:,0] = A.copy()
     e_choice = np.append(np.ones(d_e, dtype=int), np.zeros(d_e-1, dtype=int))
     lambda_choice = lambda x: np.random.choice(e_choice, x, replace=False)
-    print(*[lambda_choice(d_e) for n in range(batch_size*e)])
     vector = np.vstack([lambda_choice(d_e) for n in range(batch_size*e)])
     E[A==1,:] = np.vstack([lambda_choice(d_e) for n in range(batch_size*e)])
 
