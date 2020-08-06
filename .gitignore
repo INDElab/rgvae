@@ -1,5 +1,8 @@
 # custom
 graph_ds*.pkl
+.vscode/
+.vscode
+data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -7,7 +7,7 @@ from numpy import array
 from scipy.optimize import linear_sum_assignment
 import torch
 from munkres import Munkres, print_matrix, make_cost_matrix
-from models.utils import *
+from utils import *
 
 
 class MPGM():

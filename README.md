@@ -2,13 +2,14 @@
 
 <a href="https://github.com/INDElab/rgvae/graphs/contributors" alt="Contributors">
         <img src="https://img.shields.io/github/contributors/INDElab/rgvae?style=plastic" /></a>
+        
 <a href="https://github.com/INDElab/rgvae/pulse" alt="Activity">
         <img src="https://img.shields.io/github/commit-activity/m/INDElab/rgvae?style=plastic" /></a>
 
 Implementation of a RGVAE for relational graphs, e.g knowledge graphs.
 
 ## Dependencies
-[![Python](https://img.shields.io/badge/Python-v3.8-blue?style=plastic)](https://badge.fury.io/py/python)
+[![Python](https://img.shields.io/badge/Python-v3.8-blue?style=plastic)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-v10.2-red?style=plastic)](https://badge.fury.io/py/pytorch)
 
 
