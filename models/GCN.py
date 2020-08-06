@@ -3,7 +3,7 @@ Thomas Kipf's code <3
 """
 import torch.nn as nn
 import torch.nn.functional as F
-from models.GCN_layers import GraphConvolution
+from models.layers.GCN_layers import GraphConvolution
 
 
 class GCN(nn.Module):

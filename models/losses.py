@@ -6,8 +6,8 @@ import numpy as np
 import torch.nn as nn
 import torch
 from torch.nn import functional as F
-from models.torch_max_pooling import MPGM
-from models.utils import *
+from graph_matching.MPGM import MPGM
+from utils import *
 
 
 def graph_loss(target, prediction, l_A=1., l_E=1., l_F=1.):
