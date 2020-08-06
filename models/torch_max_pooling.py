@@ -105,9 +105,9 @@ class MPGM():
         bs = A.shape[0]     # bs stands for batch size, just to clarify.
         self.bs = bs
 
-        F = torch.tensor(F).to(float)
-        A = torch.tensor(A).to(float)
-        E = torch.tensor(E).to(float)
+        F = F.to(float)
+        A = A.to(float)
+        E = E.to(float)
 
         F_hat_t = torch.transpose(F_hat, 1, 2)
         A_hat_diag = (torch.diagonal(A_hat,dim1=-2,dim2=-1)).unsqueeze(-1)

@@ -12,30 +12,23 @@ from models.utils import *
 
 def graph_loss(target, prediction, l_A=1., l_E=1., l_F=1.):
     """
-    Loss function for the predicted graph. It takes each matrix separately into account.
-    Goal is to solve the permutation invariance.
+    Binary cross entropy loss function for the predicted graph. Each matrix is taken into account seperatly.
     Args:
-        A_hat: Predicted adjencency matrix.
-        E_hat: Predicted edge-attribute matrix.
-        F_hat: Predicted node-attribute matrix.
-        A: Ground truth adjencency matrix.
-        E: Ground truth edge-attribute matrix.
-        F: Ground truth node-attribute matrix.
+        target: list of the 3 target matrices A, E, F.
+        prediction: list of the 3 predicted matrices A_hat, E_hat, F_hat.
+        l_A: weight for BCE of A
+        l_E: weight for BCE of E
+        l_F: weight for BCE of F
     """
-    # Set weights for different parts of the loss function
-    w1 = 0
-    w2 = 2
-    w3 = 2
-    w4 = 1
 
     # Cast target vectors to tensors.
     A, E, F = target
+    A, E, F = torch.tensor(A * 1.), torch.tensor(E * 1.), torch.tensor(F * 1.)
     A_hat, E_hat, F_hat = prediction
 
     # Match number of nodes
-    loss_n_nodes = torch.sqrt((torch.count_nonzero(A) - torch.count_nonzero(A_hat))**2)
-    bce = torch.nn.BCELoss(from_logits=False)
-    loss = w1*loss_n_nodes + w2*bce(A, A_hat) + w3*bce(E, E_hat) + w4*bce(F, F_hat)
+    bce = torch.nn.BCELoss()
+    loss = l_A*bce(A_hat, A) + l_E*bce(E_hat, E) + l_F*bce(F_hat, F)
     return loss
 
 
@@ -66,7 +59,6 @@ def mpgm_loss(target, prediction, l_A=1., l_E=1., l_F=1.):
     F_hat_t = torch.matmul(X, F_hat)
 
     # To avoid inf or nan errors we add the smallest possible value to all elements.
-    A_hat_4log = add_e7(A_hat)
 
     term_1 = (1/k) * torch.sum(torch.diagonal(A_t, dim1=-2, dim2=-1) * torch.log(torch.diagonal(A_hat, dim1=-2, dim2=-1)), -1, keepdim=True)
     A_t_diag = torch.diagonal(A_t, dim1=-2, dim2=-1)
@@ -86,11 +78,14 @@ def mpgm_loss(target, prediction, l_A=1., l_E=1., l_F=1.):
     term_3 = (1/k*(1-k)) * torch.sum(term_31 + term_32, [1,2]).unsqueeze(-1)
     log_p_A = term_1 + term_2 + term_3
 
-    # Man so many confusions: is the log over one or both Fs???
-    log_p_F = (1/n) * torch.sum(torch.log(add_e7(torch.sum((F * F_hat_t), -1))), -1).unsqueeze(-1)
+    F_nozero = torch.sum(F * F_hat_t, -1)
+    F_nozero[F_nozero == 0] = 1.
+    log_p_F = (1/n) * torch.sum(torch.log(F_nozero), -1).unsqueeze(-1)
 
     ### TODO THIS IS WHERE THE BACKPROP CRASHES ###
-    log_p_E = ((1/(torch.norm(A, p='fro', dim=[-2,-1])-n)) * torch.sum(torch.log(add_e7(torch.sum(E * E_hat_t, -1))), (-2,-1))).unsqueeze(-1)
+    E_nozero = torch.sum(E * E_hat_t, -1)
+    E_nozero[E_nozero==0] = 1.
+    log_p_E = ((1/(torch.norm(A, p='fro', dim=[-2,-1])-n)) * torch.sum(torch.log(E_nozero), (-2,-1))).unsqueeze(-1)
 
     log_p = - l_A * log_p_A - l_F * log_p_F - l_E * log_p_E
     return log_p
@@ -101,3 +96,15 @@ def log_normal_pdf(sample, mean, logvar, raxis=1):
     # logvar = torch.tensor(logvar)
     log2pi = torch.log(torch.ones_like(mean) * (2. * np.pi))
     return (torch.sum(-.5 * ((sample - mean) ** 2. * torch.exp(-logvar) + logvar + log2pi), raxis)).unsqueeze(-1)
+
+def std_loss(prediction, l_A=1., l_E=1., l_F=1.):
+    """
+    This loss function pushes the model to generate more certain prediction by penalizing low std.
+    Args:
+        predition: the models generated probabilistic output.
+        l_*: weights for the matrices
+    """
+    A_hat, E_hat, F_hat = prediction
+    std = l_A * torch.std(A_hat, dim=[-2,-1]) + l_E * torch.std(E_hat, dim=[-3,-2,-1]) + l_F * torch.std(F_hat, dim=[-2,-1])
+
+    return 1. - torch.mean(std)
