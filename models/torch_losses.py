@@ -107,4 +107,4 @@ def std_loss(prediction, l_A=1., l_E=1., l_F=1.):
     A_hat, E_hat, F_hat = prediction
     std = l_A * torch.std(A_hat, dim=[-2,-1]) + l_E * torch.std(E_hat, dim=[-3,-2,-1]) + l_F * torch.std(F_hat, dim=[-2,-1])
 
-    return 1. - torch.mean(std)
+    return  torch.mean(torch.log(std**2))
