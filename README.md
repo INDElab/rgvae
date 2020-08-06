@@ -1,15 +1,16 @@
 # Relational GraphVAE
 
 <a href="https://github.com/INDElab/rgvae/graphs/contributors" alt="Contributors">
-        <img src="https://img.shields.io/github/contributors/3llobo/VAE?style=plastic" /></a>
-<br />
+        <img src="https://img.shields.io/github/contributors/INDElab/rgvae?style=plastic" /></a>
 <a href="https://github.com/INDElab/rgvae/pulse" alt="Activity">
-        <img src="https://img.shields.io/github/commit-activity/m/3llobo/VAE?style=plastic" /></a>
+        <img src="https://img.shields.io/github/commit-activity/m/INDElab/rgvae?style=plastic" /></a>
 
 Implementation of a RGVAE for relational graphs, e.g knowledge graphs.
 
 ## Dependencies
-[![Python](https://img.shields.io/pypi/pyversions/pytorch.svg?style=plastic)](https://badge.fury.io/py/pytorch)
+[![Python](https://img.shields.io/badge/Python-v3.8-blue?style=plastic)](https://badge.fury.io/py/python)
+[![PyTorch](https://img.shields.io/badge/PyTorch-v10.2-red?style=plastic)](https://badge.fury.io/py/pytorch)
+
 
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install the dependencies.
 
