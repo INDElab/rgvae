@@ -2,10 +2,6 @@
 Collection of loss functions.
 """
 
-import numpy as np
-import torch.nn as nn
-import torch
-from torch.nn import functional as F
 from graph_matching.MPGM import MPGM
 from utils import *
 
@@ -101,7 +97,7 @@ def std_loss(prediction, l_A=1., l_E=1., l_F=1.):
     """
     This loss function pushes the model to generate more certain prediction by penalizing low std.
     Args:
-        predition: the models generated probabilistic output.
+        predition: the torch_rgvae generated probabilistic output.
         l_*: weights for the matrices
     """
     A_hat, E_hat, F_hat = prediction
