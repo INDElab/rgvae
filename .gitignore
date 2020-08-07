@@ -2,6 +2,7 @@
 graph_ds*.pkl
 .vscode/
 .vscode
+.idea/
 data/
 
 # Byte-compiled / optimized / DLL files
