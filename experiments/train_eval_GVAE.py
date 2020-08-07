@@ -1,25 +1,48 @@
-"""
-Holds the training and eval functions for the different models.
-"""
+import sys
+sys.path.append('')  # Temporary solution for relative import
+
 import time
-import torch
-import numpy as np
 import pickle
 import os
 from models.GVAE import TorchGVAE
 from models.losses import *
-from utils import *
+import torch
+import numpy as np
+
+"""
+Holds the training and eval functions for the different models.
+For now it executes the training and evaluation of the RGVAE with radom data.
+Change the parameters in-script. Parsing is yet to come.
+"""
+
+
+# This sets the default torch dtype. Double-power
+my_dtype = torch.float64
+torch.set_default_dtype(my_dtype)
+
+# Parameters. Arg parsing on its way.
+n = 5
+e = 10      # All random graphs shall have 5 nodes and 10 edges
+d_e = 3
+d_n = 3
+batch_size = 64
+params = [n, e, d_e, d_n, batch_size]
+
+seed = 11
+np.random.seed(seed=seed)
+torch.manual_seed(seed)
+epochs = 111
+lr = 1e-5
 
 
 def train_eval_GVAE(params, epochs, lr=1e-5):
-
     n, e, d_e, d_n, batch_size = params
-    data_file = 'data/graph_ds_n{}_e{}_de{}_dn{}.pkl'.format(n,e,d_e,d_n)
+    data_file = 'data/graph_ds_n{}_e{}_de{}_dn{}.pkl'.format(n, e, d_e, d_n)
 
     # Check for data folder and eventually create.
     if not os.path.isdir('data'):
         os.mkdir('data')
-    
+
     # Check for data set and eventually create.
     if os.path.isfile(data_file):
         with open(data_file, "rb") as fp:
@@ -48,7 +71,7 @@ def train_eval_GVAE(params, epochs, lr=1e-5):
                 # My personal collection of losses. Mix and match as you like :)
                 # TODO: make it a function so we can use the same at eval.
                 log_pz = log_normal_pdf(z, torch.zeros_like(z), torch.zeros_like(z))
-                log_qz_x = log_normal_pdf(z, mean, 2*logstd)
+                log_qz_x = log_normal_pdf(z, mean, 2 * logstd)
                 log_px = mpgm_loss(target, prediction)
                 bce_loss = graph_loss(target, prediction)
                 G_loss = torch.mean(log_px + log_pz + log_qz_x)
@@ -69,8 +92,12 @@ def train_eval_GVAE(params, epochs, lr=1e-5):
                 z = model.reparameterize(mean, logstd)
                 prediction = model.decode(z)
                 log_pz = log_normal_pdf(z, torch.zeros_like(z), torch.zeros_like(z))
-                log_qz_x = log_normal_pdf(z, mean, 2*logstd)
+                log_qz_x = log_normal_pdf(z, mean, 2 * logstd)
                 log_px = mpgm_loss(target, prediction)
                 loss = - torch.mean(log_px + log_pz + log_qz_x)
                 mean_loss.append(loss)
-            print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'.format(epoch, np.mean(mean_loss), end_time - start_time))
+            print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'.format(epoch, np.mean(mean_loss),
+                                                                                           end_time - start_time))
+
+
+train_eval_GVAE(params, epochs, lr)
