@@ -19,6 +19,12 @@ Use the package manager [pip](https://pip.pypa.io/en/stable/) to install the dep
 pip install -r requirements.txt
 ```
 
+Now, you can install the RG-VAE package with: 
+
+```bash
+pip install -e .
+```
+
 ## Usage
 
 ```bash
