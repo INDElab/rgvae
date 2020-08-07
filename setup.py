@@ -1,12 +1,12 @@
 from setuptools import setup
 
-setup(name='torch-rgcn',
-      version='1.0',
-      description='A PyTorch library for Relational Graph Convolutional Networks',
-      url='https://github.com/thiviyanT/torch-RGCN',
+setup(name='torch-rgvae',
+      version='0.1',
+      description='A PyTorch library for Relational Graph Variational Auto-Encoder',
+      url='https://github.com/INDElab/rgvae',
       author='Thiviyan Thanapalasingam',
       author_email='t.singam@uva.nl',
       license='MIT',
-      packages=['torch_rgcn'],
-      python_requires='>=3.7',
+      packages=['torch_rgvae'],
+      python_requires='>=3.8',
       zip_safe=False)
