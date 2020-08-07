@@ -79,7 +79,7 @@ class MPGM():
             X[:,i,i,:,:] = 0
             if inverse:
                 X[:,i,i,:,:] = 1
-        return X
+        return torch.tensor(X)
 
     def affinity(self, A, A_hat, E, E_hat, F, F_hat):
         """

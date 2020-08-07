@@ -46,3 +46,6 @@ class TorchGVAE(nn.Module):
         for m in self.modules():
             if isinstance(m, nn.Linear):
                 nn.init.xavier_uniform(m.weight, gain=0.01)
+
+        pass
+    
