@@ -1,6 +1,3 @@
-import sys
-sys.path.append('')  # Temporary solution for relative import
-
 import time
 import pickle
 import os
