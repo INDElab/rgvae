@@ -2,7 +2,7 @@ future==0.18.2
 matplotlib==3.2.1
 munkres==1.1.2
 networkx==2.4
-numpy==1.17.3
+numpy==1.19.1
 Pillow==6.2.1
 pytest==5.4.1
 scipy==1.4.1
