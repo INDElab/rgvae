@@ -4,8 +4,8 @@ sys.path.append('')  # Temporary solution for relative import
 import time
 import pickle
 import os
-from models.GVAE import TorchGVAE
-from models.losses import *
+from torch_rgvae.GVAE import TorchGVAE
+from torch_rgvae.losses import *
 import torch
 import numpy as np
 
