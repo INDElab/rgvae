@@ -22,7 +22,7 @@ pip install -r requirements.txt
 ## Usage
 
 ```bash
-python main.py
+python ./experiments/train_eval_GVAE.py
 ```
 
 ## Contributing
