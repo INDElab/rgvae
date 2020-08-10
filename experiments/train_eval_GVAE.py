@@ -96,5 +96,6 @@ def train_eval_GVAE(params, epochs, lr=1e-5):
             print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'.format(epoch, np.mean(mean_loss),
                                                                                            end_time - start_time))
 
+if __name__ == "__main__":
 
-train_eval_GVAE(params, epochs, lr)
+    train_eval_GVAE(params, epochs, lr)
