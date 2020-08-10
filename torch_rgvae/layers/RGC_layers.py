@@ -1,4 +1,4 @@
-from torch_rgcn.utils import block_diag, stack_matrices, sum_sparse, drop_edges
+from torch_rgvae.utils import block_diag, stack_matrices, sum_sparse
 from torch.nn.modules.module import Module
 from torch.nn.parameter import Parameter
 from torch import nn
