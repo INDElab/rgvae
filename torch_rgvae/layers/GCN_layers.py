@@ -201,7 +201,7 @@ class GraphConvolution(Module):
     """
     Simple GCN layer, similar to https://arxiv.org/abs/1609.02907
 
-    TODO: Can you please put a link to the source code?
+    Source: https://github.com/tkipf/pygcn
     """
 
     def __init__(self, in_features, out_features, bias=True):

@@ -61,27 +61,45 @@ class TorchGVAE(nn.Module):
         e = torch.reshape(torch.tensor(E * 1.), (-1, self.n*self.n*self.ea))
         f = torch.reshape(torch.tensor(F * 1.), (-1, self.n*self.na))
         x = torch.cat([a, e, f], dim=1)
-        mean, logstd = torch.split(self.encoder(x), self.z_dim, dim=1)
-        return mean, logstd
+        mean, logvar = torch.split(self.encoder(x), self.z_dim, dim=1)
+        return mean, logvar
         
     def decode(self, z):
-        logits = self.decoder(z)
-
+        pred = self.decoder(z)
+        return self.reconstruct(pred)
+        
+    def reconstruct(self, pred):
+        """
+        Reconstructs and returnsthe graph matrices from the flat prediction vector. 
+        Args:
+            prediciton: the predicted output of the decoder.
+        """
         delimit_a = self.n*self.n
         delimit_e = self.n*self.n + self.n*self.n*self.ea
 
-        a, e, f = logits[:,:delimit_a], logits[:,delimit_a:delimit_e], logits[:, delimit_e:]
+        a, e, f = pred[:,:delimit_a], pred[:,delimit_a:delimit_e], pred[:, delimit_e:]
         A = torch.reshape(a, [-1, self.n, self.n])
         E = torch.reshape(e, [-1, self.n, self.n, self.ea])
         F = torch.reshape(f, [-1, self.n, self.na])
         return A, E, F
-        
-    def reparameterize(self, mean, logstd):
-        self.mean = mean
-        self.logstd = logstd
-        eps = torch.normal(torch.zeros_like(mean), std=1.)
-        return eps * torch.exp(logstd) + mean
 
+    def reparameterize(self, mean, logvar):
+        self.mean = mean
+        self.logvar = logvar
+        eps = torch.normal(torch.zeros_like(mean), std=1.)
+        return eps * torch.exp(logvar * .5) + mean
+
+    def sample(self, n_samples: int=1):
+        """
+        Sample n times from the model using the target as bernoulli distribution. Return the sampled graph.
+        Args:
+            n_samples: Number of samples.
+        """
+        z = torch.randn(n_samples, self.z_dim)
+        pred = self.decoder(z)
+        b_dist = torch.distributions.Bernoulli(pred)
+        samples = b_dist.sample()
+        return self.reconstruct(samples)
 
 
 if __name__ == "__main__":
@@ -89,49 +107,4 @@ if __name__ == "__main__":
     my_dtype = torch.float64
     torch.set_default_dtype(my_dtype)
 
-    n = 5
-    d_e = 3
-    d_n = 2
-    np.random.seed(seed=11)
-    epochs = 111
-    batch_size = 64
-
-    train_set = mk_random_graph_ds(n, d_e, d_n, 400, batch_size=batch_size)
-    test_set = mk_random_graph_ds(n, d_e, d_n, 100, batch_size=batch_size)
-
-    model = TorchGVAE(n, d_e, d_n)
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-
-    for epoch in range(epochs):
-        start_time = time.time()
-
-        for target in train_set:
-            model.train()
-            mean, logstd = model.encode(target)
-            z = model.reparameterize(mean, logstd)
-            prediction = model.decode(z)
-
-            log_pz = log_normal_pdf(z, torch.zeros_like(z), torch.zeros_like(z))
-            log_qz_x = log_normal_pdf(z, mean, 2*logstd)
-            log_px = mpgm_loss(target, prediction)
-            loss = - torch.mean(log_px + log_pz + log_qz_x)
-            print(loss)
-            loss.backward()
-            optimizer.step()
-            end_time = time.time()
-
-        # Evaluate
-        mean_loss = []
-        with torch.no_grad():
-            model.eval()
-            for test_x in test_set:
-                mean, logstd = model.encode(target)
-                z = model.reparameterize(mean, logstd)
-                prediction = model.decode(z)
-                log_pz = log_normal_pdf(z, torch.zeros_like(z), torch.zeros_like(z))
-                log_qz_x = log_normal_pdf(z, mean, 2*logstd)
-                log_px = mpgm_loss(target, prediction)
-                loss = - torch.mean(log_px + log_pz + log_qz_x)
-                mean_loss.append(loss)
-            print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'.format(epoch, np.mean(mean_loss), end_time - start_time))
-
+    pass
