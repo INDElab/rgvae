@@ -3,7 +3,7 @@ import pickle
 import os
 from torch_rgvae.GVAE import TorchGVAE
 from torch_rgvae.losses import *
-from torch_rgvae.utils import check_adj_logic
+from utils import check_adj_logic
 import torch
 import numpy as np
 
@@ -23,7 +23,7 @@ n = 5
 e = 10      # All random graphs shall have 5 nodes and 10 edges
 d_e = 3
 d_n = 3
-batch_size = 512        # Choose a low batch size for debugging, or creating the dataset will take very long.
+batch_size = 16        # Choose a low batch size for debugging, or creating the dataset will take very long.
 params = [n, e, d_e, d_n, batch_size]
 
 seed = 11
@@ -80,14 +80,15 @@ def train_eval_GVAE(params, epochs, lr=1e-5):
                 kl_div = KL_divergence(mean, logvar)
                 # bce_loss = graph_loss(target, prediction)
                 # G_loss = torch.mean(log_px_z + log_pz - log_qz_x)       # The last two terms try to zero the first one out?!
-                G_loss = - torch.mean( - log_px_z + kl_div)       # The last two terms try to zero the first one out?!
+                G_loss = torch.mean( - log_px_z + kl_div)       # The last two terms try to zero the first one out?!
                 G_std_loss = std_loss(prediction) *.1
                 loss = G_loss #+ G_std_loss
                 print('Epoch {} \n loss {}'.format(epoch, loss.item()))
                 loss.backward()
                 optimizer.step()
                 end_time = time.time()
-                check_adj_logic(model.sample())
+                sanity = sanity_check(model.sample(), n, e)
+                print('Sanity check: {:.2f}% nodes, {:.2f}% edges, {:.2f}% adj syntax.'.format(*sanity))
 
         # Evaluate
         print("Start evaluation epoch {}.".format(epoch))

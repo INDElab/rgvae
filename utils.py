@@ -4,6 +4,19 @@ Utility functions.
 import numpy as np
 import torch
 
+def check_adj_logic(sample):
+    """
+    Checks if the generated sample adheres to the logic, that edge attributes can only exist where the adjacency matrix indicates an edge.
+    Args:
+        sample: A binomial sample of a predicted graph.
+    Output:
+        Not sure yet.
+    """
+    A, E, F = sample
+    E_check = torch.sum(E, -1)
+    E_check[E_check > 0] = 1.
+    bool_check = A[A == E_check]
+    print(A == E_check)
 
 def mk_sparse_graph_ds(n: int, e: int, d_e: int, batch_size: int=1, batches: int=1):
     """
@@ -25,7 +38,7 @@ def mk_sparse_graph_ds(n: int, e: int, d_e: int, batch_size: int=1, batches: int
         ds.append(np.stack([s,r,o], axis=-1))
     return ds
 
-def mk_cnstrnd_graph(n: int, e: int, d_e: int, d_n: int, batch_size: int=1):
+def mk_cnstrnd_graph(n: int, e: int, d_e: int, d_n: int, batch_size: int=1, self_loop: bool=False):
     """
     Returns a random Graph constrained on the number of nodes and edges.
     Args:
@@ -34,20 +47,24 @@ def mk_cnstrnd_graph(n: int, e: int, d_e: int, d_n: int, batch_size: int=1):
         d_e: number of edge-attributes.
         d_n: number of node-attributes.
         batch_size: well.. the batch size.
-        target: generates a target graph when True, a prediction graph otherwise.
+        self_loop: Set the diagonal of the adj matrix to one.
     """
-    A = np.zeros((batch_size, n*n), dtype=int)
-    A[:,:e] = 1
-    rng = np.random.default_rng()
-    A = rng.permutation(A, axis=-1).reshape((batch_size,n,n))
+    lambda_choice = lambda x,y: np.random.choice(x, y, replace=False)
+    a_choice = np.append(np.ones(e, dtype=int), np.zeros(n*n - e, dtype=int))
+    A = np.vstack([lambda_choice(a_choice,n*n) for _ in range(batch_size)])
+    A = A.reshape((batch_size,n,n))
+
+    if self_loop:
+        one_diag = np.eye(n, dtype=int)
+        one_diag = np.tile(np.expand_dims(one_diag, axis=0), (batch_size, 1, 1))
+        A = A + one_diag
 
     # The idea here is that an edge attribute can only exist where an edge is. Further if there is an edge we want at leat one attribute to be 1.
     E = np.zeros((batch_size,n,n,d_e), dtype=int)
     E[:,:,:,0] = A.copy()
     e_choice = np.append(np.ones(d_e, dtype=int), np.zeros(d_e-1, dtype=int))
-    lambda_choice = lambda x: np.random.choice(e_choice, x, replace=False)
-    vector = np.vstack([lambda_choice(d_e) for n in range(batch_size*e)])
-    E[A==1,:] = np.vstack([lambda_choice(d_e) for n in range(batch_size*e)])
+    
+    E[A==1,:] = np.vstack([lambda_choice(e_choice, d_e) for n in range(batch_size*e)])
 
     F = np.random.randint(2, size=(batch_size,n,d_n))
     return A, E, F
@@ -141,7 +158,7 @@ def add_e7(t):
 
 
 if __name__ == "__main__":
-    # print(mk_cnstrnd_graph(5,10,3,3,11))
+    print(mk_cnstrnd_graph(5,10,3,3,2))
     # print(mk_graph_ds(5,3,3,11,constrained=True,batches=400,batch_size=64)[0])
 
-    print(mk_sparse_graph_ds(5,10,3,2,2))
+    # print(mk_sparse_graph_ds(5,10,3,2,2))

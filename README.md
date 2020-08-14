@@ -10,7 +10,7 @@ Implementation of a RGVAE for relational graphs, e.g knowledge graphs.
 
 ## Dependencies
 [![Python](https://img.shields.io/badge/Python-v3.8-blue?style=plastic)](https://www.python.org/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-v16.0-red?style=plastic)](https://pypi.org/project/torch/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-v1.6.0-red?style=plastic)](https://pypi.org/project/torch/)
 
 
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install the dependencies.
