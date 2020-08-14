@@ -4,6 +4,19 @@ Utility functions.
 import numpy as np
 import torch
 
+
+def no_zero(t):
+    """
+    This function replaces all zeros in a tensor with ones.
+    This allows us to take the logarithm and then sum over all values in the matrix.
+    Args:
+        t: tensor to be replaced
+    returns:
+        t: tensor with ones instead of zeros.
+    """
+    t[t==0] = 1.
+    return t
+
 def check_adj_logic(sample):
     """
     Checks if the generated sample adheres to the logic, that edge attributes can only exist where the adjacency matrix indicates an edge.
@@ -64,8 +77,10 @@ def mk_cnstrnd_graph(n: int, e: int, d_e: int, d_n: int, batch_size: int=1, self
     E[:,:,:,0] = A.copy()
     e_choice = np.append(np.ones(d_e, dtype=int), np.zeros(d_e-1, dtype=int))
     
-    E[A==1,:] = np.vstack([lambda_choice(e_choice, d_e) for n in range(batch_size*e)])
+    E[A==1,:] = np.vstack([lambda_choice(e_choice, d_e) for _ in range(batch_size*e)])
 
+    f_choice = np.append(np.ones(1, dtype=int), np.zeros(d_n-1, dtype=int))
+    F = np.vstack([lambda_choice(f_choice, d_n) for _ in range(batch_size*n)])
     F = np.random.randint(2, size=(batch_size,n,d_n))
     return A, E, F
 

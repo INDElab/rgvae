@@ -67,27 +67,17 @@ def train_eval_GCVAE(params, epochs, lr=1e-5):
                 mean, logvar = model.encode(target)
                 z = model.reparameterize(mean, logvar)
                 prediction = model.decode(z)
-                """
-                Thought:
-                BCE cannot be negative, therefore the graph matching loss , which we use instead should act the same.
-                Let's square it.
-                """
-                # My personal collection of losses. Mix and match as you like :)
-                # TODO: make it a function so we can use the same at eval.
-                # log_pz = log_normal_pdf(z, torch.zeros_like(z), torch.zeros_like(z))    # This one messes the whole thing up. Goes towards -inf
-                # log_qz_x = log_normal_pdf(z, mean, logvar)                              
-                log_px_z = mpgm_loss(target, prediction)                                # Then this one follows and also goes towards -inf
-                kl_div = KL_divergence(mean, logvar)
-                # bce_loss = graph_loss(target, prediction)
-                # G_loss = torch.mean(log_px_z + log_pz - log_qz_x)       # The last two terms try to zero the first one out?!
-                G_loss = - torch.mean( - log_px_z + kl_div)       # The last two terms try to zero the first one out?!
-                G_std_loss = std_loss(prediction) *.1
-                loss = G_loss #+ G_std_loss
+ 
+                # TODO: make it a function so we can use the same at eval.                             
+                log_px_z = mpgm_loss2(target, prediction)
+                kl_div = kl_divergence(mean, logvar)
+                loss = torch.mean( - log_px_z + kl_div)
                 print('Epoch {} \n loss {}'.format(epoch, loss.item()))
                 loss.backward()
                 optimizer.step()
                 end_time = time.time()
-                check_adj_logic(model.sample())
+                sanity = sanity_check(model.sample(), n, e)
+                print('Sanity check: {:.2f}% nodes, {:.2f}% edges, {:.2f}% adj syntax.'.format(*sanity))
 
         # Evaluate
         print("Start evaluation epoch {}.".format(epoch))

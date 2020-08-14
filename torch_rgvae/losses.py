@@ -80,20 +80,77 @@ def mpgm_loss(target, prediction, l_A=1., l_E=1., l_F=1., zero_diag: bool=True):
     term_3 = (1/(k*(k-1))) * torch.sum((term_31 + term_32) * mask, [1,2]).unsqueeze(-1)
     log_p_A = term_1 + term_2 + term_3
 
-    # log_p_F   
-    F_nozero = torch.sum(F * F_hat_t, -1)
-    F_nozero[F_nozero == 0] = 1.
-    log_p_F = (1/n) * torch.sum(torch.log(F_nozero), -1).unsqueeze(-1)
+    # log_p_F  
+    log_p_F = (1/n) * torch.sum(torch.log(no_zero(torch.sum(F * F_hat_t, -1))), (-1)).unsqueeze(-1)
 
     # log_p_E
-    E_nozero = torch.sum(E * E_hat_t, -1)
-    E_nozero[E_nozero==0] = 1.
-    nor = (torch.norm(A, p='fro', dim=[-2,-1])-n)
-    log_p_E = ((1/nor) * torch.sum(torch.log(E_nozero) * mask, (-2,-1))).unsqueeze(-1)
+    log_p_E = ((1/(torch.norm(A, p=1, dim=[-2,-1])-n)) * torch.sum(torch.sum(torch.log(no_zero(E * E_hat_t)), -1) * mask, (-2,-1))).unsqueeze(-1)
 
     log_p = l_A * log_p_A + l_F * log_p_F + l_E * log_p_E
     return log_p
 
+def mpgm_loss2(target, prediction, l_A=1., l_E=1., l_F=1., zero_diag: bool=True):
+    """
+    This one we treat A and E the same as both are sigmoided and F is softmaxed.
+    Loss function using max-pooling graph matching as describes in the GraphVAE paper.
+    Lets see if backprop works. Args obviously the same as above!
+    Args:
+        target: list of the 3 target matrices A, E, F.
+        prediction: list of the 3 predicted matrices A_hat, E_hat, F_hat.
+        l_A: weight for BCE of A
+        l_E: weight for BCE of E
+        l_F: weight for BCE of F
+        zero_diag: if to zero out the diagonal in log_A term_3 and log_E.
+    """
+    A, E, F = target
+
+    A_hat, E_hat, F_hat = prediction
+    bs = A.shape[0]
+    n = A.shape[1]
+    k = A_hat.shape[1]
+    d_e = E.shape[-1]
+
+    # Cast target vectors to tensors.
+    A = torch.tensor(A * 1.)
+    E = torch.tensor(E * 1.)
+    F = torch.tensor(F * 1.)
+
+    mpgm = MPGM()
+    X = mpgm.call(A, A_hat.detach(), E, E_hat.detach(), F, F_hat.detach())
+
+    # This is the loss part from the paper:s
+    A_t = torch.transpose(X, 2, 1) @ A @ X     # shape (bs,k,n)
+    E_t = torch_batch_dot_v2(torch_batch_dot_v2(X, E, 1, 1, [bs,n,k,d_e]), X, -2, 1, [bs,k,k,d_e])    # target shape is (bs,k,k,d_e)
+    F_hat_t = torch.matmul(X, F_hat)
+
+    term_1 = (1/k) * torch.sum(torch.diagonal(A_t, dim1=-2, dim2=-1) * torch.log(torch.diagonal(A_hat, dim1=-2, dim2=-1)), -1, keepdim=True)
+    A_t_diag = torch.diagonal(A_t, dim1=-2, dim2=-1)
+    A_hat_diag = torch.diagonal(A_hat, dim1=-2, dim2=-1)
+    term_2 = (1/k) * torch.sum((torch.ones_like(A_t_diag) - A_t_diag) * torch.log((torch.ones_like(A_hat_diag) - A_hat_diag)), -1, keepdim=True)
+
+    """
+    Thought: Lets compare w against w/o the zeroing out diagonal and see what happens.
+    """
+    # log_p_A part. Split in multiple terms for clarity.
+    term_31 = A_t * torch.log(A_hat)
+    term_32 = (1. - A_t) * torch.log(1. - A_hat)
+    # Zero diagonal mask:
+    mask = torch.ones_like(term_32)
+    if zero_diag:
+        ind = np.diag_indices(mask.shape[-1])
+        mask[:,ind[0], ind[1]] = 0
+    term_3 = (1/(k*(k-1))) * torch.sum((term_31 + term_32) * mask, [1,2]).unsqueeze(-1)
+    log_p_A = term_1 + term_2 + term_3
+
+    # log_p_F  
+    log_p_F = (1/n) * torch.sum(torch.log(no_zero(torch.sum(F * F_hat_t, -1))), (-1)).unsqueeze(-1)
+
+    # log_p_E
+    e_norm = (1/(torch.norm(A, p=1, dim=[-2,-1])-n))
+    log_p_E = (e_norm * torch.sum(torch.sum(E_t * torch.log(E_hat) + (1 - E_t) * torch.log(1 - E_hat), -1) * mask, (-2,-1))).unsqueeze(-1)
+
+    log_p = l_A * log_p_A + l_F * log_p_F + l_E * log_p_E
+    return log_p
 
 def log_normal_pdf(sample, mean, logvar, raxis=1):
     """
@@ -103,7 +160,7 @@ def log_normal_pdf(sample, mean, logvar, raxis=1):
     log2pi = torch.log(torch.ones_like(mean) * (2. * np.pi))
     return (torch.sum(-.5 * ((sample - mean) ** 2. * torch.exp(-logvar) + logvar + log2pi), raxis)).unsqueeze(-1)
 
-def KL_divergence(mean, logvar, raxis=1):
+def kl_divergence(mean, logvar, raxis=1):
     """
     KL divergence between N(mean,std) and the standard normal N(0,1).
     Args:

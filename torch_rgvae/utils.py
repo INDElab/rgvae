@@ -1,21 +1,6 @@
 import torch
 
 
-def check_adj_logic(sample):
-    """
-    Checks if the generated sample adheres to the logic, that edge atributes can only exist where the adjacency matrix indicates an edge.
-    Args:
-        sample: A binomial sample of a predicted graph.
-    Outpur:
-        Not sure yet
-    """
-    A, E, F = sample
-    E_check = torch.sum(E, -1)
-    E_check[E_check > 0] = 1.
-    # print(A.numpy(), '\n\n', adj_check.numpy())
-    bool_check = A[A == E_check]
-    print(A == E_check)
-
 def sum_sparse(indices, values, size, row_normalisation=True, device='cpu'):
     """
     Sum the rows or columns of a sparse matrix, and redistribute the

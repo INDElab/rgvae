@@ -42,6 +42,8 @@ class TorchGVAE(nn.Module):
                                     nn.Linear(h_dim, input_dim),
                                     nn.Sigmoid())
 
+        self.softmax = nn.Softmax(dim=-1)
+
         # Need to init?
         for m in self.modules():
             if isinstance(m, nn.Linear):
@@ -80,7 +82,7 @@ class TorchGVAE(nn.Module):
         a, e, f = pred[:,:delimit_a], pred[:,delimit_a:delimit_e], pred[:, delimit_e:]
         A = torch.reshape(a, [-1, self.n, self.n])
         E = torch.reshape(e, [-1, self.n, self.n, self.ea])
-        F = torch.reshape(f, [-1, self.n, self.na])
+        F = self.softmax(torch.reshape(f, [-1, self.n, self.na]))
         return A, E, F
 
     def reparameterize(self, mean, logvar):
