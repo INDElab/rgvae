@@ -5,6 +5,7 @@ The decoder a MLP with a flattened normal matrix output.
 """
 
 import time
+from torch_rgvae.GVAE import TorchGVAE
 from torch_rgvae.GCN import GCN
 import torch.nn as nn
 from torch_rgvae.losses import *
@@ -12,7 +13,7 @@ from utils import *
 from scipy import sparse
 
 
-class GCVAE(nn.Module):
+class GCVAE(TorchGVAE):
     def __init__(self, n: int, ea: int, na: int, h_dim: int=512, z_dim: int=2):
         """
         Graph Variational Auto Encoder
@@ -23,30 +24,14 @@ class GCVAE(nn.Module):
             h_dim : Hidden dimension
             z_dim : latent dimension
         """
-        super().__init__()
-        self.n = n
-        self.na = na
-        self.ea = ea
+        super().__init__(n, ea, na, h_dim, z_dim)
+
         input_dim = n*n + n*na + n*n*ea
         self.input_dim = input_dim
         self.z_dim = z_dim
         n_feat = na + n * ea
 
         self.encoder = GCN(n, n_feat, h_dim, 2*z_dim).to(torch.double)
-
-        self.decoder = nn.Sequential(nn.Linear(z_dim, 2*h_dim),
-                                    nn.ReLU(),
-                                    nn.Dropout(.2),
-                                    nn.Linear(2*h_dim, h_dim),
-                                    nn.ReLU(),
-                                    nn.Linear(h_dim, input_dim),
-                                    nn.Sigmoid())
-
-        self.softmax = nn.Softmax(dim=-1)
-        # Need to init?
-        for m in self.modules():
-            if isinstance(m, nn.Linear):
-                nn.init.xavier_uniform(m.weight, gain=0.01)
         
     def encode(self, args_in):
         """
@@ -57,39 +42,14 @@ class GCVAE(nn.Module):
             F: Node attribute matrix of size n*na
         """
         (A, E, F) = args_in
+        self.edge_count = torch.norm(torch.tensor(A[0] * 1.), p=1)
         bs = A.shape[0]
-        # A = sparse.coo_matrix(A)
+
         # We reshape E to (bs,n,n*d_e) and then concat it with F
         features = np.concatenate((np.reshape(E, (bs, self.n, self.n*self.ea)), F), axis=-1)
         adj = torch.tensor(A)
-        # features = sparse.csr_matrix(features)
-
-        # features = self.normalize(features)
-        # adj = self.normalize(adj) #+ sp.eye(adj.shape[0]))
-
         features = torch.Tensor(np.array(features))
-        # adj = self.sparse_mx_to_torch_sparse_tensor(adj)
-
-        mean, logstd = torch.split(self.encoder(features, adj), self.z_dim, dim=1)
-        return mean, logstd
-        
-    def decode(self, z):
-        logits = self.decoder(z)
-
-        delimit_a = self.n*self.n
-        delimit_e = self.n*self.n + self.n*self.n*self.ea
-
-        a, e, f = logits[:,:delimit_a], logits[:,delimit_a:delimit_e], logits[:, delimit_e:]
-        A = torch.reshape(a, [-1, self.n, self.n])
-        E = torch.reshape(e, [-1, self.n, self.n, self.ea])
-        F = self.softmax(torch.reshape(f, [-1, self.n, self.na]))
-        return A, E, F
-        
-    def reparameterize(self, mean, logstd):
-        self.mean = mean
-        self.logstd = logstd
-        eps = torch.normal(torch.zeros_like(mean), std=1.)
-        return eps * torch.exp(logstd) + mean
+        return torch.split(self.encoder(features, adj), self.z_dim, dim=1)
 
     def normalize(self, mx):
         """Row-normalize sparse matrix"""
@@ -108,83 +68,4 @@ class GCVAE(nn.Module):
         values = torch.from_numpy(sparse_mx.data)
         shape = torch.Size(sparse_mx.shape)
         return torch.sparse.FloatTensor(indices, values, shape)
-
-    def reconstruct(self, pred):
-        """
-        Reconstructs and returnsthe graph matrices from the flat prediction vector. 
-        Args:
-            prediciton: the predicted output of the decoder.
-        """
-        delimit_a = self.n*self.n
-        delimit_e = self.n*self.n + self.n*self.n*self.ea
-
-        a, e, f = pred[:,:delimit_a], pred[:,delimit_a:delimit_e], pred[:, delimit_e:]
-        A = torch.reshape(a, [-1, self.n, self.n])
-        E = torch.reshape(e, [-1, self.n, self.n, self.ea])
-        F = torch.reshape(f, [-1, self.n, self.na])
-        return A, E, F
-
-    def sample(self, n_samples: int=1):
-        """
-        Sample n times from the model using the target as bernoulli distribution. Return the sampled graph.
-        Args:
-            n_samples: Number of samples.
-        """
-        z = torch.randn(n_samples, self.z_dim)
-        pred = self.decoder(z)
-        b_dist = torch.distributions.Bernoulli(pred)
-        samples = b_dist.sample()
-        return self.reconstruct(samples)
-
-
-if __name__ == "__main__":
-
-    my_dtype = torch.float64
-    torch.set_default_dtype(my_dtype)
-
-    n = 5
-    d_e = 3
-    d_n = 2
-    np.random.seed(seed=11)
-    epochs = 111
-    batch_size = 64
-
-    train_set = mk_random_graph_ds(n, d_e, d_n, 400, batch_size=batch_size)
-    test_set = mk_random_graph_ds(n, d_e, d_n, 100, batch_size=batch_size)
-
-    model = TorchGVAE(n, d_e, d_n)
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-
-    for epoch in range(epochs):
-        start_time = time.time()
-
-        for target in train_set:
-            model.train()
-            mean, logstd = model.encode(target)
-            z = model.reparameterize(mean, logstd)
-            prediction = model.decode(z)
-
-            log_pz = log_normal_pdf(z, torch.zeros_like(z), torch.zeros_like(z))
-            log_qz_x = log_normal_pdf(z, mean, 2*logstd)
-            log_px = mpgm_loss(target, prediction)
-            loss = - torch.mean(log_px + log_pz + log_qz_x)
-            print(loss)
-            loss.backward()
-            optimizer.step()
-            end_time = time.time()
-
-        # Evaluate
-        mean_loss = []
-        with torch.no_grad():
-            model.eval()
-            for test_x in test_set:
-                mean, logstd = model.encode(target)
-                z = model.reparameterize(mean, logstd)
-                prediction = model.decode(z)
-                log_pz = log_normal_pdf(z, torch.zeros_like(z), torch.zeros_like(z))
-                log_qz_x = log_normal_pdf(z, mean, 2*logstd)
-                log_px = mpgm_loss(target, prediction)
-                loss = - torch.mean(log_px + log_pz + log_qz_x)
-                mean_loss.append(loss)
-            print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'.format(epoch, np.mean(mean_loss), end_time - start_time))
 

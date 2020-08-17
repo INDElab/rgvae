@@ -6,9 +6,10 @@ Decoder: MLP
 
 import torch.nn as nn
 from torch_rgvae.RGCN_models import *
+from torch_rgvae.GVAE import TorchGVAE
 
 
-class TorchRGVAE(nn.Module):
+class TorchRGVAE(TorchGVAE):
     def __init__(self, n: int, ea: int, na: int, h_dim: int=512, z_dim: int=2):
         """
         Graph Variational Auto Encoder
@@ -19,7 +20,7 @@ class TorchRGVAE(nn.Module):
             h_dim : Hidden dimension
             z_dim : latent dimension
         """
-        super().__init__()
+        super().__init__(n, ea, na, h_dim, z_dim)
         self.n = n
         self.na = na
         self.ea = ea
@@ -60,26 +61,9 @@ class TorchRGVAE(nn.Module):
         """
         x = self.encoder()
         print(x)
-        # Split x!!!)
+        # TODO: Split x!!!)
         return mean, logstd
         
-    def decode(self, z):
-        logits = self.decoder(z)
-
-        delimit_a = self.n*self.n
-        delimit_e = self.n*self.n + self.n*self.n*self.ea
-
-        a, e, f = logits[:,:delimit_a], logits[:,delimit_a:delimit_e], logits[:, delimit_e:]
-        A = torch.reshape(a, [-1, self.n, self.n])
-        E = torch.reshape(e, [-1, self.n, self.n, self.ea])
-        F = torch.reshape(f, [-1, self.n, self.na])
-        return A, E, F
-        
-    def reparameterize(self, mean, logstd):
-        self.mean = mean
-        self.logstd = logstd
-        eps = torch.normal(torch.zeros_like(mean), std=1.)
-        return eps * torch.exp(logstd) + mean
 
 if __name__ == "__main__":
     pass

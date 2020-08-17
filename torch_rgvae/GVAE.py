@@ -1,5 +1,6 @@
 """
 Graph-VAE implementation in pytorch.
+Also parent class for all other VAE models.
 """
 
 import time
@@ -58,6 +59,7 @@ class TorchGVAE(nn.Module):
             F: Node attribute matrix of size n*na
         """
         (A, E, F) = args_in
+        self.edge_count = torch.norm(torch.tensor(A[0] * 1.), p=1)
 
         a = torch.reshape(torch.tensor(A * 1.), (-1, self.n*self.n))
         e = torch.reshape(torch.tensor(E * 1.), (-1, self.n*self.n*self.ea))
@@ -74,7 +76,7 @@ class TorchGVAE(nn.Module):
         """
         Reconstructs and returnsthe graph matrices from the flat prediction vector. 
         Args:
-            prediciton: the predicted output of the decoder.
+            prediction: the predicted output of the decoder.
         """
         delimit_a = self.n*self.n
         delimit_e = self.n*self.n + self.n*self.n*self.ea
@@ -102,6 +104,48 @@ class TorchGVAE(nn.Module):
         b_dist = torch.distributions.Bernoulli(pred)
         samples = b_dist.sample()
         return self.reconstruct(samples)
+
+    def sanity_check(self):
+        """
+        Function to monitor the sanity logic of the prediction.
+        Sanity 1: Model should predict graphs with the same amount of nodes as the target graph.
+        Sanity 2: Model should predict graphs with the same amount of edges as the target graph.
+        Sanity 3: Model should only predict edge attributes were it also predicts edges.
+        Args:
+            sample: binary prediction sample.
+            n: number of nodes in target graph.
+            e: number of edges in target graph.
+        Returns:
+            The 3 sanities in percentage.
+        """
+        A, E, F = self.sample()
+        n, e = (self.n, self.edge_count)
+
+        # Sanity 1
+        A_check = A.numpy()
+        A_check = A_check[~np.all(A_check == 0, axis=1)]
+        A_check = np.delete(A_check, np.where(~A_check.any(axis=1))[0], axis=0)
+        k = A_check.shape[np.argmax(A_check.shape)] * 1.
+        if k <= n:
+            sanity_1 = k/n
+        else:
+            sanity_1 = 1 - (k-n)/n
+        
+        # Sanity 2
+        e_check = np.sum(A_check)
+        if e_check <= e:
+            sanity_2 = e_check/e
+        else:
+            sanity_2 = 1 - (e_check-e)/e
+
+        # Sanity 3
+        E_check = torch.sum(E, -1)
+        E_check[E_check > 0] = 1.
+        zero_check = torch.zeros_like(A)
+        zero_check[A == E_check] = 1
+        sanity_3 = (torch.sum(zero_check)/(n**2)).item() 
+
+        return sanity_1 * 100, sanity_2 * 100, sanity_3 * 100
 
 
 if __name__ == "__main__":

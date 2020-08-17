@@ -3,6 +3,7 @@ import pickle
 import os
 from torch_rgvae.GCVAE import GCVAE
 from torch_rgvae.losses import *
+from torch_rgvae.train_fn import train_epoch
 import torch
 import numpy as np
 from utils import *
@@ -62,37 +63,14 @@ def train_eval_GCVAE(params, epochs, lr=1e-5):
         start_time = time.time()
         print('Start training epoch {}'.format(epoch))
         with torch.autograd.detect_anomaly():
-            for target in train_set:
-                model.train()
-                mean, logvar = model.encode(target)
-                z = model.reparameterize(mean, logvar)
-                prediction = model.decode(z)
- 
-                # TODO: make it a function so we can use the same at eval.                             
-                log_px_z = mpgm_loss2(target, prediction)
-                kl_div = kl_divergence(mean, logvar)
-                loss = torch.mean( - log_px_z + kl_div)
-                print('Epoch {} \n loss {}'.format(epoch, loss.item()))
-                loss.backward()
-                optimizer.step()
-                end_time = time.time()
-                sanity = sanity_check(model.sample(), n, e)
-                print('Sanity check: {:.2f}% nodes, {:.2f}% edges, {:.2f}% adj syntax.'.format(*sanity))
-
+            train_epoch(train_set, model, optimizer, epoch)
+        end_time = time.time()
+        print('Time elapsed for epoch{} : {}'.format(epoch, start_time - end_time))
         # Evaluate
         print("Start evaluation epoch {}.".format(epoch))
         mean_loss = []
         with torch.no_grad():
-            model.eval()
-            for test_x in test_set:
-                mean, logstd = model.encode(target)
-                z = model.reparameterize(mean, logstd)
-                prediction = model.decode(z)
-                log_pz = log_normal_pdf(z, torch.zeros_like(z), torch.zeros_like(z))
-                log_qz_x = log_normal_pdf(z, mean, 2 * logstd)
-                log_px = mpgm_loss(target, prediction)
-                loss = - torch.mean(log_px + log_pz + log_qz_x)
-                mean_loss.append(loss)
+            train_epoch(test_set, model, optimizer, epoch, eval=True)
             print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'.format(epoch, np.mean(mean_loss),
                                                                                            end_time - start_time))
 

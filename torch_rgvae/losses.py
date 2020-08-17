@@ -28,10 +28,11 @@ def graph_BCEloss(target, prediction, l_A=1., l_E=1., l_F=1.):
     return loss
 
 
-def mpgm_loss(target, prediction, l_A=1., l_E=1., l_F=1., zero_diag: bool=True):
+def original_gvae_loss(target, prediction, l_A=1., l_E=1., l_F=1., zero_diag: bool=True):
     """
     Loss function using max-pooling graph matching as describes in the GraphVAE paper.
-    Lets see if backprop works. Args obviously the same as above!
+    This loss expects A_hat to have sigmoid and E_hat and F_hat to have softmax probabilities.
+    Meaning there can be several nodes and edges but only one edge and node attribute.
     Args:
         target: list of the 3 target matrices A, E, F.
         prediction: list of the 3 predicted matrices A_hat, E_hat, F_hat.
@@ -89,11 +90,12 @@ def mpgm_loss(target, prediction, l_A=1., l_E=1., l_F=1., zero_diag: bool=True):
     log_p = l_A * log_p_A + l_F * log_p_F + l_E * log_p_E
     return log_p
 
-def mpgm_loss2(target, prediction, l_A=1., l_E=1., l_F=1., zero_diag: bool=True):
+def mpgm_loss(target, prediction, l_A=1., l_E=1., l_F=1., zero_diag: bool=True):
     """
-    This one we treat A and E the same as both are sigmoided and F is softmaxed.
-    Loss function using max-pooling graph matching as describes in the GraphVAE paper.
-    Lets see if backprop works. Args obviously the same as above!
+    Modification of the loss function described in the GraphVAE paper.
+    The difference is, we treat A and E the same as both are sigmoided and F stays as it is softmaxed.
+    This way we can have multiple edge attributes.
+    The node attribute matrix is used to index the nodes, therefore the softmax.
     Args:
         target: list of the 3 target matrices A, E, F.
         prediction: list of the 3 predicted matrices A_hat, E_hat, F_hat.
@@ -182,44 +184,3 @@ def std_loss(prediction, l_A=1., l_E=1., l_F=1.):
     std = l_A * torch.std(A_hat, dim=[-2,-1]) + l_E * torch.std(E_hat, dim=[-3,-2,-1]) + l_F * torch.std(F_hat, dim=[-2,-1])
 
     return  torch.mean(torch.log(std**2))**2
-
-def sanity_check(sample, n: int, e: int):
-    """
-    Function to monitor the sanity logic of the prediction.
-    Sanity 1: Model should predict graphs with the same amount of nodes as the target graph.
-    Sanity 2: Model should predict graphs with the same amount of edges as the target graph.
-    Sanity 3: Model should only predict edge attributes were it also predicts edges.
-    Args:
-        sample: A binarized prediction sample.
-        n: number of nodes in target graph.
-        e: number of edges in target graph.
-    Returns:
-        The 3 sanities in percentage.
-    """
-    A, E, F = sample
-    
-    # Sanity 1
-    A_check = A.numpy()
-    A_check = A_check[~np.all(A_check == 0, axis=1)]
-    A_check = np.delete(A_check, np.where(~A_check.any(axis=1))[0], axis=0)
-    k = A_check.shape[np.argmax(A_check.shape)] * 1.
-    if k <= n:
-        sanity_1 = k/n
-    else:
-        sanity_1 = 1 - (k-n)/n
-    
-    # Sanity 2
-    e_check = np.sum(A_check)
-    if e_check <= e:
-        sanity_2 = e_check/e
-    else:
-        sanity_2 = 1 - (e_check-e)/e
-
-    # Sanity 3
-    E_check = torch.sum(E, -1)
-    E_check[E_check > 0] = 1.
-    zero_check = torch.zeros_like(A)
-    zero_check[A == E_check] = 1
-    sanity_3 = (torch.sum(zero_check)/(n**2)).item() 
-
-    return sanity_1 * 100, sanity_2 * 100, sanity_3 * 100
