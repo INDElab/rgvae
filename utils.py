@@ -3,6 +3,7 @@ Utility functions.
 """
 import numpy as np
 import torch
+from tqdm import tqdm
 
 
 def no_zero(t):
@@ -121,10 +122,10 @@ def mk_graph_ds(n: int, d_e: int, d_n: int, e: int, constrained: bool=True, batc
     """
     ds = list()
     if constrained:
-        for i in range(batches):
+        for i in tqdm(range(batches), desc='Creating Dataset', total=batches):
             ds.append(mk_cnstrnd_graph(n,e,d_e,d_n,batch_size))
     else:
-        for i in range(batches):
+        for i in tqdm(range(batches), desc='Creating Dataset', total=batches):
             ds.append(mk_random_graph(n,d_e,d_n,batch_size,target))
     return ds
 
