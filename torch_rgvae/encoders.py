@@ -1,14 +1,53 @@
+"""
+Collection of encoders to use in the GraphVAE.
+"""
 from torch_rgvae.layers.RGC_layers import RelationalGraphConvolution
 import torch.nn.functional as F
 from torch import nn
 import torch
 import copy
+from torch_rgvae.layers.GCN_layers import GraphConvolution
 
 
-######################################################################################
-# Models for Experiment Reproduction
-######################################################################################
+class MLP(nn.Module):
+    """
+    Simple multi layer perceptron
+    """
+    def __init__(self, input_dim, h_dim, z_dim):
+        super().__init__()
 
+        self.mlp = nn.Sequential(nn.Linear(input_dim, h_dim),
+                                            nn.ReLU(),
+                                            nn.Dropout(.2),
+                                            nn.Linear(h_dim, 2*h_dim),
+                                            nn.ReLU(),
+                                            nn.Linear(2*h_dim, 2*z_dim))
+
+    def forward(self, x):
+        return self.mlp(x)
+
+
+class GCN(nn.Module):
+    """
+    Graph convolution net.
+    Source: tkipf gcnn
+    """
+    def __init__(self, n, nfeat, nhid, nclass, dropout= .2):
+        super(GCN, self).__init__()
+
+        self.gc1 = GraphConvolution(nfeat, nhid)
+        self.gc2 = GraphConvolution(nhid, nclass)
+        self.dropout = dropout
+        self.dense = nn.Linear(n*nclass, nclass)
+
+    def forward(self, x, adj):
+        x = F.relu(self.gc1(x, adj))
+        x = F.dropout(x, self.dropout, training=self.training)
+        x = self.gc2(x, adj)
+        x = torch.reshape(x, (x.shape[0], -1))
+        x = self.dense(x)
+        return x
+        
 
 class NodeClassifier(nn.Module):
     """ Node classification with R-GCN message passing """

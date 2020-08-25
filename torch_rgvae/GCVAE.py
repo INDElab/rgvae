@@ -6,7 +6,8 @@ The decoder a MLP with a flattened normal matrix output.
 
 import time
 from torch_rgvae.GVAE import TorchGVAE
-from torch_rgvae.GCN import GCN
+from torch_rgvae.encoders import *
+from torch_rgvae.decoders import *
 import torch.nn as nn
 from torch_rgvae.losses import *
 from utils import *

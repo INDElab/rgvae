@@ -131,7 +131,7 @@ def mpgm_loss(target, prediction, l_A=1., l_E=1., l_F=1., zero_diag: bool=True):
     term_2 = (1/k) * torch.sum((torch.ones_like(A_t_diag) - A_t_diag) * torch.log((torch.ones_like(A_hat_diag) - A_hat_diag)), -1, keepdim=True)
 
     """
-    Thought: Lets compare w against w/o the zeroing out diagonal and see what happens.
+    Thought: Lets compare w/ against w/o the zeroing out diagonal and see what happens.
     """
     # log_p_A part. Split in multiple terms for clarity.
     term_31 = A_t * torch.log(A_hat)
@@ -148,8 +148,11 @@ def mpgm_loss(target, prediction, l_A=1., l_E=1., l_F=1., zero_diag: bool=True):
     log_p_F = (1/n) * torch.sum(torch.log(no_zero(torch.sum(F * F_hat_t, -1))), (-1)).unsqueeze(-1)
 
     # log_p_E
-    e_norm = (1/(torch.norm(A, p=1, dim=[-2,-1])-n))
-    log_p_E = (e_norm * torch.sum(torch.sum(E_t * torch.log(E_hat) + (1 - E_t) * torch.log(1 - E_hat), -1) * mask, (-2,-1))).unsqueeze(-1)
+    # I changed the factor to the number of edges (k*(k-1)) the -1 is for the zero diagonal.
+    k_zero = k
+    if zero_diag:
+        k_zero = k - 1
+    log_p_E = ((1/(k*(k_zero))) * torch.sum(torch.sum(E_t * torch.log(E_hat) + (1 - E_t) * torch.log(1 - E_hat), -1) * mask, (-2,-1))).unsqueeze(-1)
 
     log_p = l_A * log_p_A + l_F * log_p_F + l_E * log_p_E
     return log_p

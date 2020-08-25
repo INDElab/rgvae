@@ -6,6 +6,8 @@ Also parent class for all other VAE models.
 import time
 import torch.nn as nn
 from torch_rgvae.losses import *
+from torch_rgvae.encoders import *
+from torch_rgvae.decoders import *
 from utils import *
 
 
@@ -28,20 +30,9 @@ class TorchGVAE(nn.Module):
         self.input_dim = input_dim
         self.z_dim = z_dim
 
-        self.encoder = nn.Sequential(nn.Linear(input_dim, h_dim),
-                                    nn.ReLU(),
-                                    nn.Dropout(.2),
-                                    nn.Linear(h_dim, 2*h_dim),
-                                    nn.ReLU(),
-                                    nn.Linear(2*h_dim, 2*z_dim))
+        self.encoder = MLP(input_dim, h_dim, z_dim)
 
-        self.decoder = nn.Sequential(nn.Linear(z_dim, 2*h_dim),
-                                    nn.ReLU(),
-                                    nn.Dropout(.2),
-                                    nn.Linear(2*h_dim, h_dim),
-                                    nn.ReLU(),
-                                    nn.Linear(h_dim, input_dim),
-                                    nn.Sigmoid())
+        self.decoder = RMLP(input_dim, h_dim, z_dim)
 
         self.softmax = nn.Softmax(dim=-1)
 
