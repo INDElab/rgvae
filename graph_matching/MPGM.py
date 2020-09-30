@@ -137,14 +137,14 @@ class MPGM():
 
     def affinity_loop(self, A, A_hat, E, E_hat, F, F_hat):
         # We are going to iterate over pairs of (a,b) and (i,j)
-        # np.nindex is oging to make touples to avoid two extra loops.
+        # np.nindex is going to make tuples to avoid two extra loops.
         ij_pairs = list(np.ndindex(A.shape))
         ab_pairs = list(np.ndindex(A_hat.shape))
         n = A.shape[0]
         self.n = n
         k = A_hat.shape[0]
         self.k = k
-        # create en empty affinity martrix.
+        # create en empty affinity matrix.
         S = np.empty((n,n,k,k))
 
         # Now we start filling in the S matrix.
@@ -156,7 +156,6 @@ class MPGM():
                     S[i,j,a,b] = np.matmul(np.transpose(E[i,j,:]), E_hat[a,b,:]) * A_scalar
                     del A_scalar
                 elif a == b and i == j:
-                    # Is it necessary to transpose? I am in doubt if numpy auto matches dimensions. Update: No, does not, stop being paranoid!!!
                     S[i,j,a,b] = np.matmul(np.transpose(F[i,:]), F_hat[a,:]) * A_hat[a,a]
                 else:
                     # For some reason the similarity between two nodes for the case when one node is on the diagonal is not defined.
@@ -171,6 +170,7 @@ class MPGM():
         """
         # Just a crazy idea, but what if we flatten the X (n,k) matrix so that we can take the dot product with S (n,flat,K).
         Xs = torch.rand([self.bs, self.n, self.k])
+        self.Xs = Xs
         S = torch.reshape(S, [S.shape[0],S.shape[1],S.shape[-2],-1])
         for n in range(n_iterations):
             Xs = torch.reshape(Xs, [self.bs,-1]).unsqueeze(1).unsqueeze(-1)
@@ -189,10 +189,12 @@ class MPGM():
         """
         # The magic happens here, we are going to iteratively max pool the S matrix to get the X matrix.
         # We initiate the X matrix random uniform.
-        # init X
         k = self.k
         n = self.n
-        X = np.random.uniform(size=(n,k))
+        if self.Xs is:
+            X = self.Xs.squeeze().numpy()
+        else:
+            X = np.random.uniform(size=(n,k))
         # make pairs
         ia_pairs = list(np.ndindex(X.shape))
 
