@@ -15,7 +15,7 @@ d_e = 100
 d_n = 50
 
 batch_size = 2
-seed = 13
+seed = 11
 # Generation of random test graphs. The target graph is discrete and the reproduced graph probabilistic.
 torch.manual_seed(seed)
 np.random.seed(seed=seed)
@@ -78,9 +78,9 @@ class TestMPGM():
         assert torch.isnan(x).any() == False
         assert torch.isinf(x).any() == False
 
-        A_same = add_e7(torch.tensor(A).to(my_dtype))
-        E_same = add_e7(torch.tensor(E).to(my_dtype))
-        F_same = add_e7(torch.tensor(F).to(my_dtype))
+        A_same = add_e7(torch.tensor(A*.9).to(my_dtype))
+        E_same = add_e7(torch.tensor(E*.9).to(my_dtype))
+        F_same = add_e7(torch.tensor(F*.9).to(my_dtype))
         x_same = mpgm.call(A, A_same, E, E_same, F, F_same)
         # TODO figure out why not diagonal!
         # assert torch.diagonal(x_same, dim1=1, dim2=2).any == 1
@@ -103,4 +103,3 @@ test.test_maxpool()
 test.test_hungarian()
 test.test_call()
 test.test_set_diag_nnkk()
-test.test_zero_diag_nnkk()
