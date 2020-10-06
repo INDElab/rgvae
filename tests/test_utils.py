@@ -7,16 +7,16 @@ def test_no_zero():
     assert no_zero(t).numpy().any() != 0.
     assert no_zero(t).numpy().any() == 1.
 
-def test_check_adj_logic():
-    # TODO
-    pass
-
 def test_torch_batch_dot():
-    # TODO
-    pass
+    a = torch.rand([2,3,3,1])
+    b = torch.rand([2,5,5,1])
+    assert torch_batch_dot(a,b,-1,-1).shape == torch.Size((2,3,3,5,5))
+
 def test_torch_batch_dot_v2():
-    # TODO
-    pass
+    a = torch.rand([2,3,5])
+    b = torch.rand([2,5,7])
+    assert torch_batch_dot_v2(a,b,-1,-2,(2,3,7)).shape == torch.Size((2,3,7))
+    
 
 def test_replace_nan():
     my_nan = torch.tensor((1e-11,1e-16))
@@ -29,3 +29,5 @@ def test_replace_inf():
 test_no_zero()
 test_replace_nan()
 test_replace_inf()
+test_torch_batch_dot
+test_torch_batch_dot_v2

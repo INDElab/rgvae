@@ -132,6 +132,8 @@ def mk_graph_ds(n: int, d_e: int, d_n: int, e: int, constrained: bool=True, batc
 def torch_batch_dot(M1, M2, dim1, dim2):
     """
     Torch implementation of the batch dot matrix multiplication.
+    Only for matrices of shape (bs,n,n,1) and (bs,k,k,1).
+    Returns matrix of shape (bs,n,n,k,k).
     """
     M1_shape = M1.shape
     M2_shape = M2.shape
