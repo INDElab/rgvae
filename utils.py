@@ -81,8 +81,8 @@ def mk_cnstrnd_graph(n: int, e: int, d_e: int, d_n: int, batch_size: int=1, self
     E[A==1,:] = np.vstack([lambda_choice(e_choice, d_e) for _ in range(batch_size*e)])
 
     f_choice = np.append(np.ones(1, dtype=int), np.zeros(d_n-1, dtype=int))
-    F = np.vstack([lambda_choice(f_choice, d_n) for _ in range(batch_size*n)])
-    F = np.random.randint(2, size=(batch_size,n,d_n))
+
+    F = np.eye(d_n)[np.random.choice(d_n,batch_size*n)].reshape((batch_size,n,d_n))
     return A, E, F
 
 def mk_random_graph(n: int, d_e: int, d_n: int, batch_size: int=1, target: bool=True):

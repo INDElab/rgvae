@@ -37,6 +37,6 @@ def train_epoch(ds_set, model, optimizer, epoch, eval: bool=False):
             optimizer.step()
         sanity = model.sanity_check()
         if eval:
-            
-            loss_bar.set_description_str('Loss: {:.6f}'.format(loss.item()))
-            sanity_bar.set_description('Sanity check: {:.2f}% nodes, {:.2f}% edges, {:.2f}% adj syntax.'.format(*sanity))
+            pass
+        loss_bar.set_description_str('Loss: {:.6f}'.format(loss.item()))
+        sanity_bar.set_description('Sanity check: {:.2f}% nodes, {:.2f}% edges, {:.2f}% adj syntax.'.format(*sanity))

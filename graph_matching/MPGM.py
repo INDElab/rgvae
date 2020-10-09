@@ -74,7 +74,8 @@ class MPGM():
         E = E.to(float)
 
         A_hat_diag = (torch.diagonal(A_hat,dim1=-2,dim2=-1)).unsqueeze(-1)
-        E_norm = torch.norm(E,p=1,dim=-1,keepdim=True)  # Division by the norm since our model can have multiple edge attributes vs. one-hot
+        E_norm = torch.torch.norm(E,p=1,dim=-1,keepdim=True)  # Division by the norm since our model can have multiple edge attributes vs. one-hot
+        E_norm[E_norm == 0.] = 1.       # Otherwise we get nans
         E_ijab = torch_batch_dot(E/E_norm, E_hat, 3, 3)   # We aim for shape (batch_s,n,n,k,k).
 
         A_ab = A_hat * self.torch_set_diag(torch_batch_dot_v2(A_hat_diag,A_hat_diag, -1, -1, (bs,k,k)))
@@ -84,6 +85,7 @@ class MPGM():
         F_ia = torch.matmul(F, torch.transpose(F_hat, 1, 2))
 
         S = E_ijab * A_ijab + self.set_diag_nnkk(F_ia * A_aa, bs, n, k)
+        assert torch.isnan(S).any() == False
         return S
 
     def affinity_loop(self, A, A_hat, E, E_hat, F, F_hat):

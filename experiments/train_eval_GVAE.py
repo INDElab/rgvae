@@ -22,8 +22,8 @@ torch.set_default_dtype(my_dtype)
 # Parameters. Arg parsing on its way.
 n = 5
 e = 10      # All random graphs shall have 5 nodes and 10 edges
-d_e = 3
-d_n = 3
+d_e = 11
+d_n = 55
 batch_size = 16        # Choose a low batch size for debugging, or creating the dataset will take very long.
 params = [n, e, d_e, d_n, batch_size]
 
@@ -49,8 +49,8 @@ def train_eval_GVAE(params, epochs, lr=1e-5):
             train_set, test_set = pickle.load(fp)
     else:
         print('Creating dataset..')
-        train_set = mk_graph_ds(n, d_e, d_n, e, batches=4000, batch_size=batch_size)
-        test_set = mk_graph_ds(n, d_e, d_n, e, batches=1000, batch_size=batch_size)
+        train_set = mk_graph_ds(n, d_e, d_n, e, batches=1000, batch_size=batch_size)
+        test_set = mk_graph_ds(n, d_e, d_n, e, batches=200, batch_size=batch_size)
         with open(data_file, "wb") as fp:
             pickle.dump([train_set, test_set], fp)
 

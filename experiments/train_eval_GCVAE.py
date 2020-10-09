@@ -60,12 +60,15 @@ def train_eval_GCVAE(params, epochs, lr=1e-5):
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=5e-4)
     
     # Start training.
-    print('Start training.')
-    for epoch in tqdm(range(epochs), total=epochs, desc='Epoch', position=-1):
+    for epoch in range(epochs):
+        start_time = time.time()
+        print('Start training epoch {}'.format(epoch))
         with torch.autograd.detect_anomaly():
             train_epoch(train_set, model, optimizer, epoch)
+        end_time = time.time()
+        print('Time elapsed for epoch{} : {}'.format(epoch, start_time - end_time))
         # Evaluate
-        print("Start evaluation for epoch {}.".format(epoch))
+        print("Start evaluation epoch {}.".format(epoch))
         mean_loss = []
         with torch.no_grad():
             train_epoch(test_set, model, optimizer, epoch, eval=True)
