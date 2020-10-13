@@ -52,7 +52,31 @@ def test_kl_divergence():
     # TODO fix it
     # assert kl_divergence(mean, logvar).any() == 0
 
+def test_selfmorphism():
+    A = torch.tensor([np.eye(5),np.eye(5)])
+    A_hat = A.clone().to(my_dtype)
+    A_hat[A == 0] = 0.001
+    A_hat[A == 1] = 0.999
+    F = torch.tensor([np.eye(5),np.eye(5)])
+    F_hat = F.clone().to(my_dtype)
+    F_hat[F == 0] = 0.001
+    F_hat[F == 1] = 0.999
+    F_flip = torch.flip(F_hat, [1])
+    E_none = torch.zeros((2,5,5,3))
+    E_hat = E_none.clone()
+    E_hat[E_none == 0] = 0.001
 
-test_graph_BCEloss()
-test_mgpm_loss()
-test_kl_divergence()
+
+    loss_equal = mpgm_loss([A,E_none,F],[A_hat,E_hat,F_hat])
+    loss_flip = mpgm_loss([A,E_none,F],[A_hat,E_hat,F_flip])
+    assert loss_equal.numpy().any() == 0.
+
+    E = torch.rand((batch_size,k,k,d_e))
+    
+
+
+
+# test_graph_BCEloss()
+# test_mgpm_loss()
+# test_kl_divergence()
+test_selfmorphism()

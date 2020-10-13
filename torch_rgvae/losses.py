@@ -57,7 +57,7 @@ def mpgm_loss(target, prediction, l_A=1., l_E=1., l_F=1., zero_diag: bool=True):
     mpgm = MPGM()
     X = mpgm.call(A, A_hat.detach(), E, E_hat.detach(), F, F_hat.detach())
 
-    # This is the loss part from the paper:s
+    # This is the loss part from the paper:
     A_t = torch.transpose(X, 2, 1) @ A @ X     # shape (bs,k,n)
     E_t = torch_batch_dot_v2(torch_batch_dot_v2(X, E, 1, 1, [bs,n,k,d_e]), X, -2, 1, [bs,k,k,d_e])    # target shape is (bs,k,k,d_e)
     F_hat_t = torch.matmul(X, F_hat)

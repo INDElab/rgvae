@@ -1,6 +1,7 @@
 """
 Pytorch implementation of the max-pooling graph matching algorithm.
 """
+import time
 import networkx as nx
 import numpy as np
 from numpy import array
@@ -193,11 +194,14 @@ class MPGM():
         return X
 
     def hungarian_batch(self, Xs):
-        X = Xs.numpy()
+        X = Xs.clone().numpy()
+        # Make it a cost matrix
+        X = np.ones_like(X) - X
         for i in range(X.shape[0]):
             row_ind, col_ind = linear_sum_assignment(X[i])
             M = np.zeros(X[i].shape, dtype=float)
             M[row_ind, col_ind] = 1.
             X[i] = M
-        return torch.tensor(X)
+        X = torch.tensor(X)
+        return X
 
