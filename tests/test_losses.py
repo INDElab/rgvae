@@ -67,8 +67,8 @@ def test_selfmorphism():
     E_hat[E_none == 0] = 0.001
 
 
-    loss_equal = mpgm_loss([A,E_none,F],[A_hat,E_hat,F_hat])
-    loss_flip = mpgm_loss([A,E_none,F],[A_hat,E_hat,F_flip])
+    # loss_equal = mpgm_loss([A,E_none,F],[A_hat,E_hat,F_hat])
+    loss_flip = mpgm_loss([torch.zeros_like(A),E_none,F],[A_hat,E_hat,F_flip])
     assert loss_equal.numpy().any() == 0.
 
     E = torch.rand((batch_size,k,k,d_e))

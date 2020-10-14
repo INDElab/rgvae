@@ -85,9 +85,12 @@ class MPGM():
         A_aa = torch.bmm(torch.ones((bs,n,1)), torch.transpose(A_hat_diag,1,2))
         F_ia = torch.matmul(F, torch.transpose(F_hat, 1, 2))
 
-        S = E_ijab * A_ijab + self.set_diag_nnkk(F_ia * A_aa, bs, n, k)
-        assert torch.isnan(S).any() == False
-        return S
+        # S = E_ijab * A_ijab + self.set_diag_nnkk(F_ia * A_aa, bs, n, k)
+        # assert torch.isnan(S).any() == False
+
+        S_iaia = F_ia * A_aa
+        S_iajb = E_ijab * A_ijab #+ self.set_diag_nnkk(S_iaia, bs, n, k)
+        return (S_iajb, S_iaia)
 
     def affinity_loop(self, A, A_hat, E, E_hat, F, F_hat):
         # We are going to iterate over pairs of (a,b) and (i,j)
@@ -122,17 +125,31 @@ class MPGM():
         The famous Cho max-pooling in matrix multiplication style.
         Xs: X_star meaning X in continuos space.
         """
-        # Just a crazy idea, but what if we flatten the X (n,k) matrix so that we can take the dot product with S (n,flat,K).
+        S_iajb, S_iaia = S
         Xs = torch.rand([self.bs, self.n, self.k])
         self.Xs = Xs
-        S = torch.reshape(S, [S.shape[0],S.shape[1],S.shape[-2],-1])
         for n in range(n_iterations):
-            Xs = torch.reshape(Xs, [self.bs,-1]).unsqueeze(1).unsqueeze(-1)
-            SXs = torch.matmul(S,Xs).squeeze()
-            xnorm = torch.norm(SXs, p='fro', dim=[-2,-1])
-            Xs = (SXs / xnorm.unsqueeze(-1).unsqueeze(-1))
-            assert torch.isnan(Xs).any() == False
+            Xs1 = Xs * S_iaia 
+            Xs2 = S_iajb * Xs.unsqueeze(-1).unsqueeze(-1)   #.repeat((1,1,1,S_iajb.shape[-2],S_iajb.shape[-1]))
+            Xs3 = torch.max(Xs2,-1, out=None)[0]
+            Xs4 = torch.sum(Xs3,-1)
+            Xs = Xs1 + Xs4
+            Xs_norm = torch.norm(Xs, p='fro', dim=[-2,-1])
+            Xs = (Xs / Xs_norm.unsqueeze(-1).unsqueeze(-1))
         return Xs
+        
+
+        # # Just a crazy idea, but what if we flatten the X (n,k) matrix so that we can take the dot product with S (n,flat,K).
+        # Xs = torch.rand([self.bs, self.n, self.k])
+        # self.Xs = Xs
+        # S = torch.reshape(S, [S.shape[0],S.shape[1],S.shape[-2],-1])
+        # for n in range(n_iterations):
+        #     Xs = torch.reshape(Xs, [self.bs,-1]).unsqueeze(1).unsqueeze(-1)
+        #     SXs = torch.matmul(S,Xs).squeeze()
+        #     xnorm = torch.norm(SXs, p='fro', dim=[-2,-1])
+        #     Xs = (SXs / xnorm.unsqueeze(-1).unsqueeze(-1))
+        #     assert torch.isnan(Xs).any() == False
+        # return Xs
 
     def max_pool_loop(self, S, n_iterations: int=300):
         """
@@ -165,7 +182,7 @@ class MPGM():
                 # My interpretation is that when there is no neighbor the S matrix will be zero, there fore we still use j anb b in full rage.
                 # Second option would be to use a range of [i-1,i+2].
                 # The first term max pools over the pairs of edge matches (ia;jb).
-                de_sum = np.sum([np.argmax(X[j,:] @ S[i,j,a,:]) for j in range(k)])
+                de_sum = np.sum([np.argmax(X[j,:] @ S[i,j,a,:]) for j in range(n)])
                 # In the next term we only consider the node matches (ia;ia).
                 X[i,a] = X[i,a] * S[i,i,a,a] + de_sum
             # Normalize X to range [0,1].
