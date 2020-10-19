@@ -126,14 +126,10 @@ class MPGM():
         Xs: X_star meaning X in continuos space.
         """
         S_iajb, S_iaia = S
-        Xs = torch.rand([self.bs, self.n, self.k])
+        Xs = torch.ones_like(S_iaia)
         self.Xs = Xs
         for n in range(n_iterations):
-            Xs1 = Xs * S_iaia 
-            Xs2 = S_iajb * Xs.unsqueeze(-1).unsqueeze(-1)   #.repeat((1,1,1,S_iajb.shape[-2],S_iajb.shape[-1]))
-            Xs3 = torch.max(Xs2,-1, out=None)[0]
-            Xs4 = torch.sum(Xs3,-1)
-            Xs = Xs1 + Xs4
+            Xs = Xs * S_iaia + torch.sum(torch.max(S_iajb * Xs.unsqueeze(1).unsqueeze(1),-1, out=None)[0],-1)
             Xs_norm = torch.norm(Xs, p='fro', dim=[-2,-1])
             Xs = (Xs / Xs_norm.unsqueeze(-1).unsqueeze(-1))
         return Xs
@@ -161,6 +157,7 @@ class MPGM():
         """
         # The magic happens here, we are going to iteratively max pool the S matrix to get the X matrix.
         # We initiate the X matrix random uniform.
+        S_iajb, S_iaia = S
         k = self.k
         n = self.n
         if self.Xs is None:
@@ -182,9 +179,9 @@ class MPGM():
                 # My interpretation is that when there is no neighbor the S matrix will be zero, there fore we still use j anb b in full rage.
                 # Second option would be to use a range of [i-1,i+2].
                 # The first term max pools over the pairs of edge matches (ia;jb).
-                de_sum = np.sum([np.argmax(X[j,:] @ S[i,j,a,:]) for j in range(n)])
+                de_sum = np.sum([np.argmax(X[j,:] @ S_iajb[i,j,a,:]) for j in range(n)])
                 # In the next term we only consider the node matches (ia;ia).
-                X[i,a] = X[i,a] * S[i,i,a,a] + de_sum
+                X[i,a] = X[i,a] * S_iaia[i,a] + de_sum
             # Normalize X to range [0,1].
             X = X * 1./np.linalg.norm(X)
         return X
