@@ -82,8 +82,7 @@ class TestMPGM():
         E_same = add_e7(torch.tensor(E*.9).to(my_dtype))
         F_same = add_e7(torch.tensor(F*.9).to(my_dtype))
         x_same = mpgm.call(A, A_same, E, E_same, F, F_same)
-        # TODO figure out why not diagonal!
-        # assert torch.diagonal(x_same, dim1=1, dim2=2).numpy.any() == 1.
+        assert torch.diagonal(x_same, dim1=1, dim2=2).numpy().any() == 1.
 
     def test_torch_set_diag(self):
         diag_zero = mpgm.torch_set_diag(A_hat)
@@ -109,7 +108,7 @@ class TestMPGM():
         E_none = torch.zeros((2,5,5,3))
         E_hat = E_none.clone()
         E_hat[E_none == 0] = 0.001
-
+        # Flip two nodes
         A[:,0,-1] = 1
         E_none[:,0,-1,:] = torch.tensor(([1,0,0],[1,0,0]))
         F_hat[0,-2:,-2:] = torch.tensor([0.499,0.499])

@@ -47,10 +47,10 @@ def test_mgpm_loss():
     assert torch.isnan(loss).any() == False
 
 def test_kl_divergence():
-    mean = torch.tensor([0.,0.])
-    logvar = torch.tensor([0.,0.])
-    # TODO fix it
-    # assert kl_divergence(mean, logvar).any() == 0
+    mean = torch.zeros((2,2))
+    logvar = torch.zeros((2,2))
+    kl = kl_divergence(mean, logvar)
+    assert kl_divergence(mean, logvar).numpy().any() == 0
 
 def test_equal():
     A = torch.tensor([np.eye(5),np.eye(5)])
@@ -76,4 +76,4 @@ def test_equal():
 # test_graph_BCEloss()
 # test_mgpm_loss()
 # test_kl_divergence()
-test_equal()
+# test_equal()
