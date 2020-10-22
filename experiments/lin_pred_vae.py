@@ -1,11 +1,8 @@
 import time
-import pickle
 import os
 from torch_rgvae.GVAE import TorchGVAE
 from torch_rgvae.GCVAE import GCVAE
-from torch_rgvae.losses import *
 from torch_rgvae.train_fn import train_sparse_batch
-from utils import check_adj_logic
 import torch
 import numpy as np
 from lp_utils import *
@@ -71,7 +68,9 @@ def train_eval_vae(n, batch_size, lr, epochs, dataset):
         mean_loss = np.mean(loss_val)
         print('Epoch: {}, Test set ELBO: {:.3f}'.format(epoch, mean_loss))
         if 'old_loss' in locals() and mean_loss < old_loss:
-            # TODO save model
+            # Check for data folder and eventually create.
+            if not os.path.isdir('data/model'):
+                os.mkdir('data/model')
             torch.save(model.state_dict(), 'data/model/{}_{}_{}e_{}.pt'.format(model.name, dataset, epoch, date.today().strftime("%Y%m%d")))
         old_loss = mean_loss
 
