@@ -55,7 +55,6 @@ def train_sparse_batch(target, model, optimizer, epoch, eval: bool=False):
         eval: Option to switch between training and evaluation.
         sparse: the data is sparse and has to be converted.
     """
-    # TODO convert data
 
     mean, logvar = model.encode(target)
     z = model.reparameterize(mean, logvar)

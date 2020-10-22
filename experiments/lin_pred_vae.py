@@ -50,7 +50,7 @@ def train_eval_vae(n, batch_size, lr, epochs):
             for ii in tqdm(range(len(np.ceil(train_set)/(batch_size*n))), total=len(train_set), desc='Epoch {}'.format(epoch), position=2):
                 target = batch_t2m(ii, train_set, batch_size, n, d_n, d_e)
                 loss, sanity = train_sparse_batch(target, model, optimizer, epoch)
-                loss_bar.set_description_str('Loss: {:.6f}'.format(loss.item()))
+                loss_bar.set_description_str('Loss: {:.6f}'.format(loss))
                 sanity_bar.set_description('Sanity check: {:.2f}% nodes, {:.2f}% edges, {:.2f}% adj syntax.'.format(*sanity))
 
         end_time = time.time()
@@ -64,7 +64,7 @@ def train_eval_vae(n, batch_size, lr, epochs):
             for ii in tqdm(range(len(np.ceil(ds_set)/(batch_size*n))), total=len(test_set), desc='Epoch {}'.format(epoch), position=2):
                 target = batch_t2m(ii, train_set, batch_size, n, d_n, d_e)
                 loss = train_sparse_batch(target, model, optimizer, epoch, eval=True)
-                loss_val.append(loss.item())
+                loss_val.append(loss)
         print('Epoch: {}, Test set ELBO: {:.3f}'.format(epoch, np.mean(loss_val)))
 
 if __name__ == "__main__":
