@@ -27,6 +27,7 @@ class GCVAE(TorchGVAE):
         """
         super().__init__(n, ea, na, h_dim, z_dim)
 
+        self.name = 'GCVAE'
         input_dim = n*n + n*na + n*n*ea
         self.input_dim = input_dim
         self.z_dim = z_dim

@@ -21,6 +21,7 @@ class TorchRGVAE(TorchGVAE):
             z_dim : latent dimension
         """
         super().__init__(n, ea, na, h_dim, z_dim)
+        self.name = 'RGVAE'
         self.n = n
         self.na = na
         self.ea = ea

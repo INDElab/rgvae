@@ -10,6 +10,8 @@ import torch
 import numpy as np
 from lp_utils import *
 from tqdm import tqdm
+from datetime import date
+
 
 
 # This sets the default torch dtype. Double-power
@@ -25,11 +27,12 @@ np.random.seed(seed=seed)
 torch.manual_seed(seed)
 epochs = 111
 lr = 1e-5
+dataset = 'fb15k'
 
-def train_eval_vae(n, batch_size, lr, epochs):
+def train_eval_vae(n, batch_size, lr, epochs, dataset):
 
     # Get data
-    (n2i, i2n), (r2i, i2r), train_set, test_set, all_triples = load_link_prediction_data('fb15k')
+    (n2i, i2n), (r2i, i2r), train_set, test_set, all_triples = load_link_prediction_data(dataset)
     d_n = len(n2i)
     d_e = len(r2i)
 
@@ -65,8 +68,13 @@ def train_eval_vae(n, batch_size, lr, epochs):
                 target = batch_t2m(ii, train_set, batch_size, n, d_n, d_e)
                 loss = train_sparse_batch(target, model, optimizer, epoch, eval=True)
                 loss_val.append(loss)
-        print('Epoch: {}, Test set ELBO: {:.3f}'.format(epoch, np.mean(loss_val)))
+        mean_loss = np.mean(loss_val)
+        print('Epoch: {}, Test set ELBO: {:.3f}'.format(epoch, mean_loss))
+        if 'old_loss' in locals() and mean_loss < old_loss:
+            # TODO save model
+            torch.save(model.state_dict(), 'data/model/{}_{}_{}e_{}.pt'.format(model.name, dataset, epoch, date.today().strftime("%Y%m%d")))
+        old_loss = mean_loss
 
 if __name__ == "__main__":
 
-    train_eval_vae(n, batch_size, lr, epochs)
+    train_eval_vae(n, batch_size, lr, epochs, dataset)

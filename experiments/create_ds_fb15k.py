@@ -42,7 +42,7 @@ def create_ds_fb15k(n: int, batch_size: int):
                         break
                     (A, E, F) = triple2matrix(data_in[a:a+n], d_n, d_e)
                     if A.shape[1] == 1:
-                        print('here', data_in[a:a+n],a)
+                        print('Weirdo here:', data_in[a:a+n],a)
                     batch_a.append(A)
                     batch_e.append(E)
                     batch_f.append(F)

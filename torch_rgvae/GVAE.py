@@ -23,6 +23,7 @@ class TorchGVAE(nn.Module):
             z_dim : latent dimension
         """
         super().__init__()
+        self.name = 'GVAE'
         self.n = n
         self.na = na
         self.ea = ea
