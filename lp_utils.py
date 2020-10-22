@@ -63,7 +63,10 @@ def load_link_prediction_data(name, use_test_set=False, limit=None):
 
     # Mappings for nodes (n) and relations (r)
     nodes, rels = set(), set()
-    for s, p, o in train + val + test:
+    for i in train + val + test:
+      if len(i) < 3:
+        print(i)
+    for s, p, o in train + test:
         nodes.add(s)
         rels.add(p)
         nodes.add(o)
@@ -92,7 +95,7 @@ def triple2matrix(triples, max_n: int, max_r: int):
     # An exception for single triples.
     n_list = list(dict.fromkeys([triple[0] for triple in triples]))+list(dict.fromkeys([triple[2] for triple in triples]))
     n_dict =  dict(zip(n_list, np.arange(len(n_list))))
-    n = len(n_list)     # we take n_list so it zero pads in case of a self-loop
+    n = 2*len(triples)     # All matrices must be of same size
 
     # The empty first dimension is to stacking into batches.
     

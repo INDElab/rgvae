@@ -16,7 +16,7 @@ my_dtype = torch.float64
 torch.set_default_dtype(my_dtype)
 
 # Parameters. Arg parsing on its way.
-n = 1   # number of triples per matrix ( =  matarix_n/2)
+n = 1       # number of triples per matrix ( =  matrix_n/2)
 batch_size = 16        # Choose a low batch size for debugging, or creating the dataset will take very long.
 
 seed = 11
@@ -27,6 +27,9 @@ lr = 1e-5
 dataset = 'fb15k'
 
 def train_eval_vae(n, batch_size, lr, epochs, dataset):
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print('Using device:', device)
 
     # Get data
     (n2i, i2n), (r2i, i2r), train_set, test_set, all_triples = load_link_prediction_data(dataset)
