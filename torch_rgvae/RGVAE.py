@@ -5,7 +5,7 @@ Decoder: MLP
 """
 
 import torch.nn as nn
-from torch_rgvae.RGCN_models import *
+from torch_rgvae.RGVAE import *
 from torch_rgvae.GVAE import TorchGVAE
 
 

@@ -223,7 +223,7 @@ class GraphConvolution(Module):
 
     def forward(self, input, adj):
         support = torch.matmul(input, self.weight)
-        output = torch.matmul(adj, support.to(torch.long))
+        output = torch.matmul(adj, support)
         if self.bias is not None:
             return output + self.bias
         else:
@@ -233,3 +233,4 @@ class GraphConvolution(Module):
         return self.__class__.__name__ + ' (' \
                + str(self.in_features) + ' -> ' \
                + str(self.out_features) + ')'
+               
