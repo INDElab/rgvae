@@ -55,18 +55,28 @@ def train_sparse_batch(target, model, optimizer, epoch, eval: bool=False):
         eval: Option to switch between training and evaluation.
         sparse: the data is sparse and has to be converted.
     """
-
+    start1 = time.time()
     mean, logvar = model.encode(target)
     z = model.reparameterize(mean, logvar)
     prediction = model.decode(z)
-
+    # end1 = time.time()
+    
     log_px_z = mpgm_loss(target, prediction)
+    # end2 = time.time()
+    # print('Forwardpass time: {}'.format(end1-start1))
+    # print('Loss time: {}'.format(end2-end1))
     kl_div = kl_divergence(mean, logvar)
+    # end3 = time.time()
+    # print('KL time: {}'.format(end3-end2))
     loss = torch.mean( - log_px_z + kl_div)
     if not eval:
         loss.backward()
         optimizer.step()
+    # end4 = time.time()
+    # print('Backwardpass time: {}'.format(end4 - end3))
     sanity = model.sanity_check()
+    # end5 = time.time()
+    # print('Sanity-check time: {}'.format(end5-end4))
     if eval:
         return loss.item()
     else:
