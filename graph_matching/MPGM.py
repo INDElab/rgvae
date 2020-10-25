@@ -208,7 +208,7 @@ class MPGM():
         return X
 
     def hungarian_batch(self, Xs):
-        X = Xs.clone().numpy()
+        X = Xs.clone().cpu().numpy()
         # Make it a cost matrix
         X = np.ones_like(X) - X
         for i in range(X.shape[0]):

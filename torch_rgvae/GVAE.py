@@ -114,7 +114,7 @@ class TorchGVAE(nn.Module):
         n, e = (self.n, self.edge_count)
 
         # Sanity 1
-        A_check = A.detach().clone().numpy()
+        A_check = A.detach().clone().cpu().numpy()
         A_check = A_check[~np.all(A_check == 0, axis=1)]
         A_check = np.delete(A_check, np.where(~A_check.any(axis=1))[0], axis=0)
         k = A_check.shape[np.argmax(A_check.shape)] * 1.

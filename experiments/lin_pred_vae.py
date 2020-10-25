@@ -37,9 +37,10 @@ def train_eval_vae(n, batch_size, lr, epochs, dataset):
     d_e = len(r2i)
 
     # Initialize model and optimizer.
-    model = GCVAE(n*2, d_e, d_n)
+    model = GCVAE(n*2, d_e, d_n).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=5e-4)
-
+    old_loss = 333
+    
     # Start training.
     for epoch in range(epochs):
         start_time = time.time()
@@ -48,12 +49,12 @@ def train_eval_vae(n, batch_size, lr, epochs, dataset):
         model.train()
         loss_bar = tqdm(total=0, position=0, bar_format='{desc}')
         sanity_bar = tqdm(total=0, position=1, bar_format='{desc}')
-
-        for ii in tqdm(range(len(np.ceil(train_set)/(batch_size*n))), total=len(train_set), desc='Epoch {}'.format(epoch), position=2):
+        train_range = int(np.ceil(len(train_set)/(batch_size*n)))
+        for ii in tqdm(range(train_range), total=train_range, desc='Epoch {}'.format(epoch), position=2):
             # start1 = time.time()
             target = batch_t2m(ii, train_set, batch_size, n, d_n, d_e)
             # end1 = time.time()
-            print('Create target: {}'.format(end1-start1))
+            # print('Create target: {}'.format(end1-start1))
             loss, sanity = train_sparse_batch(target, model, optimizer, epoch)
             # end2 = time.time()
             # print('Total time: {}'.format(end2-start1))
@@ -69,8 +70,8 @@ def train_eval_vae(n, batch_size, lr, epochs, dataset):
         with torch.no_grad():
             model.eval()
             loss_val = list()
-
-            for ii in tqdm(range(len(np.ceil(ds_set)/(batch_size*n))), total=len(test_set), desc='Epoch {}'.format(epoch), position=2):
+            test_range = int(np.ceil(len(test_set)/(batch_size*n)))
+            for ii in tqdm(range(test_range), total=test_range, desc='Epoch {}'.format(epoch), position=2):
                 target = batch_t2m(ii, train_set, batch_size, n, d_n, d_e)
                 loss = train_sparse_batch(target, model, optimizer, epoch, eval=True)
                 loss_val.append(loss)
@@ -82,8 +83,8 @@ def train_eval_vae(n, batch_size, lr, epochs, dataset):
             # Check for data folder and eventually create.
             if not os.path.isdir('data/model'):
                 os.mkdir('data/model')
-            torch.save(model.state_dict(), 'data/model/{}_{}_{}e_{}.pt'.format(model.name, dataset, epoch, date.today().strftime("%Y%m%d")))
-        old_loss = mean_loss
+            torch.save(model.state_dict(), 'data/model/{}_{}_{}e_{}l_{}.pt'.format(model.name, dataset, epoch, int(mean_loss), date.today().strftime("%Y%m%d")))
+            old_loss = mean_loss
 
 if __name__ == "__main__":
 

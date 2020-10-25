@@ -48,9 +48,10 @@ class GCVAE(TorchGVAE):
         bs = A.shape[0]
 
         # We reshape E to (bs,n,n*d_e) and then concat it with F
-        features = np.concatenate((np.reshape(E, (bs, self.n, self.n*self.ea)), F), axis=-1)
+        # features = np.concatenate((np.reshape(E, (bs, self.n, self.n*self.ea)), F), axis=-1)
+        features = torch.cat((torch.reshape(E, (bs, self.n, self.n*self.ea)), F), -1)
         adj = torch.tensor(A)
-        features = torch.Tensor(np.array(features))
+        # features = torch.Tensor(np.array(features))
         return torch.split(self.encoder(features, adj), self.z_dim, dim=1)
 
     def normalize(self, mx):
