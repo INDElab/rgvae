@@ -61,7 +61,7 @@ def train_sparse_batch(target, model, optimizer, epoch, eval: bool=False):
     prediction = model.decode(z)
     # end1 = time.time()
     
-    log_px_z = mpgm_loss(target, prediction)
+    log_px_z, x = mpgm_loss(target, prediction)
     # end2 = time.time()
     # print('Forwardpass time: {}'.format(end1-start1))
     # print('Loss time: {}'.format(end2-end1))
@@ -77,7 +77,9 @@ def train_sparse_batch(target, model, optimizer, epoch, eval: bool=False):
     sanity = model.sanity_check()
     # end5 = time.time()
     # print('Sanity-check time: {}'.format(end5-end4))
+    # This is the percentage of permuted predictions.
+    x_permute = 1 - torch.mean(torch.diagonal(x, dim1=1, dim2=2)).item()
     if eval:
-        return loss.item()
+        return loss.item(), x_permute
     else:
-        return loss.item(), sanity
+        return loss.item(), sanity, x_permute

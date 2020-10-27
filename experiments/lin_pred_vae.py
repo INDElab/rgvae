@@ -25,8 +25,9 @@ torch.manual_seed(seed)
 epochs = 111
 lr = 1e-5
 dataset = 'fb15k'
+model_path = 'data/model/GCVAE_fb15k_69e_20201025.pt'
 
-def train_eval_vae(n, batch_size, lr, epochs, dataset):
+def train_eval_vae(n, batch_size, lr, epochs, dataset, model_path=None ):
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print('Using device:', device)
@@ -40,7 +41,10 @@ def train_eval_vae(n, batch_size, lr, epochs, dataset):
     model = GCVAE(n*2, d_e, d_n).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=5e-4)
     old_loss = 333
-    
+
+    if model_path:
+        model.load_state_dict(torch.load(model_path, map_location=torch.device(device)))
+        print('Saved model loaded.')
     # Start training.
     for epoch in range(epochs):
         start_time = time.time()
@@ -55,11 +59,11 @@ def train_eval_vae(n, batch_size, lr, epochs, dataset):
             target = batch_t2m(ii, train_set, batch_size, n, d_n, d_e)
             # end1 = time.time()
             # print('Create target: {}'.format(end1-start1))
-            loss, sanity = train_sparse_batch(target, model, optimizer, epoch)
+            loss, sanity, x_permute = train_sparse_batch(target, model, optimizer, epoch)
             # end2 = time.time()
             # print('Total time: {}'.format(end2-start1))
             loss_bar.set_description_str('Loss: {:.6f}'.format(loss))
-            sanity_bar.set_description('Sanity check: {:.2f}% nodes, {:.2f}% edges, {:.2f}% adj syntax.'.format(*sanity))
+            sanity_bar.set_description('Sanity check: {:.2f}% nodes, {:.2f}% edges, {:.2f}% adj syntax, {:.2f}% permuted.'.format(*sanity,x_permute*100))
                 
         end_time = time.time()
         print('Time elapsed for epoch{} : {:.3f}'.format(epoch, end_time - start_time))
@@ -70,14 +74,15 @@ def train_eval_vae(n, batch_size, lr, epochs, dataset):
         with torch.no_grad():
             model.eval()
             loss_val = list()
+            permute_list = list()
             test_range = int(np.ceil(len(test_set)/(batch_size*n)))
             for ii in tqdm(range(test_range), total=test_range, desc='Epoch {}'.format(epoch), position=2):
                 target = batch_t2m(ii, train_set, batch_size, n, d_n, d_e)
-                loss = train_sparse_batch(target, model, optimizer, epoch, eval=True)
+                loss, x_permute = train_sparse_batch(target, model, optimizer, epoch, eval=True)
                 loss_val.append(loss)
+                permute_list.append(x_permute)
 
-        mean_loss = np.mean(loss_val)
-        print('Epoch: {}, Test set ELBO: {:.3f}'.format(epoch, mean_loss))
+        print('Epoch: {}, Test set ELBO: {:.3f}, permuted {:.3f}%'.format(epoch, np.mean(loss_val), np.mean(permute_list)*100))
 
         if 'old_loss' in locals() and mean_loss < old_loss:
             # Check for data folder and eventually create.
@@ -88,4 +93,4 @@ def train_eval_vae(n, batch_size, lr, epochs, dataset):
 
 if __name__ == "__main__":
 
-    train_eval_vae(n, batch_size, lr, epochs, dataset)
+    train_eval_vae(n, batch_size, lr, epochs, dataset, model_path)

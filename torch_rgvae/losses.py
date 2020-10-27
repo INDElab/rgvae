@@ -49,10 +49,6 @@ def mpgm_loss(target, prediction, l_A=1., l_E=1., l_F=1., zero_diag: bool=True):
     k = A_hat.shape[1]
     d_e = E.shape[-1]
 
-    # Cast target vectors to tensors.
-    A = torch.tensor(A * 1.)
-    E = torch.tensor(E * 1.)
-    F = torch.tensor(F * 1.)
 
     mpgm = MPGM()
     X = mpgm.call(A, A_hat.detach(), E, E_hat.detach(), F, F_hat.detach())
@@ -92,7 +88,8 @@ def mpgm_loss(target, prediction, l_A=1., l_E=1., l_F=1., zero_diag: bool=True):
     log_p_E = ((1/(k*(k_zero))) * torch.sum(torch.sum(E_t * torch.log(E_hat) + (1 - E_t) * torch.log(1 - E_hat), -1) * mask, (-2,-1))).unsqueeze(-1)
 
     log_p = l_A * log_p_A + l_F * log_p_F + l_E * log_p_E
-    return log_p
+    return log_p, X
+
 
 def kl_divergence(mean, logvar, raxis=1):
     """

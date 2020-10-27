@@ -1,3 +1,6 @@
+"""
+Obsolete since it exceeds working memory.
+"""
 import torch
 import numpy as np
 from lp_utils import *
