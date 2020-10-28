@@ -24,8 +24,8 @@ np.random.seed(seed=seed)
 torch.manual_seed(seed)
 epochs = 111
 lr = 1e-5
-dataset = 'fb15k'
-model_path = 'data/model/GCVAE_fb15k_69e_20201025.pt'
+dataset = 'wn18rr'
+# model_path = 'data/model/GCVAE_fb15k_69e_20201025.pt'
 
 def train_eval_vae(n, batch_size, lr, epochs, dataset, model_path=None ):
 
@@ -93,4 +93,4 @@ def train_eval_vae(n, batch_size, lr, epochs, dataset, model_path=None ):
 
 if __name__ == "__main__":
 
-    train_eval_vae(n, batch_size, lr, epochs, dataset, model_path)
+    train_eval_vae(n, batch_size, lr, epochs, dataset)

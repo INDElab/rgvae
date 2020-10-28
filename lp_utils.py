@@ -52,10 +52,10 @@ def load_link_prediction_data(name, use_test_set=False, limit=None):
     val = load_strings(val_file)
     test = load_strings(test_file)
 
-    if not use_test_set:
-        test = val
-    else:
+    if use_test_set:
         train = train + val
+    else:
+        test = val
 
     if limit:
         train = train[:limit]
@@ -75,7 +75,7 @@ def load_link_prediction_data(name, use_test_set=False, limit=None):
     n2i, r2i = {n: i for i, n in enumerate(nodes)}, {r: i for i, r in enumerate(rels)}
 
     all_triples = set()
-    for s, p, o in train + val + test:
+    for s, p, o in train + test:
         all_triples.add((n2i[s], r2i[p], n2i[o]))
 
     train = [[n2i[st[0]], r2i[st[1]], n2i[st[2]]] for st in train]
@@ -111,6 +111,45 @@ def triple2matrix(triples, max_n: int, max_r: int):
         F[0,i_o,o] = 1
     return (A, E, F)
 
+def matrix2triple(graph):
+    """
+    Converts a sparse graph back to triple from.
+    Args:
+        graph: Graph consisting of A, E, F matrix
+    returns a set of triples/one triple.
+    """
+    A, E, F = graph
+    a = A.squeeze().detach().cpu().numpy()
+    e = E.squeeze().detach().cpu().numpy()
+    f = F.squeeze().detach().cpu().numpy()
+    
+    s, o = np.where(a == 1)
+    _, n_index = np.where(f == 1)
+    _, _, r_index = np.where(e == 1)
+    
+    triples = list()
+    for i in range(len(s)):
+        cho = np.where(e[s[i],o[i],:] == 1)[0]
+        if cho.size > 0:
+            r = np.random.choice(cho[0])
+            triple = (n_index[s[i]], r, n_index[o[i]])
+            triples.append(triple)
+    return triples
+
+
+def translate_triple(triples, i2n, i2r):
+    """
+    Translate an indexed triple back to text.
+    Args:
+    ....
+    """
+    triples_text = list()
+    for triple in triples:
+        (s,r,o) = triple
+        triples_text.append((i2n[s], i2r[r], i2n[0]))
+    return triples_text
+
+
 def batch_t2m(i, data_set, batch_size, n, d_n, d_e):
     """
     Converts batches of triples into matrix form.
@@ -135,6 +174,7 @@ def batch_t2m(i, data_set, batch_size, n, d_n, d_e):
         batch_a.append(A)
         batch_e.append(E)
         batch_f.append(F)
+
     return [torch.cat(batch_a, dim=0),torch.cat(batch_e, dim=0),torch.cat(batch_f, dim=0)]
 
 

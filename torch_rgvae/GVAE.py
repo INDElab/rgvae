@@ -85,17 +85,26 @@ class TorchGVAE(nn.Module):
         eps = torch.normal(torch.zeros_like(mean), std=1.)
         return eps * torch.exp(logvar * .5) + mean
 
-    def sample(self, n_samples: int=1):
+    def sample(self, z, n_samples: int=1):
         """
         Sample n times from the model using the target as bernoulli distribution. Return the sampled graph.
         Args:
-            n_samples: Number of samples.
+            z:  Decoder input signal, shape (batch_size, z_dim)
         """
-        z = torch.randn(n_samples, self.z_dim)
-        pred = self.decoder(z)
-        b_dist = torch.distributions.Bernoulli(pred)
-        samples = b_dist.sample()
-        return self.reconstruct(samples)
+        assert z.shape[-1] == self.z_dim
+        a, e, f = self.reconstruct(self.decoder(z))
+        a_dist = torch.distributions.Bernoulli(a)
+        a = a_dist.sample()
+        e_dist = torch.distributions.Bernoulli(e)
+        e = e_dist.sample()
+        f_dist = torch.distributions.Categorical(f)
+        f_dense = f_dist.sample()
+        f_zeros = torch.zeros_like(f)
+        inds = list(zip(np.zeros(f_dense.shape[-1], dtype=int), np.arange(f_dense.shape[-1]), *f_dense.detach().cpu().numpy()))
+        for ind in inds:
+            f_zeros[ind] = 1
+
+        return (a, e, f_zeros)
 
     def sanity_check(self):
         """
