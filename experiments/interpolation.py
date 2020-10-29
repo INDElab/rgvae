@@ -19,7 +19,7 @@ n = 1       # Number of triples per graph
 steps = 5   # Interpolation steps
 
 dataset = 'fb15k'
-model_path = 'data/model/GCVAE_fb15k_11e_20201025.pt'
+model_path = 'data/model/GCVAE_fb15k_85e_20201025.pt'
 
 def interpolate_triples(n: int, steps: int, data_set: str, model_path: str):
      # Get data
@@ -57,7 +57,7 @@ def interpolate_triples(n: int, steps: int, data_set: str, model_path: str):
         pred_dense = matrix2triple(prediction)
         if len(pred_dense) > 0:
             triples.append(pred_dense)
-        print(translate_triple(triples[-1], i2n, i2r))
+            print(translate_triple(triples[-1], i2n, i2r))
 
     pred_list.append(prediction2)
     triples.append(matrix2triple(prediction2))

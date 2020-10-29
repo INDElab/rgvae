@@ -61,6 +61,7 @@ class TorchGVAE(nn.Module):
         return mean, logvar
         
     def decode(self, z):
+        self.z = z
         pred = self.decoder(z)
         return self.reconstruct(pred)
         
@@ -119,7 +120,7 @@ class TorchGVAE(nn.Module):
         Returns:
             The 3 sanities in percentage.
         """
-        A, E, F = self.sample()
+        A, E, F = self.sample(self.z)
         n, e = (self.n, self.edge_count)
 
         # Sanity 1

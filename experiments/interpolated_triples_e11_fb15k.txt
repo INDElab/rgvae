@@ -1,0 +1,25 @@
+[('/m/0394y', '/location/administrative_division/country', '/m/0kstw')]
+[('/m/071tyz', '/film/director/film', '/m/0kstw')]
+[('/m/0z53k', '/american_football/football_team/current_roster./sports/sports_team_roster/position', '/m/0kstw')]
+[('/m/0z53k', '/american_football/football_team/current_roster./sports/sports_team_roster/position', '/m/0kstw')]
+[('/m/02ctyy', '/base/popstra/celebrity/breakup./base/popstra/breakup/participant', '/m/0kstw')]
+
+[('/m/018qpb', '/base/popstra/celebrity/dated./base/popstra/dated/participant', '/m/0l2hf')]
+[('/m/02lf_x', '/location/statistical_region/rent50_2./measurement_unit/dated_money_value/currency', '/m/0l2hf')]
+[('/m/01_k0d', '/people/profession/specialization_of', '/m/0l2hf')]
+[('/m/01f9mq', '/business/business_operation/operating_income./measurement_unit/dated_money_value/currency', '/m/0l2hf')]
+
+[('/m/02vgh', '/common/topic/webpage./common/webpage/category', '/m/02kcv4x')]
+[('/m/03m7d', '/film/film/cinematography', '/m/02kcv4x')]
+[('/m/016tb7', '/olympics/olympic_participating_country/medals_won./olympics/olympic_medal_honor/medal', '/m/02kcv4x')]
+[('/m/02lx0', '/people/person/employment_history./business/employment_tenure/company', '/m/02kcv4x')]
+
+[('/m/02b71x', '/people/person/languages', '/m/06m_5')]
+[('/m/0232lm', '/people/deceased_person/place_of_death', '/m/06m_5')]
+[('/m/02656h', '/music/group_member/membership./music/group_membership/role', '/m/06m_5')]
+[('/m/01634x', '/music/performance_role/regular_performances./music/group_membership/role', '/m/06m_5')]
+
+[('/m/01g03q', '/award/ranked_item/appears_in_ranked_lists./award/ranking/list', '/m/04fcx7')]
+[('/m/08xz51', '/people/ethnicity/geographic_distribution', '/m/04fcx7')]
+[('/m/01vt9p3', '/location/country/form_of_government', '/m/04fcx7')]
+[('/m/09rx7tx', '/military/military_conflict/combatants./military/military_combatant_group/combatants', '/m/04fcx7')]

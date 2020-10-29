@@ -1,0 +1,20 @@
+[('/m/01g03q', '/award/ranked_item/appears_in_ranked_lists./award/ranking/list', '/m/04fcx7')]
+[('/m/08xz51', '/people/ethnicity/geographic_distribution', '/m/04fcx7')]
+[('/m/01vt9p3', '/location/country/form_of_government', '/m/04fcx7')]
+[('/m/09rx7tx', '/military/military_conflict/combatants./military/military_combatant_group/combatants', '/m/04fcx7')]
+
+[('/m/06nv27', '/time/event/locations', '/m/02d9nr')]
+[('/m/0522wp', '/base/aareas/schema/administrative_area/administrative_parent', '/m/02d9nr')]
+[('/m/03f0fp', '/people/profession/specialization_of', '/m/02d9nr')]
+
+[('/m/0ncy4', '/film/film/film_format', '/m/059x0w')]
+[('/m/08l_c1', '/sports/professional_sports_team/draft_picks./sports/sports_league_draft_pick/school', '/m/059x0w')]
+[('/m/0bn8fw', '/user/ktrueman/default_domain/international_organization/member_states', '/m/059x0w')]
+
+[('/m/05szq8z', '/tv/tv_program/languages', '/m/01x1cn2')]
+[('/m/063_j5', '/film/film/edited_by', '/m/01x1cn2')]
+[('/m/01g2q', '/olympics/olympic_games/sports', '/m/01x1cn2')]
+
+[('/m/05x2s', '/music/artist/track_contributions./music/track_contribution/role', '/m/02lp0w')]
+[('/m/0k2sk', '/base/popstra/celebrity/canoodled./base/popstra/canoodled/participant', '/m/02lp0w')]
+[('/m/06ntj', '/music/genre/artists', '/m/02lp0w')]
