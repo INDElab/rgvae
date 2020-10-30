@@ -63,7 +63,7 @@ def train_eval_vae(n, batch_size, lr, epochs, dataset, model_path=None ):
             # end2 = time.time()
             # print('Total time: {}'.format(end2-start1))
             loss_bar.set_description_str('Loss: {:.6f}'.format(loss))
-            sanity_bar.set_description('Sanity check: {:.2f}% nodes, {:.2f}% edges, {:.2f}% adj syntax, {:.2f}% permuted.'.format(*sanity,x_permute*100))
+            sanity_bar.set_description('Sanity check: {:.2f}% nodes, {:.2f}% edges, {:.2f}% permuted.'.format(*sanity,x_permute*100))
                 
         end_time = time.time()
         print('Time elapsed for epoch{} : {:.3f}'.format(epoch, end_time - start_time))

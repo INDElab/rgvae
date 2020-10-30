@@ -76,7 +76,7 @@ class TorchGVAE(nn.Module):
 
         a, e, f = pred[:,:delimit_a], pred[:,delimit_a:delimit_e], pred[:, delimit_e:]
         A = torch.reshape(a, [-1, self.n, self.n])
-        E = torch.reshape(e, [-1, self.n, self.n, self.ea])
+        E = self.softmax(torch.reshape(e, [-1, self.n, self.n, self.ea]))
         F = self.softmax(torch.reshape(f, [-1, self.n, self.na]))
         return A, E, F
 
@@ -95,17 +95,14 @@ class TorchGVAE(nn.Module):
         assert z.shape[-1] == self.z_dim
         a, e, f = self.reconstruct(self.decoder(z))
         a_dist = torch.distributions.Bernoulli(a)
-        a = a_dist.sample()
-        e_dist = torch.distributions.Bernoulli(e)
-        e = e_dist.sample()
+        a_sample = a_dist.sample()
+        e_dist = torch.distributions.Categorical(e)
+        e_dense = e_dist.sample()
         f_dist = torch.distributions.Categorical(f)
         f_dense = f_dist.sample()
-        f_zeros = torch.zeros_like(f)
-        inds = list(zip(np.zeros(f_dense.shape[-1], dtype=int), np.arange(f_dense.shape[-1]), *f_dense.detach().cpu().numpy()))
-        for ind in inds:
-            f_zeros[ind] = 1
 
-        return (a, e, f_zeros)
+
+        return (a_sample, e_dense, f_dense)
 
     def sanity_check(self):
         """
@@ -140,14 +137,7 @@ class TorchGVAE(nn.Module):
         else:
             sanity_2 = 1 - (e_check-e)/e
 
-        # Sanity 3
-        E_check = torch.sum(E.detach().clone(), -1)
-        E_check[E_check > 0] = 1.
-        zero_check = torch.zeros_like(A)
-        zero_check[A == E_check] = 1
-        sanity_3 = (torch.sum(zero_check)/(n**2)).item() 
-
-        return sanity_1 * 100, sanity_2 * 100, sanity_3 * 100
+        return sanity_1 * 100, sanity_2 * 100
 
 
 if __name__ == "__main__":
