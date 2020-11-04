@@ -8,6 +8,7 @@ from torch_rgvae.GCVAE import GCVAE
 from torch_rgvae.train_fn import train_sparse_batch
 from lp_utils import *
 
+
 # This sets the default torch dtype. Double-power
 my_dtype = torch.float64
 torch.set_default_dtype(my_dtype)
@@ -20,6 +21,7 @@ steps = 5   # Interpolation steps
 
 dataset = 'fb15k'
 model_path = 'data/model/GCVAE_fb15k_85e_20201025.pt'
+
 
 def interpolate_triples(n: int, steps: int, data_set: str, model_path: str):
      # Get data

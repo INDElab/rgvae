@@ -67,7 +67,7 @@ class TorchGVAE(nn.Module):
         
     def reconstruct(self, pred):
         """
-        Reconstructs and returnsthe graph matrices from the flat prediction vector. 
+        Reconstructs and returns the graph matrices from the flat prediction vector. 
         Args:
             prediction: the predicted output of the decoder.
         """

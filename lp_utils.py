@@ -4,6 +4,7 @@ Utile functions for link prediction.
 import gzip, os, pickle, tqdm
 import torch
 import numpy as np
+import pandas as pd
 
 
 def locate_file(filepath):
@@ -143,6 +144,12 @@ def translate_triple(triples, i2n, i2r):
     Args:
     ....
     """
+    # Load the entity dictionary
+    entity2text = pd.read_csv('data/fb15k/entity2text.txt', header=None, sep='\t')
+    entity2text.columns = ['Entity', 'Text']
+    entity_dict = entity2text.set_index('Entity').T.to_dict('series')
+    del entity2text
+
     triples_text = list()
     for triple in triples:
         (s,r,o) = triple
