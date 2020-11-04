@@ -4,6 +4,7 @@ Utile functions for link prediction.
 import gzip, os, pickle, tqdm
 import torch
 import numpy as np
+import pandas as pd
 
 
 def locate_file(filepath):
@@ -137,16 +138,17 @@ def matrix2triple(graph):
     return triples
 
 
-def translate_triple(triples, i2n, i2r):
+def translate_triple(triples, i2n, i2r, entity_dict):
     """
     Translate an indexed triple back to text.
     Args:
     ....
     """
+
     triples_text = list()
     for triple in triples:
         (s,r,o) = triple
-        triples_text.append((i2n[s], i2r[r], i2n[0]))
+        triples_text.append((entity_dict[i2n[s]][0], i2r[r], entity_dict[i2n[0]][0]))
     return triples_text
 
 
