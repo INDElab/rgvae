@@ -12,15 +12,15 @@ from utils import *
 
 
 class TorchGVAE(nn.Module):
-    def __init__(self, n: int, ea: int, na: int, h_dim: int=512, z_dim: int=2):
+    def __init__(self, n: int, ea: int, na: int, h_dim: int=512, z_dim: int=2, softmax_E: bool=True):
         """
         Graph Variational Auto Encoder
-        Args:
-            n : Number of nodes
-            na : Number of node attributes
-            ea : Number of edge attributes
-            h_dim : Hidden dimension
-            z_dim : latent dimension
+        :param n : Number of nodes
+        :param na : Number of node attributes
+        :param ea : Number of edge attributes
+        :param h_dim : Hidden dimension
+        :param z_dim : latent dimension
+        :param softmax_E : use softmax for edge attributes
         """
         super().__init__()
         self.name = 'GVAE'
@@ -30,6 +30,7 @@ class TorchGVAE(nn.Module):
         input_dim = n*n + n*na + n*n*ea
         self.input_dim = input_dim
         self.z_dim = z_dim
+        self.softmax_E = softmax_E
 
         self.encoder = MLP(input_dim, h_dim, z_dim)
 
@@ -76,7 +77,9 @@ class TorchGVAE(nn.Module):
 
         a, e, f = pred[:,:delimit_a], pred[:,delimit_a:delimit_e], pred[:, delimit_e:]
         A = torch.reshape(a, [-1, self.n, self.n])
-        E = self.softmax(torch.reshape(e, [-1, self.n, self.n, self.ea]))
+        E = torch.reshape(e, [-1, self.n, self.n, self.ea])
+        if self.softmax_E:
+            E = self.softmax(E)
         F = self.softmax(torch.reshape(f, [-1, self.n, self.na]))
         return A, E, F
 
@@ -85,6 +88,16 @@ class TorchGVAE(nn.Module):
         self.logvar = logvar
         eps = torch.normal(torch.zeros_like(mean), std=1.)
         return eps * torch.exp(logvar * .5) + mean
+
+    def forward(self, args_in):
+        """
+        Forward pass of the VAE.
+        :param args_in: batch of graphs in spare form.
+        :return : Prediction of the model.
+        """
+        mean, logvar = self.encode(args_in)
+        z = self.reparameterize(mean, logvar)
+        return self.decode(z)
 
     def sample(self, z, n_samples: int=1):
         """
@@ -96,7 +109,11 @@ class TorchGVAE(nn.Module):
         a, e, f = self.reconstruct(self.decoder(z))
         a_dist = torch.distributions.Bernoulli(a)
         a_sample = a_dist.sample()
-        e_dist = torch.distributions.Categorical(e)
+        if self.softmax_E:
+            # in this case e will be dense
+            e_dist = torch.distributions.Categorical(e)
+        else:
+            e_dist = torch.distributions.Bernoulli(e)
         e_dense = e_dist.sample()
         f_dist = torch.distributions.Categorical(f)
         f_dense = f_dist.sample()

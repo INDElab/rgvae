@@ -15,15 +15,15 @@ from scipy import sparse
 
 
 class GCVAE(TorchGVAE):
-    def __init__(self, n: int, ea: int, na: int, h_dim: int=512, z_dim: int=2):
+    def __init__(self, n: int, ea: int, na: int, h_dim: int=512, z_dim: int=2, softmax_E: bool=True):
         """
         Graph Variational Auto Encoder
-        Args:
-            n : Number of nodes
-            na : Number of node attributes
-            ea : Number of edge attributes
-            h_dim : Hidden dimension
-            z_dim : latent dimension
+        :param n : Number of nodes
+        :param na : Number of node attributes
+        :param ea : Number of edge attributes
+        :param h_dim : Hidden dimension
+        :param z_dim : latent dimension
+        :param softmax_E : use softmax for edge attributes
         """
         super().__init__(n, ea, na, h_dim, z_dim)
 
@@ -32,6 +32,7 @@ class GCVAE(TorchGVAE):
         self.input_dim = input_dim
         self.z_dim = z_dim
         n_feat = na + n * ea
+        self.softmax_E = softmax_E
 
         self.encoder = GCN(n, n_feat, h_dim, 2*z_dim).to(torch.double)
         

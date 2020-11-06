@@ -53,10 +53,10 @@ def train_eval_vae(n, batch_size, lr, epochs, dataset, model_path=None ):
         model.train()
         loss_bar = tqdm(total=0, position=0, bar_format='{desc}')
         sanity_bar = tqdm(total=0, position=1, bar_format='{desc}')
-        train_range = int(np.ceil(len(train_set)/(batch_size*n)))
-        for ii in tqdm(range(train_range), total=train_range, desc='Epoch {}'.format(epoch), position=2):
+        for b_from in tqdm(range(0,len(train_set),(batch_size*n)), desc='Epoch {}'.format(epoch), position=2):
+            b_to = min(b_from + batch_size, len(train_set))
             # start1 = time.time()
-            target = batch_t2m(ii, train_set, batch_size, n, d_n, d_e)
+            target = batch_t2m(train_set[b_from:b_to], n, d_n, d_e)
             # end1 = time.time()
             # print('Create target: {}'.format(end1-start1))
             loss, sanity, x_permute = train_sparse_batch(target, model, optimizer, epoch)
@@ -75,9 +75,9 @@ def train_eval_vae(n, batch_size, lr, epochs, dataset, model_path=None ):
             model.eval()
             loss_val = list()
             permute_list = list()
-            test_range = int(np.ceil(len(test_set)/(batch_size*n)))
-            for ii in tqdm(range(test_range), total=test_range, desc='Epoch {}'.format(epoch), position=2):
-                target = batch_t2m(ii, train_set, batch_size, n, d_n, d_e)
+            for b_from in tqdm(range(0,len(test_set),(batch_size*n)), desc='Epoch {}'.format(epoch), position=2):
+                b_to = min(b_from + batch_size, len(train_set))
+                target = batch_t2m(test_set[b_from:b_to], n, d_n, d_e)
                 loss, x_permute = train_sparse_batch(target, model, optimizer, epoch, eval=True)
                 loss_val.append(loss)
                 permute_list.append(x_permute)

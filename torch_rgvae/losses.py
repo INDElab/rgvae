@@ -27,7 +27,7 @@ def graph_BCEloss(target, prediction, l_A=1., l_E=1., l_F=1.):
     return loss
 
 
-def mpgm_loss(target, prediction, l_A=1., l_E=1., l_F=1., zero_diag: bool=False):
+def mpgm_loss(target, prediction, l_A=1., l_E=1., l_F=1., zero_diag: bool=False, softmax_E: bool=True):
     """
     Modification of the loss function described in the GraphVAE paper.
     The difference is, we treat A and E the same as both are sigmoided and F stays as it is softmaxed.
@@ -91,10 +91,15 @@ def mpgm_loss(target, prediction, l_A=1., l_E=1., l_F=1., zero_diag: bool=False)
         k_zero = k - 1
     log_p_E2 = ((1/(k*(k_zero))) * torch.sum(torch.sum(E_t * torch.log(E_hat) + (1 - E_t) * torch.log(1 - E_hat), -1) * mask, (-2,-1))).unsqueeze(-1)
 
-
     # log_p_E
-    log_p_E = ((1/(torch.norm(A, p=1, dim=[-2,-1]))) * torch.sum(torch.sum(torch.log(no_zero(E * E_hat_t)), -1) * mask, (-2,-1))).unsqueeze(-1)
-
+    if softmax_E:
+        log_p_E = ((1/(torch.norm(A, p=1, dim=[-2,-1]))) * torch.sum(torch.sum(torch.log(no_zero(E * E_hat_t)), -1) * mask, (-2,-1))).unsqueeze(-1)
+    else:
+        # I changed the factor to the number of edges (k*(k-1)) the -1 is for the zero diagonal.
+        k_zero = k
+        if zero_diag:
+            k_zero = k - 1
+        log_p_E = ((1/(k*(k_zero))) * torch.sum(torch.sum(E_t * torch.log(E_hat) + (1 - E_t) * torch.log(1 - E_hat), -1) * mask, (-2,-1))).unsqueeze(-1)
 
     log_p = l_A * log_p_A + l_F * log_p_F + l_E * log_p_E
     return log_p, X
