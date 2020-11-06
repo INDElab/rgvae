@@ -12,15 +12,15 @@ from utils import *
 
 
 class TorchGVAE(nn.Module):
-    def __init__(self, n: int, ea: int, na: int, h_dim: int=512, z_dim: int=2):
+    def __init__(self, n: int, ea: int, na: int, h_dim: int=512, z_dim: int=2, softmax_E: bool=True):
         """
         Graph Variational Auto Encoder
-        Args:
-            n : Number of nodes
-            na : Number of node attributes
-            ea : Number of edge attributes
-            h_dim : Hidden dimension
-            z_dim : latent dimension
+        :param n : Number of nodes
+        :param na : Number of node attributes
+        :param ea : Number of edge attributes
+        :param h_dim : Hidden dimension
+        :param z_dim : latent dimension
+        :param softmax_E : use softmax for edge attributes
         """
         super().__init__()
         self.name = 'GVAE'
@@ -30,6 +30,7 @@ class TorchGVAE(nn.Module):
         input_dim = n*n + n*na + n*n*ea
         self.input_dim = input_dim
         self.z_dim = z_dim
+        self.softmax_E = softmax_E
 
         self.encoder = MLP(input_dim, h_dim, z_dim)
 
@@ -67,7 +68,7 @@ class TorchGVAE(nn.Module):
         
     def reconstruct(self, pred):
         """
-        Reconstructs and returnsthe graph matrices from the flat prediction vector. 
+        Reconstructs and returns the graph matrices from the flat prediction vector. 
         Args:
             prediction: the predicted output of the decoder.
         """
@@ -77,6 +78,8 @@ class TorchGVAE(nn.Module):
         a, e, f = pred[:,:delimit_a], pred[:,delimit_a:delimit_e], pred[:, delimit_e:]
         A = torch.reshape(a, [-1, self.n, self.n])
         E = torch.reshape(e, [-1, self.n, self.n, self.ea])
+        if self.softmax_E:
+            E = self.softmax(E)
         F = self.softmax(torch.reshape(f, [-1, self.n, self.na]))
         return A, E, F
 
@@ -85,6 +88,16 @@ class TorchGVAE(nn.Module):
         self.logvar = logvar
         eps = torch.normal(torch.zeros_like(mean), std=1.)
         return eps * torch.exp(logvar * .5) + mean
+
+    def forward(self, args_in):
+        """
+        Forward pass of the VAE.
+        :param args_in: batch of graphs in spare form.
+        :return : Prediction of the model.
+        """
+        mean, logvar = self.encode(args_in)
+        z = self.reparameterize(mean, logvar)
+        return self.decode(z)
 
     def sample(self, z, n_samples: int=1):
         """
@@ -95,17 +108,18 @@ class TorchGVAE(nn.Module):
         assert z.shape[-1] == self.z_dim
         a, e, f = self.reconstruct(self.decoder(z))
         a_dist = torch.distributions.Bernoulli(a)
-        a = a_dist.sample()
-        e_dist = torch.distributions.Bernoulli(e)
-        e = e_dist.sample()
+        a_sample = a_dist.sample()
+        if self.softmax_E:
+            # in this case e will be dense
+            e_dist = torch.distributions.Categorical(e)
+        else:
+            e_dist = torch.distributions.Bernoulli(e)
+        e_dense = e_dist.sample()
         f_dist = torch.distributions.Categorical(f)
         f_dense = f_dist.sample()
-        f_zeros = torch.zeros_like(f)
-        inds = list(zip(np.zeros(f_dense.shape[-1], dtype=int), np.arange(f_dense.shape[-1]), *f_dense.detach().cpu().numpy()))
-        for ind in inds:
-            f_zeros[ind] = 1
 
-        return (a, e, f_zeros)
+
+        return (a_sample, e_dense, f_dense)
 
     def sanity_check(self):
         """
@@ -140,14 +154,7 @@ class TorchGVAE(nn.Module):
         else:
             sanity_2 = 1 - (e_check-e)/e
 
-        # Sanity 3
-        E_check = torch.sum(E.detach().clone(), -1)
-        E_check[E_check > 0] = 1.
-        zero_check = torch.zeros_like(A)
-        zero_check[A == E_check] = 1
-        sanity_3 = (torch.sum(zero_check)/(n**2)).item() 
-
-        return sanity_1 * 100, sanity_2 * 100, sanity_3 * 100
+        return sanity_1 * 100, sanity_2 * 100
 
 
 if __name__ == "__main__":

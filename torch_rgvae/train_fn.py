@@ -47,8 +47,9 @@ def train_epoch(ds_set, model, optimizer, epoch, eval: bool=False):
 
 def train_sparse_batch(target, model, optimizer, epoch, eval: bool=False):
     """
+    :param target: Dataset to train/eval on.
     Args:
-        ds_set: Dataset to train/eval on.
+        target: Dataset to train/eval on.
         model:  The model to train.
         optimizer: The optimizer for the model.
         epoch: The current epoch.
