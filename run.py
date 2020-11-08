@@ -1,4 +1,4 @@
-import torch
+
 import numpy as np
 from torch_rgvae.GVAE import GVAE
 from torch_rgvae.GCVAE import GCVAE
@@ -7,6 +7,7 @@ from experiments.train_eval_vae import train_eval_vae
 from experiments.link_prediction import link_prediction
 from datetime import date
 import json
+import torch
 
 
 # This sets the default torch dtype. Double-power

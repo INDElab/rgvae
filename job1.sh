@@ -28,8 +28,6 @@ mkdir -p "$STORE_DIR"
 cp -R $HOME/"$PATH_TO_SOURCE" "$TMPDIR"
 cd "$TMPDIR"/"rgvae"
 
-pip3 install -e .
-pip3 install -r requirements.txt
 python3 -u run.py
 
 tar -czf "$STORE_DIR"/"$EXPERIMENT_NAME".tar.gz "$TMPDIR"/"rgvae"/"data"
