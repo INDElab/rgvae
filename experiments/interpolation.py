@@ -80,3 +80,5 @@ def interpolate_triples(n: int, steps: int, data_set: str, model_path: str):
 
 if __name__ == "__main__":
     interpolate_triples(n, steps, dataset, model_path)
+
+scp data fwolf@lisa.surfsara.nl:rgvae

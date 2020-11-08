@@ -5,17 +5,14 @@ import gzip, os, pickle, tqdm
 import torch
 import numpy as np
 import pandas as pd
-<<<<<<< HEAD
-=======
 import random
 import torch, os, sys, time, tqdm
-
+from torch_rgvae.losses import mpgm_loss
 from torch.autograd import Variable
 import torch.nn.functional as F
 from collections.abc import Iterable
 from torch import nn
 import re
->>>>>>> E_softmax
 
 
 def locate_file(filepath):
@@ -165,11 +162,7 @@ def translate_triple(triples, i2n, i2r, entity_dict):
     triples_text = list()
     for triple in triples:
         (s,r,o) = triple
-<<<<<<< HEAD
-        triples_text.append((entity_dict[i2n[s]][0], i2r[r], entity_dict[i2n[0]][0]))
-=======
         triples_text.append((entity_dict[i2n[s]][0], i2r[r], entity_dict[i2n[o]][0]))
->>>>>>> E_softmax
     return triples_text
 
 

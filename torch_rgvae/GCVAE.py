@@ -5,7 +5,7 @@ The decoder a MLP with a flattened normal matrix output.
 """
 
 import time
-from torch_rgvae.GVAE import TorchGVAE
+from torch_rgvae.GVAE import GVAE
 from torch_rgvae.encoders import *
 from torch_rgvae.decoders import *
 import torch.nn as nn
@@ -14,7 +14,7 @@ from utils import *
 from scipy import sparse
 
 
-class GCVAE(TorchGVAE):
+class GCVAE(GVAE):
     def __init__(self, n: int, ea: int, na: int, h_dim: int=512, z_dim: int=2, softmax_E: bool=True):
         """
         Graph Variational Auto Encoder
@@ -28,6 +28,9 @@ class GCVAE(TorchGVAE):
         super().__init__(n, ea, na, h_dim, z_dim)
 
         self.name = 'GCVAE'
+        self.n = n
+        self.na = na
+        self.ea = ea
         input_dim = n*n + n*na + n*n*ea
         self.input_dim = input_dim
         self.z_dim = z_dim

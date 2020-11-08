@@ -11,7 +11,7 @@ from torch_rgvae.decoders import *
 from utils import *
 
 
-class TorchGVAE(nn.Module):
+class GVAE(nn.Module):
     def __init__(self, n: int, ea: int, na: int, h_dim: int=512, z_dim: int=2, softmax_E: bool=True):
         """
         Graph Variational Auto Encoder
