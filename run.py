@@ -17,7 +17,7 @@ torch.set_default_dtype(my_dtype)
 
 # Parameters. Arg parsing on its way.
 n = 1       # number of triples per matrix ( =  matrix_n/2)
-batch_size = 64        # Choose a low batch size for debugging, or creating the dataset will take very long.
+batch_size = 1024        # Choose a low batch size for debugging, or creating the dataset will take very long.
 h = 60      # number of hidden dimensions
 seed = 11
 np.random.seed(seed=seed)
@@ -49,7 +49,7 @@ train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer)
 testsub = torch.tensor(test_set)
 truedict = truedicts(all_triples)
 
-lp_results =  link_prediction(model, testsub[:2,:], truedict, batch_size)
+lp_results =  link_prediction(model, testsub, truedict, batch_size)
 
 outfile_path = 'data/'+dataset+'/lp_results_{}_{}.json'.format(model.name, date.today().strftime("%Y%m%d"))
 with open(outfile_path, 'w') as outfile:
