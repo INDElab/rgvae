@@ -8,5 +8,5 @@ setup(name='torch-rgvae',
       author_email=['t.singam@uva.nl', 'flocwolf@gmail.com'],
       license='MIT',
       packages=['torch_rgvae'],
-      python_requires='>=3.7',
+      python_requires='>=3.6',
       zip_safe=False)
