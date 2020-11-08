@@ -25,8 +25,7 @@ export STORE_DIR=$HOME/results
 
 mkdir -p "$STORE_DIR"
 # Copy input data from home to scratch
-echo "Unzipping"
-tar zxf "$DATA_TO_UNZIP_PATH" --directory "$TMPDIR"
+cp -R $HOME/"$PATH_TO_SOURCE" "$TMPDIR"
 cd "$TMPDIR"/"rgvae"
 
 pip install -e .
