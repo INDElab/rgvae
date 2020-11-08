@@ -33,7 +33,7 @@ d_n = len(n2i)
 d_e = len(r2i)
 
 # Initialize model and optimizer.
-if model_name == 'GCVAE'
+if model_name == 'GCVAE':
     model = GCVAE(n*2, d_e, d_n, z_dim=h).to(device)
 else:
     model = GVAE(n*2, d_e, d_n, z_dim=h).to(device)

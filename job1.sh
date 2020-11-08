@@ -32,4 +32,4 @@ cd "$TMPDIR"/"rgvae"
 pip install -e .
 python3 -u run.py
 
-tar zcf "$STORE_DIR"/"$EXPERIMENT_NAME".tar.gz "$TMPDIR"/"rgvae"/"data"
+tar -czf "$STORE_DIR"/"$EXPERIMENT_NAME".tar.gz "$TMPDIR"/"rgvae"/"data"
