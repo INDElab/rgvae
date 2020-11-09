@@ -27,7 +27,7 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer)
         sanity_bar = tqdm(total=0, position=1, bar_format='{desc}')
         for b_from in tqdm(range(0,len(train_set),(batch_size*n)), desc='Epoch {}'.format(epoch), position=2):
             b_to = min(b_from + batch_size, len(train_set))
-            target = batch_t2m(torch.tensor(train_set[b_from:b_to]), n, d_n, d_e)
+            target = batch_t2m(torch.tensor(train_set[b_from:b_to], device=d()), n, d_n, d_e)
 
             loss, sanity, x_permute = train_sparse_batch(target, model, optimizer, epoch)
 
@@ -46,7 +46,7 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer)
             permute_list = list()
             for b_from in tqdm(range(0,len(test_set),(batch_size*n)), desc='Epoch {}'.format(epoch), position=2):
                 b_to = min(b_from + batch_size, len(test_set))
-                target = batch_t2m(torch.tensor(test_set[b_from:b_to]), n, d_n, d_e)
+                target = batch_t2m(torch.tensor(test_set[b_from:b_to], device=d()), n, d_n, d_e)
                 loss, x_permute = train_sparse_batch(target, model, optimizer, epoch, eval=True)
                 loss_val.append(loss)
                 permute_list.append(x_permute)

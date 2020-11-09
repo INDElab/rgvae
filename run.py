@@ -21,7 +21,7 @@ if __name__ == "__main__":
 
     # Parameters. Arg parsing on its way.
     n = 1       # number of triples per matrix ( =  matrix_n/2)
-    batch_size = 512        # Choose a low batch size for debugging, or creating the dataset will take very long.
+    batch_size = 1024        # Choose a low batch size for debugging, or creating the dataset will take very long.
     h = 60      # number of hidden dimensions
     seed = 11
     np.random.seed(seed=seed)
@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
     for dataset in ['fb15k', 'wn18rr']:
         # Get data
-        (n2i, i2n), (r2i, i2r), train_set, test_set, all_triples = load_link_prediction_data(dataset)
+        (n2i, i2n), (r2i, i2r), train_set, test_set, all_triples = load_link_prediction_data(dataset, use_test_set=False)
         d_n = len(n2i)
         d_e = len(r2i)
         for model_name in ['GVAE', 'GCVAE']:
@@ -51,7 +51,7 @@ if __name__ == "__main__":
 
             train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer)
 
-            testsub = torch.tensor(test_set)
+            testsub = torch.tensor(test_set, device=d())
             truedict = truedicts(all_triples)
 
             lp_results =  link_prediction(model, testsub, truedict, batch_size)
