@@ -16,7 +16,7 @@ module load Python/3.6.6-foss-2019b
 module load CUDA/10.1.243
 module load cuDNN/7.6.5.32-CUDA-10.1.243
 
-echo "Joint training"
+echo "RGVAE training"
 export DATA_TO_UNZIP_PATH=$HOME/rgvae.tar.gz
 export DATASET_DIR="datasets"
 export EXPERIMENT_NAME="RGVAE_h60"
@@ -28,7 +28,7 @@ mkdir -p "$STORE_DIR"
 cp -R $HOME/"$PATH_TO_SOURCE" "$TMPDIR"
 cd "$TMPDIR"/"rgvae"
 
-pip3 install --user -r requirements
+pip3 install --user -r requirements.txt
 python3 -u run.py
 
 tar -czf "$STORE_DIR"/"$EXPERIMENT_NAME".tar.gz "$TMPDIR"/"rgvae"/"data"

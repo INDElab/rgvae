@@ -2,7 +2,6 @@
 Pytorch implementation of the max-pooling graph matching algorithm.
 """
 import time
-import networkx as nx
 import numpy as np
 from numpy import array
 from scipy.optimize import linear_sum_assignment
