@@ -31,7 +31,7 @@ class MPGM():
         Pytorch fix of fill_diagonal for batches.
         We assume the input tensor has shape (bs,n,n).
         """
-        t_return = t.cpu().clone().detach()
+        t_return = t.cpu().clone().detach().to(d())
         ind = np.diag_indices(t.shape[-1])
         t_return[:,ind[0], ind[1]] = torch.ones(t.shape[-1]) * filler
         return t_return
@@ -74,9 +74,7 @@ class MPGM():
         E_norm = torch.norm(E,p=1,dim=-1,keepdim=True)  # Division by the norm since our model can have multiple edge attributes vs. one-hot
         E_norm[E_norm == 0.] = 1.       # Otherwise we get nans
         E_ijab = torch_batch_dot(E/E_norm, E_hat, 3, 3)   # We aim for shape (batch_s,n,n,k,k).
-        print(A_hat.device)
-        print(A_hat_diag.device)
-        
+
         A_ab = A_hat * self.torch_set_diag(torch_batch_dot_v2(A_hat_diag,A_hat_diag, -1, -1, (bs,k,k)))
         A_ijab = torch_batch_dot_v2((self.torch_set_diag(A)).unsqueeze(-1),A_ab.unsqueeze(-1), -1, -1, (bs,n,n,k,k))
 

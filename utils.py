@@ -151,7 +151,6 @@ def torch_batch_dot_v2(M1, M2, dim1, dim2, return_shape):
     M2_shape = M2.shape
     bs = M1_shape[0]
     M3 = torch.matmul(M1.view(bs,-1,M1_shape[dim1]), M2.view(bs,M2_shape[dim2],-1)).view(return_shape)
-    print(M3.device)
     return M3
 
 def replace_nan(t):
