@@ -88,7 +88,6 @@ class GVAE(nn.Module):
         self.mean = mean
         self.logvar = logvar
         eps = torch.normal(torch.zeros_like(mean), std=1.).to(d())
-        print(eps.device)
         return eps * torch.exp(logvar * .5) + mean
 
     def forward(self, args_in):
