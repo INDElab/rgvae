@@ -87,7 +87,7 @@ class GVAE(nn.Module):
     def reparameterize(self, mean, logvar):
         self.mean = mean
         self.logvar = logvar
-        eps = torch.normal(torch.zeros_like(mean), std=1., device=d())
+        eps = torch.normal(torch.zeros_like(mean), std=1.).to(d())
         print(eps.device)
         return eps * torch.exp(logvar * .5) + mean
 
