@@ -109,9 +109,9 @@ def triple2matrix(triples, max_n: int, max_r: int):
 
     # The empty first dimension is to stacking into batches.
     
-    A = torch.zeros((1,n,n))
-    E = torch.zeros((1,n,n,max_r))
-    F = torch.zeros((1,n,max_n))
+    A = torch.zeros((1,n,n), device=d())
+    E = torch.zeros((1,n,n,max_r), device=d())
+    F = torch.zeros((1,n,max_n), device=d())
 
     for (s, r, o) in triples:
         i_s, i_o = n_dict[s], n_dict[o]
