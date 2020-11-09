@@ -29,6 +29,7 @@ cp -R $HOME/"$PATH_TO_SOURCE" "$TMPDIR"
 cd "$TMPDIR"/"rgvae"
 
 pip3 install --user -r requirements.txt
+pip3 install -e torch torchvision
 python3 -u run.py
 
 tar -czf "$STORE_DIR"/"$EXPERIMENT_NAME".tar.gz "$TMPDIR"/"rgvae"/"data"
