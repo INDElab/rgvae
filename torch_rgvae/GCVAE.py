@@ -48,15 +48,14 @@ class GCVAE(GVAE):
             F: Node attribute matrix of size n*na
         """
         (A, E, F) = args_in
-        self.edge_count = torch.norm(torch.tensor(A[0] * 1.), p=1)
+        self.edge_count = torch.norm(A[0], p=1)
         bs = A.shape[0]
 
         # We reshape E to (bs,n,n*d_e) and then concat it with F
         # features = np.concatenate((np.reshape(E, (bs, self.n, self.n*self.ea)), F), axis=-1)
         features = torch.cat((torch.reshape(E, (bs, self.n, self.n*self.ea)), F), -1)
-        adj = torch.tensor(A)
         # features = torch.Tensor(np.array(features))
-        return torch.split(self.encoder(features, adj), self.z_dim, dim=1)
+        return torch.split(self.encoder(features, A), self.z_dim, dim=1)
 
     def normalize(self, mx):
         """Row-normalize sparse matrix"""

@@ -30,7 +30,7 @@ class MPGM():
         Pytorch fix of fill_diagonal for batches.
         We assume the input tensor has shape (bs,n,n).
         """
-        t_return = torch.tensor(t)
+        t_return = t.cpu().clone().detach()
         ind = np.diag_indices(t.shape[-1])
         t_return[:,ind[0], ind[1]] = torch.ones(t.shape[-1]) * filler
         return t_return

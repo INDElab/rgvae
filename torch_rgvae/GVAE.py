@@ -51,12 +51,9 @@ class GVAE(nn.Module):
             E: Edge attribute matrix of size n*n*ea
             F: Node attribute matrix of size n*na
         """
-        (A, E, F) = args_in
-        self.edge_count = torch.norm(torch.tensor(A[0] * 1.), p=1)
+        (a, e, f) = args_in
+        self.edge_count = torch.norm(a[0], p=1)
 
-        a = torch.reshape(torch.tensor(A * 1.), (-1, self.n*self.n))
-        e = torch.reshape(torch.tensor(E * 1.), (-1, self.n*self.n*self.ea))
-        f = torch.reshape(torch.tensor(F * 1.), (-1, self.n*self.na))
         x = torch.cat([a, e, f], dim=1)
         mean, logvar = torch.split(self.encoder(x), self.z_dim, dim=1)
         return mean, logvar

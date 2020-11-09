@@ -18,7 +18,6 @@ def graph_BCEloss(target, prediction, l_A=1., l_E=1., l_F=1.):
     """
     # Cast target vectors to tensors.
     A, E, F = target
-    A, E, F = torch.tensor(A * 1.), torch.tensor(E * 1.), torch.tensor(F * 1.)
     A_hat, E_hat, F_hat = prediction
 
     # Match number of nodes
