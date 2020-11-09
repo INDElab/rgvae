@@ -8,7 +8,7 @@ from scipy.optimize import linear_sum_assignment
 import torch
 from munkres import Munkres, print_matrix, make_cost_matrix
 from utils import *
-from lp_utils import d
+from torch_rgvae.lp_utils import d
 
 
 class MPGM():

@@ -48,7 +48,6 @@ def mpgm_loss(target, prediction, l_A=1., l_E=1., l_F=1., zero_diag: bool=False,
     k = A_hat.shape[1]
     d_e = E.shape[-1]
 
-
     mpgm = MPGM()
     X = mpgm.call(A, A_hat.detach(), E, E_hat.detach(), F, F_hat.detach())
 

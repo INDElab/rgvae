@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import random
 import torch, os, sys, time, tqdm
-from torch_rgvae.losses import mpgm_loss
+from torch_rgvae.losses import *
 from torch.autograd import Variable
 import torch.nn.functional as F
 from collections.abc import Iterable
@@ -17,7 +17,7 @@ import re
 
 def locate_file(filepath):
     directory = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-    return directory + '/rgvae/' + filepath
+    return directory + '/' + filepath
 
 
 def load_strings(file):

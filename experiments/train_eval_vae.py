@@ -5,7 +5,7 @@ from torch_rgvae.GCVAE import GCVAE
 from torch_rgvae.train_fn import train_sparse_batch
 import torch
 import numpy as np
-from lp_utils import *
+from torch_rgvae.lp_utils import *
 from tqdm import tqdm
 from datetime import date
 
