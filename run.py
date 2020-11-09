@@ -18,7 +18,7 @@ torch.set_default_dtype(my_dtype)
 
 # Parameters. Arg parsing on its way.
 n = 1       # number of triples per matrix ( =  matrix_n/2)
-batch_size = 1024        # Choose a low batch size for debugging, or creating the dataset will take very long.
+batch_size = 512        # Choose a low batch size for debugging, or creating the dataset will take very long.
 h = 60      # number of hidden dimensions
 seed = 11
 np.random.seed(seed=seed)
