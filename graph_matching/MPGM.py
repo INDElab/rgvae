@@ -78,7 +78,7 @@ class MPGM():
         A_ab = A_hat * self.torch_set_diag(torch_batch_dot_v2(A_hat_diag,A_hat_diag, -1, -1, (bs,k,k)))
         A_ijab = torch_batch_dot_v2((self.torch_set_diag(A)).unsqueeze(-1),A_ab.unsqueeze(-1), -1, -1, (bs,n,n,k,k))
 
-        A_aa = torch.bmm(torch.ones((bs,n,1)), torch.transpose(A_hat_diag,1,2))
+        A_aa = torch.bmm(torch.ones((bs,n,1), device=d()), torch.transpose(A_hat_diag,1,2))
         F_ia = torch.matmul(F, torch.transpose(F_hat, 1, 2))
 
         # S = E_ijab * A_ijab + self.set_diag_nnkk(F_ia * A_aa, bs, n, k)

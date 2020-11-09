@@ -2,4 +2,4 @@
 
 git pull
 rm slurm*
-sbtach job1.sh
+sbatch job1.sh
