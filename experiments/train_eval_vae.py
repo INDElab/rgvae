@@ -53,7 +53,7 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer)
                 permute_list.append(x_permute)
         mean_loss = np.mean(loss_val)
         loss_dict[epoch] = mean_loss
-        print('Epoch: {}, Test set ELBO: {:.3f}, permuted {:.3f}%'.format(epoch, , np.mean(permute_list)*100))
+        print('Epoch: {}, Test set ELBO: {:.3f}, permuted {:.3f}%'.format(epoch, mean_loss, np.mean(permute_list)*100))
 
         if 'old_loss' in locals() and mean_loss < old_loss and epoch > 10:
             # Check for data folder and eventually create.
