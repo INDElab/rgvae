@@ -170,13 +170,3 @@ def add_e7(t):
     Function to add a very small value to each element, to avoid inf errors when taking the logarithm.
     """
     return t + torch.ones_like(t) * 1e-7
-
-    
-
-
-
-if __name__ == "__main__":
-    print(mk_cnstrnd_graph(5,10,3,3,2))
-    # print(mk_graph_ds(5,3,3,11,constrained=True,batches=400,batch_size=64)[0])
-
-    # print(mk_sparse_graph_ds(5,10,3,2,2))

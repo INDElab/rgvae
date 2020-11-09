@@ -9,6 +9,7 @@ from torch_rgvae.losses import *
 from torch_rgvae.encoders import *
 from torch_rgvae.decoders import *
 from utils import *
+from torch_rgvae.lp_utils import d
 
 
 class GVAE(nn.Module):
@@ -86,7 +87,8 @@ class GVAE(nn.Module):
     def reparameterize(self, mean, logvar):
         self.mean = mean
         self.logvar = logvar
-        eps = torch.normal(torch.zeros_like(mean), std=1.)
+        eps = torch.normal(torch.zeros_like(mean), std=1., device=d())
+        print(eps.device)
         return eps * torch.exp(logvar * .5) + mean
 
     def forward(self, args_in):
