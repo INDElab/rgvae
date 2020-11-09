@@ -8,6 +8,7 @@ from scipy.optimize import linear_sum_assignment
 import torch
 from munkres import Munkres, print_matrix, make_cost_matrix
 from utils import *
+from lp_utils import d
 
 
 class MPGM():
@@ -69,12 +70,8 @@ class MPGM():
         bs = A.shape[0]     # bs stands for batch size, just to clarify.
         self.bs = bs
 
-        F = F.to(float)
-        A = A.to(float)
-        E = E.to(float)
-
         A_hat_diag = (torch.diagonal(A_hat,dim1=-2,dim2=-1)).unsqueeze(-1)
-        E_norm = torch.torch.norm(E,p=1,dim=-1,keepdim=True)  # Division by the norm since our model can have multiple edge attributes vs. one-hot
+        E_norm = torch.norm(E,p=1,dim=-1,keepdim=True)  # Division by the norm since our model can have multiple edge attributes vs. one-hot
         E_norm[E_norm == 0.] = 1.       # Otherwise we get nans
         E_ijab = torch_batch_dot(E/E_norm, E_hat, 3, 3)   # We aim for shape (batch_s,n,n,k,k).
 
@@ -125,7 +122,7 @@ class MPGM():
         Xs: X_star meaning X in continuos space.
         """
         S_iajb, S_iaia = S
-        Xs = torch.ones_like(S_iaia)
+        Xs = torch.ones_like(S_iaia, device=d())
         self.Xs = Xs
         for n in range(n_iterations):
             Xs = Xs * S_iaia + torch.sum(torch.max(S_iajb * Xs.unsqueeze(1).unsqueeze(1),-1, out=None)[0],-1)
@@ -215,6 +212,5 @@ class MPGM():
             M = np.zeros(X[i].shape, dtype=float)
             M[row_ind, col_ind] = 1.
             X[i] = M
-        X = torch.tensor(X)
+        X = torch.tensor(X, device=d())
         return X
-
