@@ -33,7 +33,7 @@ class MPGM():
         """
         t_return = t.cpu().clone().detach().to(d())
         ind = np.diag_indices(t.shape[-1])
-        t_return[:,ind[0], ind[1]] = torch.ones(t.shape[-1]) * filler
+        t_return[:,ind[0], ind[1]] = torch.ones(t.shape[-1], device=d()) * filler
         return t_return
 
     def set_diag_nnkk(self, S2, bs, n, k):
