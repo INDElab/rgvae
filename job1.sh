@@ -30,6 +30,7 @@ cd "$TMPDIR"/"rgvae"
 
 # pip3 install --user -r requirements.txt
 # pip3 install --user torch==1.7.0+cu101 torchvision==0.8.1+cu101 torchaudio==0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
+pip3 install --user -e .
 python3 -u run.py
 
 tar -czf "$STORE_DIR"/"$EXPERIMENT_NAME".tar.gz "$TMPDIR"/"rgvae"/"data"
