@@ -15,12 +15,13 @@ from scipy import sparse
 
 
 class GCVAE(GVAE):
-    def __init__(self, n: int, ea: int, na: int, h_dim: int=512, z_dim: int=2, softmax_E: bool=True):
+    def __init__(self, n: int, ea: int, na: int, dataset_name: str, h_dim: int=512, z_dim: int=2, softmax_E: bool=True):
         """
         Graph Variational Auto Encoder
         :param n : Number of nodes
         :param na : Number of node attributes
         :param ea : Number of edge attributes
+        :param dataset_name : name of the dataset which the model will train on.
         :param h_dim : Hidden dimension
         :param z_dim : latent dimension
         :param softmax_E : use softmax for edge attributes
@@ -36,6 +37,7 @@ class GCVAE(GVAE):
         self.z_dim = z_dim
         n_feat = na + n * ea
         self.softmax_E = softmax_E
+        self.dataset_name = dataset_name
 
         self.encoder = GCN(n, n_feat, h_dim, 2*z_dim).to(torch.double)
         

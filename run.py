@@ -21,7 +21,7 @@ if __name__ == "__main__":
 
     # Parameters. Arg parsing on its way.
     n = 1       # number of triples per matrix ( =  matrix_n/2)
-    batch_size = 2**11        # Choose a low batch size for debugging, or creating the dataset will take very long.
+    batch_size = 2**13        # Choose a low batch size for debugging, or creating the dataset will take very long.
     h = 60      # number of hidden dimensions
     seed = 11
     np.random.seed(seed=seed)
@@ -39,9 +39,9 @@ if __name__ == "__main__":
         for model_name in ['GVAE', 'GCVAE']:
             # Initialize model and optimizer.
             if model_name == 'GCVAE':
-                model = GCVAE(n*2, d_e, d_n, z_dim=h).to(device)
+                model = GCVAE(n*2, d_e, d_n, dataset, z_dim=h).to(device)
             else:
-                model = GVAE(n*2, d_e, d_n, z_dim=h).to(device)
+                model = GVAE(n*2, d_e, d_n, dataset, z_dim=h).to(device)
             optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=5e-4)
 
             if 'model_path' in locals():

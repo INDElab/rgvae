@@ -13,12 +13,13 @@ from torch_rgvae.lp_utils import d
 
 
 class GVAE(nn.Module):
-    def __init__(self, n: int, ea: int, na: int, h_dim: int=512, z_dim: int=2, softmax_E: bool=True):
+    def __init__(self, n: int, ea: int, na: int, dataset_name: str, h_dim: int=512, z_dim: int=2, softmax_E: bool=True):
         """
         Graph Variational Auto Encoder
         :param n : Number of nodes
         :param na : Number of node attributes
         :param ea : Number of edge attributes
+        :param dataset_name : name of the dataset which the model will train on.
         :param h_dim : Hidden dimension
         :param z_dim : latent dimension
         :param softmax_E : use softmax for edge attributes
@@ -32,6 +33,7 @@ class GVAE(nn.Module):
         self.input_dim = input_dim
         self.z_dim = z_dim
         self.softmax_E = softmax_E
+        self.dataset_name = dataset_name
 
         self.encoder = MLP(input_dim, h_dim, z_dim)
 
@@ -42,7 +44,7 @@ class GVAE(nn.Module):
         # Need to init?
         for m in self.modules():
             if isinstance(m, nn.Linear):
-                nn.init.xavier_uniform(m.weight, gain=0.01)
+                nn.init.xavier_uniform_(m.weight, gain=0.01)
         
     def encode(self, args_in):
         """
