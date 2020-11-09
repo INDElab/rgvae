@@ -16,6 +16,7 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer)
     d_e = model.ea
 
     old_loss = 3333
+    loss_dict = {}
 
     # Start training.
     for epoch in range(epochs):
@@ -50,17 +51,18 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer)
                 loss, x_permute = train_sparse_batch(target, model, optimizer, epoch, eval=True)
                 loss_val.append(loss)
                 permute_list.append(x_permute)
+        mean_loss = np.mean(loss_val)
+        loss_dict[epoch] = mean_loss
+        print('Epoch: {}, Test set ELBO: {:.3f}, permuted {:.3f}%'.format(epoch, , np.mean(permute_list)*100))
 
-        print('Epoch: {}, Test set ELBO: {:.3f}, permuted {:.3f}%'.format(epoch, np.mean(loss_val), np.mean(permute_list)*100))
-
-        if 'old_loss' in locals() and mean_loss < old_loss:
+        if 'old_loss' in locals() and mean_loss < old_loss and epoch > 10:
             # Check for data folder and eventually create.
             if not os.path.isdir('data/model'):
                 os.mkdir('data/model')
             torch.save(model.state_dict(), 'data/model/{}_{}_{}e_{}l_{}.pt'.format(model.name, dataset, epoch, int(mean_loss), date.today().strftime("%Y%m%d")))
             old_loss = mean_loss
             print('Model saved at epoch {}'.format(epoch))
-
+    return loss_dict
 if __name__ == "__main__":
 
 
@@ -94,4 +96,4 @@ if __name__ == "__main__":
 
     print('This should not be printed.')
 
-    train_eval_vae(n, batch_size, lr, epochs, dataset)
+    loss_dict = train_eval_vae(n, batch_size, lr, epochs, dataset)
