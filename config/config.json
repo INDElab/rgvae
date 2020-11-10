@@ -1,0 +1,11 @@
+{"datasets": ["fb15k", "wn18rr"],
+    "models": ["GVAE", "GCVAE"],
+    "train": true,
+    "link_prediction": true,
+    "load_model_path": []
+    "h": 60,
+    "n": 1,
+    "epochs": 111,
+    "lr": 3e-16,
+    "batch_size_2**": 13
+}

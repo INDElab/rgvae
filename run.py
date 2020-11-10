@@ -7,10 +7,21 @@ from experiments.train_eval_vae import train_eval_vae
 from experiments.link_prediction import link_prediction
 from datetime import date
 import json
+import argparse
 import torch
 
+
 if __name__ == "__main__":
-        
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config', nargs=1,
+                        help="JSON file with configurations",
+                        type=argparse.FileType('r'))
+    arguments = parser.parse_args()
+    # Loading a JSON object returns a dict.
+    config = json.load(arguments.config)
+    print(arguments)
+
     # This sets the default torch dtype. Double-power
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print('Using device:', device)
@@ -21,7 +32,7 @@ if __name__ == "__main__":
 
     # Parameters. Arg parsing on its way.
     n = 1       # number of triples per matrix ( =  matrix_n/2)
-    batch_size = 2**3        # Choose a low batch size for debugging, or creating the dataset will take very long.
+    batch_size = 2**13        # Choose a low batch size for debugging, or creating the dataset will take very long.
     h = 60      # number of hidden dimensions
     seed = 11
     np.random.seed(seed=seed)

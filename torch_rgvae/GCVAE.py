@@ -26,7 +26,7 @@ class GCVAE(GVAE):
         :param z_dim : latent dimension
         :param softmax_E : use softmax for edge attributes
         """
-        super().__init__(n, ea, na, h_dim, z_dim)
+        super().__init__(n, ea, na, dataset_name, h_dim, z_dim)
 
         self.name = 'GCVAE'
         self.n = n
@@ -40,6 +40,7 @@ class GCVAE(GVAE):
         self.dataset_name = dataset_name
 
         self.encoder = GCN(n, n_feat, h_dim, 2*z_dim).to(torch.double)
+        self.decoder = RMLP(input_dim, h_dim, z_dim)
         
     def encode(self, args_in):
         """

@@ -35,7 +35,7 @@ if __name__ == "__main__":
     (n2i, i2n), (r2i, i2r), train_set, test_set, all_triples = load_link_prediction_data(dataset, use_test_set=False)
     d_n = len(n2i)
     d_e = len(r2i)
-    for model_name in ['GVAE', 'GCVAE']:
+    for model_name in ['GCVAE']:
         # Initialize model and optimizer.
         if model_name == 'GCVAE':
             model = GCVAE(n*2, d_e, d_n, dataset, z_dim=h).to(device)
