@@ -2,14 +2,12 @@
 Graph-VAE implementation in pytorch.
 Also parent class for all other VAE models.
 """
-
 import time
 import torch.nn as nn
-from torch_rgvae.losses import *
 from torch_rgvae.encoders import *
 from torch_rgvae.decoders import *
 from utils import *
-from torch_rgvae.lp_utils import d
+from lp_utils import d
 
 
 class GVAE(nn.Module):

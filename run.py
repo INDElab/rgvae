@@ -2,8 +2,7 @@
 import numpy as np
 from torch_rgvae.GVAE import GVAE
 from torch_rgvae.GCVAE import GCVAE
-from torch_rgvae.losses import *
-from torch_rgvae.lp_utils import *
+from lp_utils import *
 from experiments.train_eval_vae import train_eval_vae
 from experiments.link_prediction import link_prediction
 from datetime import date
@@ -22,7 +21,7 @@ if __name__ == "__main__":
 
     # Parameters. Arg parsing on its way.
     n = 1       # number of triples per matrix ( =  matrix_n/2)
-    batch_size = 2**15        # Choose a low batch size for debugging, or creating the dataset will take very long.
+    batch_size = 2**3        # Choose a low batch size for debugging, or creating the dataset will take very long.
     h = 60      # number of hidden dimensions
     seed = 11
     np.random.seed(seed=seed)
@@ -50,11 +49,11 @@ if __name__ == "__main__":
                 print('Saved model loaded.')
 
 
-            loss_dict =  train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer)
+            # loss_dict =  train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer)
 
-            loss_file_path = 'data/'+dataset+'/loss{}_{}.json'.format(model.name, date.today().strftime("%Y%m%d"))
-            with open(loss_file_path, 'w') as outfile:
-                json.dump(loss_dict, outfile)
+            # loss_file_path = 'data/'+dataset+'/loss{}_{}.json'.format(model.name, date.today().strftime("%Y%m%d"))
+            # with open(loss_file_path, 'w') as outfile:
+            #     json.dump(loss_dict, outfile)
 
             testsub = torch.tensor(test_set[:2], device=d())
             truedict = truedicts(all_triples)

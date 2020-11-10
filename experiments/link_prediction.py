@@ -4,7 +4,8 @@ import os
 from torch_rgvae.GVAE import GVAE
 from torch_rgvae.GCVAE import GCVAE
 from torch_rgvae.train_fn import train_sparse_batch
-from torch_rgvae.lp_utils import *
+from torch_rgvae.losses import mpgm_loss
+from lp_utils import *
 import tqdm
 import json
 from datetime import date
@@ -28,7 +29,7 @@ def link_prediction(model, testsub, truedict, batch_size):
         model.train(False)
 
         mrr, hits, ranks = eval(
-            model=model, valset=testsub, truedicts=truedict, n=d_n, r=d_e,
+            model=model, loss_fn=mpgm_loss, valset=testsub, truedicts=truedict, n=d_n, r=d_e,
             batch_size=batch_size, verbose=True)
 
     print(f'MRR {mrr:.4}\t hits@1 {hits[0]:.4}\t  hits@3 {hits[1]:.4}\t  hits@10 {hits[2]:.4}')
