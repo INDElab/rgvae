@@ -27,7 +27,7 @@ if __name__ == "__main__":
     np.random.seed(seed=seed)
     torch.manual_seed(seed)
     epochs = 111
-    lr = 2e-6
+    lr = 9e-6
     # model_path = 'data/model/GCVAE_fb15k_69e_20201025.pt'
 
     dataset = 'wn18rr'
