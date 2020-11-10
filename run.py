@@ -21,13 +21,13 @@ if __name__ == "__main__":
 
     # Parameters. Arg parsing on its way.
     n = 1       # number of triples per matrix ( =  matrix_n/2)
-    batch_size = 2**13        # Choose a low batch size for debugging, or creating the dataset will take very long.
+    batch_size = 2**15        # Choose a low batch size for debugging, or creating the dataset will take very long.
     h = 60      # number of hidden dimensions
     seed = 11
     np.random.seed(seed=seed)
     torch.manual_seed(seed)
     epochs = 111
-    lr = 1e-6
+    lr = 2e-6
     # model_path = 'data/model/GCVAE_fb15k_69e_20201025.pt'
 
 
@@ -52,7 +52,7 @@ if __name__ == "__main__":
             loss_dict =  train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer)
 
             loss_file_path = 'data/'+dataset+'/loss{}_{}.json'.format(model.name, date.today().strftime("%Y%m%d"))
-            with open(outfile_path, 'w') as outfile:
+            with open(loss_file_path, 'w') as outfile:
                 json.dump(loss_dict, outfile)
 
             testsub = torch.tensor(test_set, device=d())
@@ -61,5 +61,5 @@ if __name__ == "__main__":
             lp_results =  link_prediction(model, testsub, truedict, batch_size)
 
             lp_file_path = 'data/'+dataset+'/lp_results_{}_{}.json'.format(model.name, date.today().strftime("%Y%m%d"))
-            with open(outfile_path, 'w') as outfile:
+            with open(lp_file_path, 'w') as outfile:
                 json.dump(lp_results, outfile)
