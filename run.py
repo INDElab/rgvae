@@ -2,6 +2,7 @@
 import numpy as np
 from torch_rgvae.GVAE import GVAE
 from torch_rgvae.GCVAE import GCVAE
+from torch_rgvae.losses import *
 from torch_rgvae.lp_utils import *
 from experiments.train_eval_vae import train_eval_vae
 from experiments.link_prediction import link_prediction
@@ -55,7 +56,7 @@ if __name__ == "__main__":
             with open(loss_file_path, 'w') as outfile:
                 json.dump(loss_dict, outfile)
 
-            testsub = torch.tensor(test_set, device=d())
+            testsub = torch.tensor(test_set[:2], device=d())
             truedict = truedicts(all_triples)
 
             lp_results =  link_prediction(model, testsub, truedict, batch_size)

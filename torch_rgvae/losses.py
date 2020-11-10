@@ -1,7 +1,6 @@
 """
 Collection of loss functions.
 """
-
 from graph_matching.MPGM import MPGM
 from utils import *
 

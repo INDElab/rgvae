@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import random
 import torch, os, sys, time, tqdm
-from torch_rgvae.losses import *
+from torch_rgvae.losses import mpgm_loss, kl_divergence
 from torch.autograd import Variable
 import torch.nn.functional as F
 from collections.abc import Iterable
@@ -194,9 +194,7 @@ def batch_t2m(batch, n, d_n, d_e):
 
     return [torch.cat(batch_a, dim=0),torch.cat(batch_e, dim=0),torch.cat(batch_f, dim=0)]
 
-#############################################################################
 ###################### For actual link prediction ###########################
-#############################################################################
 
 tics = []
 
@@ -333,8 +331,8 @@ def eval(model : nn.Module, valset, truedicts, n, r, batch_size=16, hitsat=[1, 3
     ranks = []
     for head in [True, False]:  # head or tail prediction
 
-        for fr in rng(0, len(valset), batch_size):
-            to = min(fr + batch_size, len(valset))
+        for fr in rng(0, valset.shape[0], batch_size):
+            to = min(fr + batch_size, valset.shape[0])
 
             batch = valset[fr:to, :].to(device=d())
             bn, _ = batch.size()
@@ -354,7 +352,7 @@ def eval(model : nn.Module, valset, truedicts, n, r, batch_size=16, hitsat=[1, 3
             # TODO 1. batch it again 2. make it sparse 3. store the scores.
             for ii in rng(0, bn, 1):
                 batch_scores = list()
-                for iii in rng(0, n, batch_size):
+                for iii in range(0, n, batch_size):
                     tt = min(iii + batch_size, toscore.shape[1])
                     tpg = model.n -1    # number of triples per graph
                     sub_batch = batch_t2m(toscore[ii, iii:tt, :].squeeze(), tpg, n, r)
