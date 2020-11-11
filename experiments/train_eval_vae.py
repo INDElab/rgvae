@@ -16,7 +16,7 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer)
     d_e = model.ea
 
     old_loss = 3333
-    loss_dict = {}
+    loss_dict = dict()
 
     # Start training.
     for epoch in range(epochs):

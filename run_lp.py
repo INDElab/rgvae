@@ -9,6 +9,7 @@ from datetime import date
 import json
 import argparse
 import torch
+import os
 
 
 if __name__ == "__main__":
@@ -32,40 +33,34 @@ if __name__ == "__main__":
 
     # Parameters. Arg parsing on its way.
     n = 1       # number of triples per matrix ( =  matrix_n/2)
-    batch_size = 2**3        # Choose a low batch size for debugging, or creating the dataset will take very long.
+    batch_size = 2**13        # Choose a low batch size for debugging,.
     h = 60      # number of hidden dimensions
     seed = 11
     np.random.seed(seed=seed)
     torch.manual_seed(seed)
-    epochs = 111
-    lr = 2e-6
-    # model_path = 'data/model/GCVAE_fb15k_69e_20201025.pt'
 
 
     for dataset in ['fb15k', 'wn18rr']:
+        model_list = list()
+        folder = 'data/{}/models/'.format(dataset)
+        for filename in os.listdir(folder):
+            if filename.endswith(".pt"):
+                model_list.append(filename)
         # Get data
         (n2i, i2n), (r2i, i2r), train_set, test_set, all_triples = load_link_prediction_data(dataset, use_test_set=False)
         d_n = len(n2i)
         d_e = len(r2i)
-        for model_name in ['GCVAE']:
+        for model_path in model_list:
             # Initialize model and optimizer.
-            if model_name == 'GCVAE':
+            if 'GCVAE' in model_path.split('_'):
                 model = GCVAE(n*2, d_e, d_n, dataset, z_dim=h).to(device)
             else:
                 model = GVAE(n*2, d_e, d_n, dataset, z_dim=h).to(device)
-            optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=5e-4)
-
-            if 'model_path' in locals():
-                model.load_state_dict(torch.load(model_path, map_location=torch.device(device)))
-                print('Saved model loaded.')
 
 
-            loss_dict =  train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer)
-
-            loss_file_path = 'data/'+dataset+'/loss{}_{}_{}.json'.format(model.name, date.today().strftime("%Y%m%d"))
-            with open(loss_file_path, 'w') as outfile:
-                json.dump(loss_dict, outfile)
-
+            model.load_state_dict(torch.load(folder + model_path, map_location=torch.device(device)))
+            print('Saved model loaded.')
+            
             testsub = torch.tensor(test_set[:2], device=d())
             truedict = truedicts(all_triples)
 
