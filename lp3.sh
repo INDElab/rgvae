@@ -3,10 +3,9 @@
 
 #SBATCH -N 1
 #SBATCH -t 11:00:00
+#SBATCH --mem=15.6G
 #SBATCH -p gpu_titanrtx_shared
 #SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=6
-#SBATCH --mem=15.6
 
 # Loading modules
 module purge
