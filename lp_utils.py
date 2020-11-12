@@ -310,7 +310,7 @@ def eval_simple(model : nn.Module, valset, alltriples, n, hitsat=[1, 3, 10], fil
 
     return mrr, tuple(hits), ranks
 
-def eval(model : nn.Module, loss_fn, valset, truedicts, n, r, batch_size=16, hitsat=[1, 3, 10], filter_candidates=True, verbose=False):
+def eval(model : nn.Module, loss_fn, valset, truedicts, n, r, batch_size=16, hitsat=[1, 3, 10], filter_candidates=True, verbose=False, elbo=True):
     """
     Evaluates a triple scoring model. Does the sorting in a single, GPU-accelerated operation.
     :param model:
@@ -318,6 +318,7 @@ def eval(model : nn.Module, loss_fn, valset, truedicts, n, r, batch_size=16, hit
     :param val_set:
     :param alltriples:
     :param filter:
+    :param eblo: If true, use full elbo as loss. Else just the reconstruction loss.
     :return:
     """
 
@@ -358,7 +359,12 @@ def eval(model : nn.Module, loss_fn, valset, truedicts, n, r, batch_size=16, hit
                     sub_batch = batch_t2m(toscore[ii, iii:tt, :].squeeze(), tpg, n, r)
                     prediction = model.forward(sub_batch)
                     log_px_z, _ = loss_fn(sub_batch, prediction)
-                    batch_scores.append(log_px_z)
+                    if elbo:
+                        kl_div = kl_divergence(model.mean, model.logvar)
+                        loss = log_px_z + kl_div
+                    else:
+                        loss = log_px_z
+                    batch_scores.append(loss)
                 scores.append(torch.cat(batch_scores, dim=0).unsqueeze(0))
             scores = torch.cat(scores, dim=0).squeeze()
             tforward += toc()

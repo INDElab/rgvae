@@ -2,7 +2,7 @@
     "models": ["GVAE", "GCVAE"],
     "train": true,
     "link_prediction": true,
-    "load_model_path": []
+    "load_model_path": [],
     "h": 60,
     "n": 1,
     "epochs": 111,

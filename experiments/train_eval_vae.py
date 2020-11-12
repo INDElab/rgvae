@@ -17,6 +17,8 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer)
 
     old_loss = 3333
     loss_dict = dict()
+    loss_dict['val'] = dict()
+    loss_dict['train'] = dict()
 
     # Start training.
     for epoch in range(epochs):
@@ -26,15 +28,18 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer)
         model.train()
         loss_bar = tqdm(total=0, position=0, bar_format='{desc}')
         sanity_bar = tqdm(total=0, position=1, bar_format='{desc}')
+        loss_train = list()
+
         for b_from in tqdm(range(0,len(train_set),(batch_size*n)), desc='Epoch {}'.format(epoch), position=2):
             b_to = min(b_from + batch_size, len(train_set))
             target = batch_t2m(torch.tensor(train_set[b_from:b_to], device=d()), n, d_n, d_e)
 
             loss, sanity, x_permute = train_sparse_batch(target, model, optimizer, epoch)
-
+            loss_train.append(loss)
             loss_bar.set_description_str('Loss: {:.6f}'.format(loss))
             sanity_bar.set_description('Sanity check: {:.2f}% nodes, {:.2f}% edges, {:.2f}% permuted.'.format(*sanity,x_permute*100))
-                
+        
+        loss_dict['train'][epoch] = np.mean(loss_train)
         end_time = time.time()
         print('Time elapsed for epoch{} : {:.3f}'.format(epoch, end_time - start_time))
 
@@ -52,7 +57,7 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer)
                 loss_val.append(loss)
                 permute_list.append(x_permute)
         mean_loss = np.mean(loss_val)
-        loss_dict[epoch] = mean_loss
+        loss_dict[val][epoch] = mean_loss
         print('Epoch: {}, Test set ELBO: {:.3f}, permuted {:.3f}%'.format(epoch, mean_loss, np.mean(permute_list)*100))
 
         if 'old_loss' in locals() and mean_loss < old_loss and epoch > 6:
