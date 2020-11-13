@@ -6,12 +6,13 @@ import time
 import torch.nn as nn
 from torch_rgvae.encoders import *
 from torch_rgvae.decoders import *
+from torch_rgvae.losses import *
 from utils import *
 from lp_utils import d
 
 
 class GVAE(nn.Module):
-    def __init__(self, n: int, ea: int, na: int, dataset_name: str, h_dim: int=512, z_dim: int=2, softmax_E: bool=True):
+    def __init__(self, n: int, ea: int, na: int, dataset_name: str, h_dim: int=512, z_dim: int=2, beta: int=1, softmax_E: bool=True):
         """
         Graph Variational Auto Encoder
         :param n : Number of nodes
@@ -20,6 +21,7 @@ class GVAE(nn.Module):
         :param dataset_name : name of the dataset which the model will train on.
         :param h_dim : Hidden dimension
         :param z_dim : latent dimension
+        :param beta: for beta < 1, makes the model is a beta-VAE
         :param softmax_E : use softmax for edge attributes
         """
         super().__init__()
@@ -30,6 +32,7 @@ class GVAE(nn.Module):
         input_dim = n*n + n*na + n*n*ea
         self.input_dim = input_dim
         self.z_dim = z_dim
+        self.beta = beta
         self.softmax_E = softmax_E
         self.dataset_name = dataset_name
 
@@ -85,20 +88,40 @@ class GVAE(nn.Module):
         return A, E, F
 
     def reparameterize(self, mean, logvar):
+        """
+        Reparametrization trick.
+        """
         self.mean = mean
         self.logvar = logvar
         eps = torch.normal(torch.zeros_like(mean), std=1.).to(d())
         return eps * torch.exp(logvar * .5) + mean
 
-    def forward(self, args_in):
+    def forward(self, target):
         """
         Forward pass of the VAE.
-        :param args_in: batch of graphs in spare form.
+        :param target: batch of graphs in spare form.
         :return : Prediction of the model.
         """
-        mean, logvar = self.encode(args_in)
+        mean, logvar = self.encode(target)
         z = self.reparameterize(mean, logvar)
         return self.decode(z)
+
+    def reconstruction_loss(self, target, prediction):
+        return mpgm_loss(target, prediction)
+    
+    def regularization_loss(self, mean, logvar):
+        return kl_divergence(mean, logvar)
+
+    def elbo(self,target):
+        """
+        Loss function of the VAE.
+        :param target: The target Graph.
+        :return : the ELBO loss
+        """
+        mean, logvar = self.encode(target)
+        z = self.reparameterize(mean, logvar)
+        prediction = self.decode(z)
+        return self.beta * self.regularization_loss(mean, logvar) - self.reconstruction_loss(target, prediction)
 
     def sample(self, z, n_samples: int=1):
         """

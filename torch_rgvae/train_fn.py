@@ -6,7 +6,6 @@ import time
 import torch
 import numpy as np
 from tqdm import tqdm
-from torch_rgvae.losses import *
 
 
 def train_epoch(ds_set, model, optimizer, epoch, eval: bool=False):
@@ -26,13 +25,8 @@ def train_epoch(ds_set, model, optimizer, epoch, eval: bool=False):
     loss_bar = tqdm(total=0, position=0, bar_format='{desc}')
     sanity_bar = tqdm(total=0, position=1, bar_format='{desc}')
     for target in tqdm(ds_set, total=len(ds_set), desc='Epoch {}. Batch'.format(epoch), position=2):
-        mean, logvar = model.encode(target)
-        z = model.reparameterize(mean, logvar)
-        prediction = model.decode(z)
 
-        log_px_z = mpgm_loss(target, prediction)
-        kl_div = kl_divergence(mean, logvar)
-        loss = torch.mean( - log_px_z + kl_div)
+        loss = torch.mean(model.elbo(target))
         if not eval:
             loss.backward()
             optimizer.step()
@@ -57,15 +51,8 @@ def train_sparse_batch(target, model, optimizer, epoch, eval: bool=False):
         sparse: the data is sparse and has to be converted.
     """
     start1 = time.time()
-    mean, logvar = model.encode(target)
-    z = model.reparameterize(mean, logvar)
-    prediction = model.decode(z)
+    loss = torch.mean(model.elbo(target))
 
-    log_px_z, x = mpgm_loss(target, prediction)
-
-    kl_div = kl_divergence(mean, logvar)
-
-    loss = torch.mean( - log_px_z + kl_div)
     if not eval:
         loss.backward()
         optimizer.step()

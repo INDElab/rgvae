@@ -15,7 +15,7 @@ from scipy import sparse
 
 
 class GCVAE(GVAE):
-    def __init__(self, n: int, ea: int, na: int, dataset_name: str, h_dim: int=512, z_dim: int=2, softmax_E: bool=True):
+    def __init__(self, n: int, ea: int, na: int, dataset_name: str, h_dim: int=512, z_dim: int=2, beta: int=1, softmax_E: bool=True):
         """
         Graph Variational Auto Encoder
         :param n : Number of nodes
@@ -24,20 +24,16 @@ class GCVAE(GVAE):
         :param dataset_name : name of the dataset which the model will train on.
         :param h_dim : Hidden dimension
         :param z_dim : latent dimension
+        :param beta: for beta < 1, makes the model is a beta-VAE
         :param softmax_E : use softmax for edge attributes
         """
         super().__init__(n, ea, na, dataset_name, h_dim, z_dim)
 
         self.name = 'GCVAE'
-        self.n = n
-        self.na = na
-        self.ea = ea
+
         input_dim = n*n + n*na + n*n*ea
         self.input_dim = input_dim
-        self.z_dim = z_dim
         n_feat = na + n * ea
-        self.softmax_E = softmax_E
-        self.dataset_name = dataset_name
 
         self.encoder = GCN(n, n_feat, h_dim, 2*z_dim).to(torch.double)
         self.decoder = RMLP(input_dim, h_dim, z_dim)
