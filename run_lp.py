@@ -20,7 +20,8 @@ if __name__ == "__main__":
                         type=str)
     parser.add_argument('--m_path', nargs=1,
                         help="model path",
-                        type=str)                    
+                        type=str)
+    parser.add_argument('--bs_2', nargs=1, type=int)                    
     args = parser.parse_args()
     # # Loading a JSON object returns a dict.
     # config = json.load(arguments.config)
@@ -38,7 +39,7 @@ if __name__ == "__main__":
 
     # Parameters. Arg parsing on its way.
     n = 1       # number of triples per matrix ( =  matrix_n/2)
-    batch_size = 2**15        # Choose a low batch size for debugging,.
+    batch_size = 2**args.bs_2[0]        # Choose a low batch size for debugging,.
     h = 60      # number of hidden dimensions
     seed = 11
     np.random.seed(seed=seed)

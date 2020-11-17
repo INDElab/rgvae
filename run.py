@@ -1,4 +1,3 @@
-
 import numpy as np
 from torch_rgvae.GVAE import GVAE
 from torch_rgvae.GCVAE import GCVAE
@@ -6,21 +5,22 @@ from lp_utils import *
 from experiments.train_eval_vae import train_eval_vae
 from experiments.link_prediction import link_prediction
 from datetime import date
-import json
+import yaml
 import argparse
 import torch
 
 
 if __name__ == "__main__":
     
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument('--config', nargs=1,
-    #                     help="JSON file with configurations",
-    #                     type=argparse.FileType('r'))
-    # arguments = parser.parse_args()
-    # # Loading a JSON object returns a dict.
-    # config = json.load(arguments.config)
-    # print(arguments)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--configs', nargs=1,
+                        help="YAML file with configurations",
+                        type=argparse.FileType('r'))
+    arguments = parser.parse_args()
+
+    # Loading a JSON object returns a dict.
+    args = yaml.full_load(arguments.configs[0])
+    print(args)
 
     # This sets the default torch dtype. Double-power
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

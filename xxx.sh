@@ -1,7 +1,5 @@
 #!/bin/bash
 
-git pull
-rm slurm*
 sbatch lp1.sh
 sbatch lp2.sh
 sbatch lp3.sh

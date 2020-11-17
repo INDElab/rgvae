@@ -1,0 +1,16 @@
+model_params:
+    model_name: GCVAE   # Choose between [GVAE, GCVAE]
+    z_dim:  60          # Latent dimensions
+    n:  1               # Triples per graph
+    beta:   0.6         # betaVAE ratio
+    epochs: 111
+    lr: 0.000003
+    batch_size_exp2: 13 # 2**(batch_size_exp)
+
+dataset_params:
+    dataset_name: fb15k
+
+experiment:
+    train:  true
+    link_prediction:    false
+    load_model_path:    []

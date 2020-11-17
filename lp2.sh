@@ -2,8 +2,7 @@
 # Job requirements:
 
 #SBATCH -N 1
-#SBATCH -t 11:00:00
-#SBATCH --mem=15.6G
+#SBATCH -t 33:00:00
 #SBATCH -p gpu_titanrtx_shared
 #SBATCH --gres=gpu:1
 
@@ -19,7 +18,7 @@ export DATA_TO_UNZIP_PATH=$HOME/rgvae.tar.gz
 export DATASET_DIR="datasets"
 export EXPERIMENT_NAME="GCVAE_h60_fb"
 export PATH_TO_SOURCE="rgvae"
-export STORE_DIR=$HOME/results
+export STORE_DIR=$HOME/results1117
 
 mkdir -p "$STORE_DIR"
 # Copy input data from home to scratch
@@ -29,6 +28,6 @@ cd "$TMPDIR"/"rgvae"
 # pip3 install --user -r requirements.txt
 # pip3 install --user torch==1.7.0+cu101 torchvision==0.8.1+cu101 torchaudio==0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
 pip3 install --user -e .
-python3 -u run_lp.py --ds fb15k --m_path GCVAE_fb15k_89e_14l_20201111.pt
+python3 -u run_lp.py --ds fb15k --m_path GCVAE_fb15k_89e_14l_20201111.pt --bs_2 13
 
 tar -czf "$STORE_DIR"/"$EXPERIMENT_NAME".tar.gz "$TMPDIR"/"rgvae"/"data"
