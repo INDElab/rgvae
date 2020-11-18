@@ -31,14 +31,14 @@ if __name__ == "__main__":
     torch.set_default_dtype(my_dtype)
 
     # Parameters. Arg parsing on its way.
-    n = 1       # number of triples per matrix ( =  matrix_n/2)
-    batch_size = 2**3        # Choose a low batch size for debugging, or creating the dataset will take very long.
-    h = 60      # number of hidden dimensions
+    n = args['model_params']['n']       # number of triples per matrix ( =  matrix_n/2)
+    batch_size = 2**args['model_params']['batch']        # Choose a low batch size for debugging, or creating the dataset will take very long.
+    z_dim = args['model_params']['z_dim']      # number of hidden dimensions
     seed = 11
     np.random.seed(seed=seed)
     torch.manual_seed(seed)
-    epochs = 111
-    lr = 2e-6
+    epochs = args['model_params']['epochs']
+    lr = args['model_params']['lr']
     # model_path = 'data/model/GCVAE_fb15k_69e_20201025.pt'
 
 
@@ -50,9 +50,9 @@ if __name__ == "__main__":
         for model_name in ['GCVAE']:
             # Initialize model and optimizer.
             if model_name == 'GCVAE':
-                model = GCVAE(n*2, d_e, d_n, dataset, z_dim=h).to(device)
+                model = GCVAE(n*2, d_e, d_n, dataset, z_dim=z_dim).to(device)
             else:
-                model = GVAE(n*2, d_e, d_n, dataset, z_dim=h).to(device)
+                model = GVAE(n*2, d_e, d_n, dataset, z_dim=z_dim).to(device)
             optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=5e-4)
 
             if 'model_path' in locals():
@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
             loss_dict =  train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer)
 
-            loss_file_path = 'data/'+dataset+'/loss{}_{}_{}.json'.format(model.name, date.today().strftime("%Y%m%d"))
+            loss_file_path = 'data/model/{}_{}_{}.json'.format(model.name, model.dataset_name, date.today().strftime("%Y%m%d"))
             with open(loss_file_path, 'w') as outfile:
                 json.dump(loss_dict, outfile)
 

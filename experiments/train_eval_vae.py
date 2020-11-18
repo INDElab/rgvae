@@ -16,9 +16,8 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer)
     d_e = model.ea
 
     old_loss = 3333
-    loss_dict = dict()
-    loss_dict['val'] = dict()
-    loss_dict['train'] = dict()
+    num_no_improvements = 0
+    loss_dict = {'val': dict(), 'train': dict()}
 
     # Start training.
     for epoch in range(epochs):
@@ -60,45 +59,30 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer)
         loss_dict[val][epoch] = mean_loss
         print('Epoch: {}, Test set ELBO: {:.3f}, permuted {:.3f}%'.format(epoch, mean_loss, np.mean(permute_list)*100))
 
-        if 'old_loss' in locals() and mean_loss < old_loss and epoch > 6:
+        if mean_loss < old_loss and epoch > 11:
             # Check for data folder and eventually create.
             if not os.path.isdir('data/model'):
                 os.mkdir('data/model')
-            torch.save(model.state_dict(), 'data/model/{}_{}_{}e_{}l_{}.pt'.format(model.name, model.dataset_name, epoch, int(mean_loss), date.today().strftime("%Y%m%d")))
+            torch.save({
+                'epoch': epoch,
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimiser.state_dict(),
+                'loss': mean_loss
+                # TODO can I save the loss dict here too?
+            },  'data/model/{}_{}_{}.pt'.format(model.name, model.dataset_name, date.today().strftime("%Y%m%d")))
+            num_no_improvements = 0
             old_loss = mean_loss
             print('Model saved at epoch {}'.format(epoch))
+        # Early stopping
+        else:
+            num_no_improvements += 1
+        if num_no_improvements == 6:
+            print('Early Stopping at epoch {}'.format(epoch))
+            break
+        else:
+            continue
     return loss_dict
+
+
 if __name__ == "__main__":
-
-
-    # This sets the default torch dtype. Double-power
-    my_dtype = torch.float64
-    torch.set_default_dtype(my_dtype)
-
-    # Parameters. Arg parsing on its way.
-    n = 1       # number of triples per matrix ( =  matrix_n/2)
-    batch_size = 16        # Choose a low batch size for debugging, or creating the dataset will take very long.
-
-    seed = 11
-    np.random.seed(seed=seed)
-    torch.manual_seed(seed)
-    epochs = 111
-    lr = 1e-5
-    dataset = 'wn18rr'
-    # model_path = 'data/model/GCVAE_fb15k_69e_20201025.pt'
-
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print('Using device:', device)
-
-    # Get data
-    (n2i, i2n), (r2i, i2r), train_set, test_set, all_triples = load_link_prediction_data(dataset)
-    d_n = len(n2i)
-    d_e = len(r2i)
-
-    # Initialize model and optimizer.
-    model = GCVAE(n*2, d_e, d_n).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=5e-4)
-
-    print('This should not be printed.')
-
-    loss_dict = train_eval_vae(n, batch_size, lr, epochs, dataset)
+    pass
