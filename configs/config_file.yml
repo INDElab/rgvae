@@ -14,3 +14,4 @@ experiment:
     train:  true
     link_prediction:    false
     load_model_path:    []
+    save_path: ~/results

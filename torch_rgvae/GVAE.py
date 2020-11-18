@@ -107,7 +107,7 @@ class GVAE(nn.Module):
         return self.decode(z)
 
     def reconstruction_loss(self, target, prediction):
-        return mpgm_loss(target, prediction)
+        return mpgm_loss(target, prediction)[0]
     
     def regularization_loss(self, mean, logvar):
         return kl_divergence(mean, logvar)
