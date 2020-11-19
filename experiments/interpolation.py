@@ -3,37 +3,12 @@ Experiment: Interpolate between two subgraphs/sets of triples and print the resu
 """
 import torch
 import numpy as np
-from torch_rgvae.GVAE import TorchGVAE
+from torch_rgvae.GVAE import GVAE
 from torch_rgvae.GCVAE import GCVAE
 from torch_rgvae.train_fn import train_sparse_batch
 from lp_utils import *
 import pandas as pd
 
-
-# This sets the default torch dtype. Double-power
-my_dtype = torch.float64
-torch.set_default_dtype(my_dtype)
-
-seed = 11
-np.random.seed(seed=seed)
-torch.manual_seed(seed)
-n = 1       # Number of triples per graph
-steps = 10   # Interpolation steps
-
-dataset = 'fb15k'
-model_path = 'data/model/GCVAE_fb15k_11e_20201025.pt'
-
-# Load the entity dictionary
-entity2text = pd.read_csv('data/fb15k/entity2text.txt', header=None, sep='\t')
-entity2text.columns = ['Entity', 'Text']
-entity_dict = entity2text.set_index('Entity').T.to_dict('series')
-del entity2text
-
-# Load the entity dictionary
-entity2text = pd.read_csv('data/fb15k/entity2text.txt', header=None, sep='\t')
-entity2text.columns = ['Entity', 'Text']
-entity_dict = entity2text.set_index('Entity').T.to_dict('series')
-del entity2text
 
 def interpolate_triples(n: int, steps: int, data_set: str, model_path: str):
      # Get data
@@ -44,8 +19,8 @@ def interpolate_triples(n: int, steps: int, data_set: str, model_path: str):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print('Using device:', device)
 
-    model = GCVAE(n*2, d_e, d_n).to(device)
-    model.load_state_dict(torch.load(model_path, map_location=torch.device(device)))
+    model = GCVAE(n*2, d_e, d_n, dataset, z_dim=60).to(device)
+    model.load_state_dict(torch.load('/home/wolf/Thesis/Code/rgvae/results/exp_20201119/GCVAE_fb15k_20201119.pt', map_location=torch.device(device))['model_state_dict'])
     print('Model loaded.')
 
     rand1, rand2 = np.random.randint(0, len(test_set), size=2)
@@ -79,6 +54,30 @@ def interpolate_triples(n: int, steps: int, data_set: str, model_path: str):
 
 
 if __name__ == "__main__":
+
+    # This sets the default torch dtype. Double-power
+    my_dtype = torch.float64
+    torch.set_default_dtype(my_dtype)
+
+    seed = 11
+    np.random.seed(seed=seed)
+    torch.manual_seed(seed)
+    n = 1       # Number of triples per graph
+    steps = 10   # Interpolation steps
+
+    dataset = 'fb15k'
+    model_path = '/home/wolf/Thesis/Code/rgvae/results/exp_20201119/GCVAE_fb15k_20201119.pt'
+
+    # Load the entity dictionary
+    entity2text = pd.read_csv('data/fb15k/entity2text.txt', header=None, sep='\t')
+    entity2text.columns = ['Entity', 'Text']
+    entity_dict = entity2text.set_index('Entity').T.to_dict('series')
+    del entity2text
+
+    # Load the entity dictionary
+    entity2text = pd.read_csv('data/fb15k/entity2text.txt', header=None, sep='\t')
+    entity2text.columns = ['Entity', 'Text']
+    entity_dict = entity2text.set_index('Entity').T.to_dict('series')
+    del entity2text
     interpolate_triples(n, steps, dataset, model_path)
 
-scp data fwolf@lisa.surfsara.nl:rgvae
