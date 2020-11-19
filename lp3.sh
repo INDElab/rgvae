@@ -2,7 +2,7 @@
 # Job requirements:
 
 #SBATCH -N 1
-#SBATCH -t 33:00:00
+#SBATCH -t 66:00:00
 #SBATCH -p gpu_titanrtx_shared
 #SBATCH --gres=gpu:1
 

@@ -21,7 +21,7 @@ if __name__ == "__main__":
     parser.add_argument('--m_path', nargs=1,
                         help="model path",
                         type=str)
-    parser.add_argument('--bs_2', nargs=1, type=int)                    
+    parser.add_argument('--bs_2', nargs=1, type=int)                 
     args = parser.parse_args()
     # # Loading a JSON object returns a dict.
     # config = json.load(arguments.config)
@@ -46,7 +46,7 @@ if __name__ == "__main__":
     torch.manual_seed(seed)
 
 
-    folder = 'data/{}/models/'.format(dataset)
+    folder = 'data/model/'
     # model_list = list()
     # for filename in os.listdir(folder):
     #     if filename.endswith(".pt"):
@@ -70,6 +70,6 @@ if __name__ == "__main__":
 
     lp_results =  link_prediction(model, testsub, truedict, batch_size)
 
-    lp_file_path = 'data/'+dataset+'/lp_{}.json'.format(model_path.split('.')[0])
+    lp_file_path = 'results/'+dataset+'/lp_{}.json'.format(model_path.split('.')[0])
     with open(lp_file_path, 'w') as outfile:
         json.dump(lp_results, outfile)

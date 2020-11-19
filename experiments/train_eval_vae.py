@@ -10,8 +10,19 @@ from tqdm import tqdm
 from datetime import date
 
 
-def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer):
-
+def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer, result_dir):
+    """
+    Train and evaluate the model on the test and train set.
+    :param n: triples per graph
+    :param batch_size: bs
+    :param epochs: laps
+    :param train_set: train data
+    :param test_set: test data
+    :param model: Pytorch RGVAE model
+    :param optimizer: mice r
+    :param result_dir: path where to save model state_dict
+    :returns : dict with train and val loss per epoch
+    """
     d_n = model.na
     d_e = model.ea
 
@@ -56,32 +67,29 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer)
                 loss_val.append(loss)
                 permute_list.append(x_permute)
         mean_loss = np.mean(loss_val)
-        loss_dict[val][epoch] = mean_loss
+        loss_dict['val'][epoch] = mean_loss
         print('Epoch: {}, Test set ELBO: {:.3f}, permuted {:.3f}%'.format(epoch, mean_loss, np.mean(permute_list)*100))
 
-        if mean_loss < old_loss and epoch > 11:
-            # Check for data folder and eventually create.
-            if not os.path.isdir('data/model'):
-                os.mkdir('data/model')
+        if mean_loss < old_loss and epoch > 3:
             torch.save({
                 'epoch': epoch,
                 'model_state_dict': model.state_dict(),
-                'optimizer_state_dict': optimiser.state_dict(),
-                'loss': mean_loss
-                # TODO can I save the loss dict here too?
-            },  'data/model/{}_{}_{}.pt'.format(model.name, model.dataset_name, date.today().strftime("%Y%m%d")))
+                'optimizer_state_dict': optimizer.state_dict(),
+                'loss_val': mean_loss,
+                'loss_log': loss_dict},
+                result_dir + '/{}_{}_{}.pt'.format(model.name, model.dataset_name, date.today().strftime("%Y%m%d")))
             num_no_improvements = 0
             old_loss = mean_loss
             print('Model saved at epoch {}'.format(epoch))
         # Early stopping
         else:
             num_no_improvements += 1
+
         if num_no_improvements == 6:
             print('Early Stopping at epoch {}'.format(epoch))
             break
         else:
             continue
-    return loss_dict
 
 
 if __name__ == "__main__":

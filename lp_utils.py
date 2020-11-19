@@ -252,64 +252,6 @@ def truedicts(all):
 
     return heads, tails
 
-
-def eval_simple(model : nn.Module, valset, alltriples, n, hitsat=[1, 3, 10], filter_candidates=True, verbose=False):
-    """
-    A simple and slow implementation of link prediction eval.
-    NB Does not break ties properly (use eval)
-    :param model:
-    :param valset:
-    :param alltriples:
-    :param n:
-    :param batch_size:
-    :param hitsat:
-    :param filter_candidates:
-    :param verbose:
-    :return:
-    """
-
-    ranks = []
-
-    for tail in [False, True]:  # head or tail prediction
-
-        for i, (s, p, o) in enumerate(tqdm.tqdm(valset) if verbose else valset):
-
-            s, p, o = triple = s.item(), p.item(), o.item()
-
-            if tail:
-                raw_candidates = [(s, p, c) for c in range(n)]
-            else:
-                raw_candidates = [(c, p, o) for c in range(n)]
-
-            if filter_candidates:
-                candidates = filter(raw_candidates, alltriples, triple)
-
-            triples = torch.tensor(candidates, device=d())
-            scores = model(triples[:, 0], triples[:, 1], triples[:, 2])
-            scores = scores.tolist()
-
-            # sort candidates by score
-            sorted_candidates = [tuple(p[0]) for p in
-                                 sorted(
-                                     zip(candidates, scores),
-                                     key=lambda p: -p[1]
-                                 )
-                                 ]
-
-            rank = sorted_candidates.index(triple) + 1
-
-            ranks.append(rank)
-
-    print(ranks)
-
-    mrr = sum([1.0/rank for rank in ranks])/len(ranks)
-
-    hits = []
-    for k in hitsat:
-        hits.append(sum([1.0 if rank <= k else 0.0 for rank in ranks]) / len(ranks))
-
-    return mrr, tuple(hits), ranks
-
 def eval(model : nn.Module, valset, truedicts, n, r, batch_size=16, hitsat=[1, 3, 10], filter_candidates=True, verbose=False, elbo=True):
     """
     Evaluates a triple scoring model. Does the sorting in a single, GPU-accelerated operation.
@@ -329,9 +271,9 @@ def eval(model : nn.Module, valset, truedicts, n, r, batch_size=16, hitsat=[1, 3
 
     tic()
     ranks = []
-    for head in [True, False]:  # head or tail prediction
+    for head in tqdm.tqdm([True, False], desc='LP Head, Tail', leave=True):  # head or tail prediction
 
-        for fr in rng(0, valset.shape[0], batch_size):
+        for fr in rng(0, valset.shape[0], batch_size, desc='Validation Set', leave=True):
             to = min(fr + batch_size, valset.shape[0])
 
             batch = valset[fr:to, :].to(device=d())
@@ -349,10 +291,9 @@ def eval(model : nn.Module, valset, truedicts, n, r, batch_size=16, hitsat=[1, 3
 
             tic()
             scores = list()
-            # TODO 1. batch it again 2. make it sparse 3. store the scores.
-            for ii in rng(0, bn, 1):
+            for ii in rng(0, bn, 1, desc='Valset Batch', leave=False):
                 batch_scores = list()
-                for iii in range(0, n, batch_size):
+                for iii in rng(0, n, batch_size, desc='Batch of Batch', leave=False):
                     tt = min(iii + batch_size, toscore.shape[1])
                     tpg = model.n -1    # number of triples per graph
                     sub_batch = batch_t2m(toscore[ii, iii:tt, :].squeeze(), tpg, n, r)

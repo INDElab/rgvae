@@ -32,7 +32,7 @@ class GVAE(nn.Module):
         input_dim = n*n + n*na + n*n*ea
         self.input_dim = input_dim
         self.z_dim = z_dim
-        self.beta = beta
+        self.beta = torch.tensor(beta)
         self.softmax_E = softmax_E
         self.dataset_name = dataset_name
 
@@ -107,7 +107,9 @@ class GVAE(nn.Module):
         return self.decode(z)
 
     def reconstruction_loss(self, target, prediction):
-        return mpgm_loss(target, prediction)[0]
+        loss, x_permute = mpgm_loss(target, prediction)
+        self.x_permute = x_permute
+        return loss
     
     def regularization_loss(self, mean, logvar):
         return kl_divergence(mean, logvar)

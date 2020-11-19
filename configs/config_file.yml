@@ -5,13 +5,13 @@ model_params:
     beta:   0.6         # betaVAE ratio
     epochs: 111
     lr: 0.000003
-    batch_size_exp2: 13 # 2**(batch_size_exp)
+    batch_size_exp2: 3 # 2**(batch_size_exp)
 
 dataset_params:
     dataset_name: fb15k
 
 experiment:
-    train:  true
-    link_prediction:    false
-    load_model_path:    []
-    save_path: ~/results
+    train:  false
+    link_prediction:    true
+    load_model: true
+    load_model_path:    /home/wolf/Thesis/Code/rgvae/results/exp_20201119/GCVAE_fb15k_20201119.pt

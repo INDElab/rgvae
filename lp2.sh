@@ -2,7 +2,7 @@
 # Job requirements:
 
 #SBATCH -N 1
-#SBATCH -t 33:00:00
+#SBATCH -t 66:00:00
 #SBATCH -p gpu_titanrtx_shared
 #SBATCH --gres=gpu:1
 
@@ -31,3 +31,8 @@ pip3 install --user -e .
 python3 -u run_lp.py --ds fb15k --m_path GCVAE_fb15k_89e_14l_20201111.pt --bs_2 13
 
 tar -czf "$STORE_DIR"/"$EXPERIMENT_NAME".tar.gz "$TMPDIR"/"rgvae"/"data"
+
+export USER_AT_HOST="fwolf@login-gpu.lisa.surfsara.nl"
+export PUBKEYPATH="$HOME/.ssh/id_ed25519.pub"
+
+ssh-copy-id -i "$PUBKEYPATH" "$USER_AT_HOST"
