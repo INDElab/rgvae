@@ -6,7 +6,7 @@ graph_ds*.pkl
 data/model
 data/fb15k/text*
 results/
-*.sh
+#*.sh
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
