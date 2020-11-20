@@ -76,7 +76,7 @@ if __name__ == "__main__":
         testsub = torch.tensor(test_set, device=d())
         truedict = truedicts(all_triples)
 
-        lp_results =  link_prediction(model, testsub[:2], truedict, batch_size)
+        lp_results =  link_prediction(model, testsub, truedict, batch_size)
         
 
         lp_file_path = result_dir + '/lp_results_{}_{}.json'.format(model.name, dataset)
