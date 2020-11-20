@@ -63,7 +63,8 @@ if __name__ == "__main__":
 
     # Load model
     if args['experiment']['load_model']:
-        model.load_state_dict(torch.load(model_path, map_location=torch.device(device))['model_state_dict'])
+        # model.load_state_dict(torch.load(model_path, map_location=torch.device(device))['model_state_dict'])
+        model.load_state_dict(torch.load(model_path, map_location=torch.device(device)))
         print('Saved model loaded.')
 
     # Train model
