@@ -48,7 +48,7 @@ if __name__ == "__main__":
     d_n = len(n2i)
     d_e = len(r2i)
 
-    result_dir = 'results/exp_{}'.format(date.today().strftime("%Y%m%d"))
+    result_dir = 'results/exp_{}_{}'.format(model_name, date.today().strftime("%Y%m%d"))
     if not os.path.isdir(result_dir):
         os.makedirs(result_dir)
 
