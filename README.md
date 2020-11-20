@@ -27,10 +27,11 @@ pip install -e .
 
 ## Usage
 
+Configure the experiments in configs/config_file.yml. Then run:
 ```bash
-python ./experiments/train_eval_GVAE.py
+python run.py --configs configs/config_file.yml
 ```
-
+Results will be stored in results/
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 

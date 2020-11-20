@@ -3,8 +3,10 @@ graph_ds*.pkl
 .vscode/
 .vscode
 .idea/
-data/
+data/model
+data/fb15k/text*
 results/
+*.sh
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
