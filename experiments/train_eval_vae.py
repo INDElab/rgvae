@@ -26,8 +26,7 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer,
     d_n = model.na
     d_e = model.ea
 
-    old_loss = 3333
-    num_no_improvements = 0
+    old_loss = best_loss = 3333
     loss_dict = {'val': dict(), 'train': dict()}
 
     # Start training.
@@ -70,26 +69,19 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer,
         loss_dict['val'][epoch] = mean_loss
         print('Epoch: {}, Test set ELBO: {:.3f}, permuted {:.3f}%'.format(epoch, mean_loss, np.mean(permute_list)*100))
 
-        if mean_loss < old_loss and epoch > 3:
-            torch.save({
-                'epoch': epoch,
-                'model_state_dict': model.state_dict(),
-                'optimizer_state_dict': optimizer.state_dict(),
-                'loss_val': mean_loss,
-                'loss_log': loss_dict},
-                result_dir + '/{}_{}_{}.pt'.format(model.name, model.dataset_name, date.today().strftime("%Y%m%d")))
-            num_no_improvements = 0
-            old_loss = mean_loss
-            print('Model saved at epoch {}'.format(epoch))
-        # Early stopping
-        else:
-            num_no_improvements += 1
-
-        if num_no_improvements == 6:
-            print('Early Stopping at epoch {}'.format(epoch))
-            break
-        else:
-            continue
+        torch.save({
+            'epoch': epoch,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'loss_val': mean_loss,
+            'loss_log': loss_dict},
+            result_dir + '/{}_{}_{}.pt'.format(model.name, model.dataset_name, date.today().strftime("%Y%m%d")))
+            
+        if mean_loss > old_loss:
+            print('Validation loss diverging:{:.3} vs. {:.3}'.format(mean_loss, best_loss))
+        if mean_loss < best_loss:
+            best_loss = mean_loss
+        old_loss = mean_loss
 
 
 if __name__ == "__main__":
