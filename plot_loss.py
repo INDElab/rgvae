@@ -9,9 +9,16 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--pt', nargs=1,
                         help="saved pytorch model",
-                        type=argparse.FileType('r'))
+                        type=str)
+
+    parser.add_argument('--n', nargs=1,
+                        help="name to save plot",
+                        type=str)
+
     arguments = parser.parse_args()
     pt_path = arguments.pt[0]
+    plot_name = arguments.n[0]
+    print(pt_path)
     device = 'cpu'
     loaded = torch.load(pt_path, map_location=torch.device(device))
 
@@ -24,4 +31,4 @@ if __name__ == "__main__":
     plt.xlabel('Epoch')
     plt.ylabel('Elbo')
 
-    plt.show()
+    plt.savefig('plots/{}.png'.format(plot_name))
