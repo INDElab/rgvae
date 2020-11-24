@@ -24,8 +24,8 @@ if __name__ == "__main__":
     loss_dict = loaded['loss_log']
 
     fig, ax = plt.subplots()
-    ax.plot(zip(*sorted(loss_dict['val'].items())), 'g', label='Validation loss')
-    ax.plot(zip(*sorted(loss_dict['train'].items())), 'b', label='Training loss')
+    ax.plot(*list(zip(*sorted(loss_dict['val'].items()))), 'g', label='Validation loss')
+    ax.plot(*list(zip(*sorted(loss_dict['train'].items()))), 'b', label='Training loss')
     plt.title(pt_path.split('/')[-1].strip('.pt'))
     plt.xlabel('Epoch')
     plt.ylabel('Elbo')
