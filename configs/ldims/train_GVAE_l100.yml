@@ -2,7 +2,7 @@ model_params:
     model_name: GVAE   # Choose between [GVAE, GCVAE]
     z_dim:  100          # Latent dimensions
     n:  1               # Triples per graph
-    beta:   1         # betaVAE ratio
+    beta:   1  0       # betaVAE ratio
     epochs: 333
     lr: 0.000003
     batch_size_exp2: 13 # 2**(batch_size_exp) fb_max=13 wn_max=12

@@ -8,7 +8,7 @@ if __name__ == "__main__":
     # Arg parsing
     parser = argparse.ArgumentParser()
     parser.add_argument('--pt', nargs=1,
-                        help="saved pytorch model",
+                        help="absolut path to pytorch model",
                         type=str)
 
     parser.add_argument('--n', nargs=1,
@@ -18,7 +18,6 @@ if __name__ == "__main__":
     arguments = parser.parse_args()
     pt_path = arguments.pt[0]
     plot_name = arguments.n[0]
-    print(pt_path)
     device = 'cpu'
     loaded = torch.load(pt_path, map_location=torch.device(device))
 
@@ -27,7 +26,7 @@ if __name__ == "__main__":
     fig, ax = plt.subplots()
     ax.plot(zip(*sorted(loss_dict['val'].items())), 'g', label='Validation loss')
     ax.plot(zip(*sorted(loss_dict['train'].items())), 'b', label='Training loss')
-    plt.title(pt_path.split('-')[0])
+    plt.title(pt_path.split('/')[-1].strip('.pt'))
     plt.xlabel('Epoch')
     plt.ylabel('Elbo')
 

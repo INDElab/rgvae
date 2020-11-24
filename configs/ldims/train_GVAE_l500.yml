@@ -1,6 +1,6 @@
 model_params:
     model_name: GVAE   # Choose between [GVAE, GCVAE]
-    z_dim:  100          # Latent dimensions
+    z_dim:  500          # Latent dimensions
     n:  1               # Triples per graph
     beta:   1         # betaVAE ratio
     epochs: 333

@@ -6,6 +6,10 @@ graph_ds*.pkl
 data/model
 data/fb15k/text*
 results/
+plots/
+jobs/
+slurm*
+*.pr
 *.sh
 
 # Byte-compiled / optimized / DLL files
