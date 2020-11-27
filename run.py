@@ -8,6 +8,7 @@ from datetime import date
 import yaml, json
 import argparse
 import torch
+import torch_optimizer as optim
 import os
 
 
@@ -33,6 +34,7 @@ if __name__ == "__main__":
     model_name = args['model_params']['model_name']
     n = args['model_params']['n']       # number of triples per matrix ( =  matrix_n/2)
     batch_size = 2**args['model_params']['batch_size_exp2']        # Choose an apropiate batch size. cpu: 2**9
+    h_dim = args['model_params']['h_dim']       # number of hidden dimensions
     z_dim = args['model_params']['z_dim']      # number of latent dimensions
     seed = 11
     np.random.seed(seed=seed)
@@ -48,7 +50,9 @@ if __name__ == "__main__":
     d_n = len(n2i)
     d_e = len(r2i)
 
-    result_dir = 'results/exp_{}_{}'.format(model_name, date.today().strftime("%Y%m%d"))
+    todate = date.today().strftime("%Y%m%d")
+    exp_name = args['experiment']['exp_name']
+    result_dir = 'results/{}_{}'.format(exp_name, todate)
     if not os.path.isdir(result_dir):
         os.makedirs(result_dir)
 
@@ -59,7 +63,7 @@ if __name__ == "__main__":
         model = GVAE(n*2, d_e, d_n, dataset, z_dim=z_dim).to(device)
     else:
         raise ValueError('{} not defined!'.format(model_name))
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=5e-4)
+    optimizer = optim.Ranger(model.parameters(),lr=lr, weight_decay=1e-5)
 
     # Load model
     if args['experiment']['load_model']:
@@ -73,12 +77,11 @@ if __name__ == "__main__":
 
     # Link prediction
     if args['experiment']['link_prediction']:
-        testsub = torch.tensor(test_set, device=d())
+        testsub = torch.tensor(test_set[:300], device=d())      # TODO remove the testset croping
         truedict = truedicts(all_triples)
 
         lp_results =  link_prediction(model, testsub, truedict, batch_size)
         
-
-        lp_file_path = result_dir + '/lp_results_{}_{}.json'.format(model.name, dataset)
+        lp_file_path = result_dir + '/lp_{}_{}.json'.format(exp_name, todate)
         with open(lp_file_path, 'w') as outfile:
             json.dump(lp_results, outfile)

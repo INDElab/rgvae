@@ -10,6 +10,7 @@ from tqdm import tqdm
 from datetime import date
 
 
+
 def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer, result_dir):
     """
     Train and evaluate the model on the test and train set.
@@ -46,7 +47,7 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer,
             loss, sanity, x_permute = train_sparse_batch(target, model, optimizer, epoch)
             loss_train.append(loss)
             loss_bar.set_description_str('Loss: {:.6f}'.format(loss))
-            sanity_bar.set_description('Sanity check: {:.2f}% nodes, {:.2f}% edges, {:.2f}% permuted.'.format(*sanity,x_permute*100))
+            # sanity_bar.set_description('Sanity check: {:.2f}% nodes, {:.2f}% edges, {:.2f}% permuted.'.format(*sanity,x_permute*100))
         
         loss_dict['train'][epoch] = np.mean(loss_train)
         end_time = time.time()
@@ -75,7 +76,7 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer,
             'optimizer_state_dict': optimizer.state_dict(),
             'loss_val': mean_loss,
             'loss_log': loss_dict},
-            result_dir + '/{}_{}_{}.pt'.format(model.name, model.dataset_name, date.today().strftime("%Y%m%d")))
+            result_dir + '/rgvae_dict.pt')
             
         if mean_loss > old_loss:
             print('Validation loss diverging:{:.3} vs. {:.3}'.format(mean_loss, best_loss))

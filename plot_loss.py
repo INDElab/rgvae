@@ -2,6 +2,8 @@ import torch
 from experiments.link_prediction import link_prediction
 import argparse
 import matplotlib.pylab as plt
+import os
+
 
 if __name__ == "__main__":
     
@@ -30,4 +32,4 @@ if __name__ == "__main__":
     plt.xlabel('Epoch')
     plt.ylabel('Elbo')
 
-    plt.savefig('plots/{}.png'.format(plot_name))
+    plt.savefig(os.path.dirname(os.path.abspath(__file__)) + '/plots/{}.png'.format(plot_name))

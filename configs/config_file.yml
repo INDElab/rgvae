@@ -1,17 +1,19 @@
 model_params:
     model_name: GCVAE   # Choose between [GVAE, GCVAE]
+    h_dim:  512         # Hidden dimensions
     z_dim:  60          # Latent dimensions
     n:  1               # Triples per graph
     beta:   0.6         # betaVAE ratio
     epochs: 111
-    lr: 0.000003
+    lr: 0.000001
     batch_size_exp2: 3 # 2**(batch_size_exp)
 
 dataset_params:
     dataset_name: fb15k
 
 experiment:
-    train:  false
+    exp_name: test_config
+    train:  true
     link_prediction:    true
-    load_model: true
+    load_model: false
     load_model_path:    /home/wolf/Thesis/Code/rgvae/results/exp_20201119/GCVAE_fb15k_20201119.pt
