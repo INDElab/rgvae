@@ -23,19 +23,24 @@ if __name__ == "__main__":
     my_dtype = torch.float64
     torch.set_default_dtype(my_dtype)
 
-    # Arg parsing
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--configs', nargs=1,
-                        help="YAML file with configurations",
-                        type=argparse.FileType('r'))
-    arguments = parser.parse_args()
-    args = yaml.full_load(arguments.configs[0])
+
+    # # Arg parsing
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument('--configs', nargs=1,
+    #                     help="YAML file with configurations",
+    #                     type=argparse.FileType('r'))
+    # arguments = parser.parse_args()
+    # args = yaml.full_load(arguments.configs[0])
+
+    with open('configs/config_file.yml', 'r') as file:
+        args = yaml.load(file, Loader=yaml.FullLoader)
 
     model_name = args['model_params']['model_name']
     n = args['model_params']['n']       # number of triples per matrix ( =  matrix_n/2)
     batch_size = 2**args['model_params']['batch_size_exp2']        # Choose an apropiate batch size. cpu: 2**9
     h_dim = args['model_params']['h_dim']       # number of hidden dimensions
     z_dim = args['model_params']['z_dim']      # number of latent dimensions
+    beta = args['model_params']['beta']         # beta parameter of betaVAE
     seed = 11
     np.random.seed(seed=seed)
     torch.manual_seed(seed)
@@ -44,6 +49,7 @@ if __name__ == "__main__":
 
     dataset = args['dataset_params']['dataset_name']
     model_path = args['experiment']['load_model_path']
+
 
     # Get data
     (n2i, i2n), (r2i, i2r), train_set, test_set, all_triples = load_link_prediction_data(dataset, use_test_set=False)
@@ -55,15 +61,17 @@ if __name__ == "__main__":
     result_dir = 'results/{}_{}'.format(exp_name, todate)
     if not os.path.isdir(result_dir):
         os.makedirs(result_dir)
+    global writer 
 
     # Initialize model and optimizer.
     if model_name == 'GCVAE':
-        model = GCVAE(n*2, d_e, d_n, dataset, z_dim=z_dim).to(device)
+        model = GCVAE(n*2, d_e, d_n, dataset, h_dim=h_dim, z_dim=z_dim, beta=beta).to(device)
     elif model_name == 'GVAE':
-        model = GVAE(n*2, d_e, d_n, dataset, z_dim=z_dim).to(device)
+        model = GVAE(n*2, d_e, d_n, dataset, h_dim=h_dim, z_dim=z_dim, beta=beta).to(device)
     else:
         raise ValueError('{} not defined!'.format(model_name))
     optimizer = optim.Ranger(model.parameters(),lr=lr, weight_decay=1e-5)
+
 
     # Load model
     if args['experiment']['load_model']:
@@ -77,7 +85,7 @@ if __name__ == "__main__":
 
     # Link prediction
     if args['experiment']['link_prediction']:
-        testsub = torch.tensor(test_set[:300], device=d())      # TODO remove the testset croping
+        testsub = torch.tensor(test_set, device=d())      # TODO remove the testset croping
         truedict = truedicts(all_triples)
 
         lp_results =  link_prediction(model, testsub, truedict, batch_size)

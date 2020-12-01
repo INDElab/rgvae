@@ -1,5 +1,6 @@
 import time
 import os
+from torch.utils.tensorboard import SummaryWriter
 from torch_rgvae.GVAE import GVAE
 from torch_rgvae.GCVAE import GCVAE
 from torch_rgvae.train_fn import train_sparse_batch
@@ -29,6 +30,7 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer,
 
     old_loss = best_loss = 3333
     loss_dict = {'val': dict(), 'train': dict()}
+    writer = SummaryWriter(log_dir=result_dir)
 
     # Start training.
     for epoch in range(epochs):
@@ -48,6 +50,7 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer,
             loss_train.append(loss)
             loss_bar.set_description_str('Loss: {:.6f}'.format(loss))
             # sanity_bar.set_description('Sanity check: {:.2f}% nodes, {:.2f}% edges, {:.2f}% permuted.'.format(*sanity,x_permute*100))
+            writer.add_scalar('Loss/train', loss, b_from + epoch*len(train_set))
         
         loss_dict['train'][epoch] = np.mean(loss_train)
         end_time = time.time()
@@ -66,6 +69,7 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer,
                 loss, x_permute = train_sparse_batch(target, model, optimizer, epoch, eval=True)
                 loss_val.append(loss)
                 permute_list.append(x_permute)
+                writer.add_scalar('Loss/test', loss, b_from + epoch*len(test_set))
         mean_loss = np.mean(loss_val)
         loss_dict['val'][epoch] = mean_loss
         print('Epoch: {}, Test set ELBO: {:.3f}, permuted {:.3f}%'.format(epoch, mean_loss, np.mean(permute_list)*100))
