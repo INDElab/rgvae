@@ -58,6 +58,8 @@ if __name__ == "__main__":
 
     todate = date.today().strftime("%Y%m%d")
     exp_name = args['experiment']['exp_name']
+    print('Experiment: ' + exp_name)
+    
     result_dir = 'results/{}_{}'.format(exp_name, todate)
     if not os.path.isdir(result_dir):
         os.makedirs(result_dir)
