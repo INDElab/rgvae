@@ -24,16 +24,16 @@ if __name__ == "__main__":
     torch.set_default_dtype(my_dtype)
 
 
-    # # Arg parsing
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument('--configs', nargs=1,
-    #                     help="YAML file with configurations",
-    #                     type=argparse.FileType('r'))
-    # arguments = parser.parse_args()
-    # args = yaml.full_load(arguments.configs[0])
+    # Arg parsing
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--configs', nargs=1,
+                        help="YAML file with configurations",
+                        type=argparse.FileType('r'))
+    arguments = parser.parse_args()
+    args = yaml.full_load(arguments.configs[0])
 
-    with open('configs/config_file.yml', 'r') as file:
-        args = yaml.load(file, Loader=yaml.FullLoader)
+    # with open('configs/config_file.yml', 'r') as file:
+    #     args = yaml.load(file, Loader=yaml.FullLoader)
 
     model_name = args['model_params']['model_name']
     n = args['model_params']['n']       # number of triples per matrix ( =  matrix_n/2)
@@ -61,7 +61,6 @@ if __name__ == "__main__":
     result_dir = 'results/{}_{}'.format(exp_name, todate)
     if not os.path.isdir(result_dir):
         os.makedirs(result_dir)
-    global writer 
 
     # Initialize model and optimizer.
     if model_name == 'GCVAE':
