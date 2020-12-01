@@ -12,7 +12,7 @@ from lp_utils import d
 
 
 class GVAE(nn.Module):
-    def __init__(self, n: int, ea: int, na: int, dataset_name: str, h_dim: int=512, z_dim: int=2, beta: float=1., softmax_E: bool=True):
+    def __init__(self, n: int, ea: int, na: int, dataset_name: str, h_dim: int=1024, z_dim: int=2, beta: float=1., softmax_E: bool=True):
         """
         Graph Variational Auto Encoder
         :param n : Number of nodes
