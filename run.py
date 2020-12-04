@@ -86,7 +86,9 @@ if __name__ == "__main__":
 
     # Link prediction
     if args['experiment']['link_prediction']:
-        testsub = torch.tensor(test_set, device=d())      # TODO remove the testset croping
+        
+        print('Start link prediction!')
+        testsub = torch.tensor(test_set[300], device=d())      # TODO remove the testset croping
         truedict = truedicts(all_triples)
 
         lp_results =  link_prediction(model, testsub, truedict, batch_size)
@@ -94,3 +96,4 @@ if __name__ == "__main__":
         lp_file_path = result_dir + '/lp_{}_{}.json'.format(exp_name, todate)
         with open(lp_file_path, 'w') as outfile:
             json.dump(lp_results, outfile)
+        print('Saved link prediction results!')
