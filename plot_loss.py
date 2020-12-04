@@ -3,9 +3,14 @@ from experiments.link_prediction import link_prediction
 import argparse
 import matplotlib.pylab as plt
 import os
+import seaborn as sns
+
+
 
 
 if __name__ == "__main__":
+    
+    sns.set()
     
     # Arg parsing
     parser = argparse.ArgumentParser()
@@ -28,7 +33,8 @@ if __name__ == "__main__":
     fig, ax = plt.subplots()
     ax.plot(*list(zip(*sorted(loss_dict['val'].items()))), 'g', label='Validation loss')
     ax.plot(*list(zip(*sorted(loss_dict['train'].items()))), 'b', label='Training loss')
-    plt.title(pt_path.split('/')[-1].strip('.pt'))
+    plt.legend(loc='upper right')
+    plt.title(plot_name)
     plt.xlabel('Epoch')
     plt.ylabel('Elbo')
 
