@@ -88,7 +88,7 @@ if __name__ == "__main__":
     if args['experiment']['link_prediction']:
         
         print('Start link prediction!')
-        testsub = torch.tensor(test_set[300], device=d())      # TODO remove the testset croping
+        testsub = torch.tensor(test_set[:300], device=d())      # TODO remove the testset croping
         truedict = truedicts(all_triples)
 
         lp_results =  link_prediction(model, testsub, truedict, batch_size)
