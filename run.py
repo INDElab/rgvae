@@ -84,16 +84,16 @@ if __name__ == "__main__":
     if args['experiment']['train']:
         train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer, result_dir)
 
-    # Link prediction
-    if args['experiment']['link_prediction']:
+    # # Link prediction
+    # if args['experiment']['link_prediction']:
         
-        print('Start link prediction!')
-        testsub = torch.tensor(test_set[:300], device=d())      # TODO remove the testset croping
-        truedict = truedicts(all_triples)
+    print('Start link prediction!')
+    testsub = torch.tensor(test_set[:300], device=d())      # TODO remove the testset croping
+    truedict = truedicts(all_triples)
 
-        lp_results =  link_prediction(model, testsub, truedict, batch_size)
-        
-        lp_file_path = result_dir + '/lp_{}_{}.json'.format(exp_name, todate)
-        with open(lp_file_path, 'w') as outfile:
-            json.dump(lp_results, outfile)
-        print('Saved link prediction results!')
+    lp_results =  link_prediction(model, testsub, truedict, batch_size)
+    
+    lp_file_path = result_dir + '/lp_{}_{}.json'.format(exp_name, todate)
+    with open(lp_file_path, 'w') as outfile:
+        json.dump(lp_results, outfile)
+    print('Saved link prediction results!')
