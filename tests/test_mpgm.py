@@ -59,7 +59,7 @@ class TestMPGM():
         Xs_sci_0 = mpgm.max_pool_loop([S[0][0].squeeze().numpy(),S[1][0].squeeze().numpy()])
         assert Xs_batch[0].squeeze().numpy().any() == Xs_sci_0.any()
 
-    def test_hungarian(self):
+    # def test_hungarian(self):
         X_batch = mpgm.hungarian_batch(Xs)
         assert X_batch.shape == torch.Size([batch_size,n,k])
 
@@ -133,9 +133,9 @@ class TestMPGM():
         assert X_unequal2[[n for n in range(2)]].numpy().any() == X_check.any()
 
 test = TestMPGM()
-# test.test_affinity()    
-# test.test_maxpool()
+test.test_affinity()    
+test.test_maxpool()
 test.test_hungarian()
-# test.test_call()
-# test.test_set_diag_nnkk()
-# test.test_selfmorphism()
+test.test_call()
+test.test_set_diag_nnkk()
+test.test_selfmorphism()
