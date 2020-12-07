@@ -19,8 +19,9 @@ def interpolate_triples(n: int, steps: int, data_set: str, model_path: str):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print('Using device:', device)
 
-    model = GCVAE(n*2, d_e, d_n, dataset, z_dim=60).to(device)
-    model.load_state_dict(torch.load('/home/wolf/Thesis/Code/rgvae/results/exp_20201119/GCVAE_fb15k_20201119.pt', map_location=torch.device(device))['model_state_dict'])
+    model = GVAE(n*2, d_e, d_n, dataset, z_dim=60).to(device)
+    checkpoint = torch.load(model_path, map_location=lambda storage, loc: storage)
+    model.load_state_dict(checkpoint['model_state_dict'])
     print('Model loaded.')
 
     rand1, rand2 = np.random.randint(0, len(test_set), size=2)
@@ -42,6 +43,7 @@ def interpolate_triples(n: int, steps: int, data_set: str, model_path: str):
 
     for i in range(steps):
         prediction = model.sample(z1 + step*i)
+        print(prediction)
         pred_list.append(prediction)
         pred_dense = matrix2triple(prediction)
         if len(pred_dense) > 0:
@@ -66,7 +68,7 @@ if __name__ == "__main__":
     steps = 10   # Interpolation steps
 
     dataset = 'fb15k'
-    model_path = '/home/wolf/Thesis/Code/rgvae/results/exp_20201119/GCVAE_fb15k_20201119.pt'
+    model_path = '/home/wolf/Desktop/results/results/tune_GVAE_fb15k_b10_20201201' + '/rgvae_dict.pt'
 
     # Load the entity dictionary
     entity2text = pd.read_csv('data/fb15k/entity2text.txt', header=None, sep='\t')
@@ -80,4 +82,3 @@ if __name__ == "__main__":
     entity_dict = entity2text.set_index('Entity').T.to_dict('series')
     del entity2text
     interpolate_triples(n, steps, dataset, model_path)
-

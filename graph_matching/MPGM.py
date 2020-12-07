@@ -4,9 +4,9 @@ Pytorch implementation of the max-pooling graph matching algorithm.
 import time
 import numpy as np
 from numpy import array
-from scipy.optimize import linear_sum_assignment
 import torch
 from munkres import Munkres, print_matrix, make_cost_matrix
+from scipy.optimize import linear_sum_assignment
 from utils import *
 from lp_utils import d
 
@@ -205,6 +205,7 @@ class MPGM():
 
     def hungarian_batch(self, Xs):
         X = Xs.clone().cpu().numpy()
+
         # Make it a cost matrix
         X = np.ones_like(X) - X
         for i in range(X.shape[0]):
