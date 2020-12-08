@@ -32,7 +32,6 @@ if __name__ == "__main__":
                         type=argparse.FileType('r'),
                         default='configs/config_file.yml')
     arguments = parser.parse_args()
-    if arguments.typ
     args = yaml.full_load(arguments.configs[0])
 
     # with open('configs/config_file.yml', 'r') as file:
