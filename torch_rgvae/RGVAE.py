@@ -6,10 +6,10 @@ Decoder: MLP
 
 import torch.nn as nn
 from torch_rgvae.RGVAE import *
-from torch_rgvae.GVAE import TorchGVAE
+from torch_rgvae.GVAE import GVAE
 
 
-class TorchRGVAE(TorchGVAE):
+class TorchRGVAE(GVAE):
     def __init__(self, n: int, ea: int, na: int, h_dim: int=512, z_dim: int=2):
         """
         Graph Variational Auto Encoder

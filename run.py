@@ -9,6 +9,7 @@ import yaml, json
 import argparse
 import torch
 import torch_optimizer as optim
+from ranger import Ranger
 import os
 
 
@@ -28,8 +29,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--configs', nargs=1,
                         help="YAML file with configurations",
-                        type=argparse.FileType('r'))
+                        type=argparse.FileType('r'),
+                        default='configs/config_file.yml')
     arguments = parser.parse_args()
+    if arguments.typ
     args = yaml.full_load(arguments.configs[0])
 
     # with open('configs/config_file.yml', 'r') as file:
@@ -46,6 +49,7 @@ if __name__ == "__main__":
     torch.manual_seed(seed)
     epochs = args['model_params']['epochs']
     lr = args['model_params']['lr']
+    k = args['model_params']['k'] if 'k' in args['model_params'] else 6
 
     dataset = args['dataset_params']['dataset_name']
     model_path = args['experiment']['load_model_path']
@@ -71,8 +75,9 @@ if __name__ == "__main__":
         model = GVAE(n*2, d_e, d_n, dataset, h_dim=h_dim, z_dim=z_dim, beta=beta).to(device)
     else:
         raise ValueError('{} not defined!'.format(model_name))
-    optimizer = optim.Ranger(model.parameters(),lr=lr, weight_decay=1e-5)
 
+    # optimizer = optim.Ranger(model.parameters(),lr=lr, k=11, betas=(.95,0.999), use_gc=True, gc_conv_only=False, )
+    optimizer = Ranger(model.parameters(),lr=lr, k=k, betas=(.95,0.999), use_gc=True, gc_conv_only=False)
 
     # Load model
     if args['experiment']['load_model']:
