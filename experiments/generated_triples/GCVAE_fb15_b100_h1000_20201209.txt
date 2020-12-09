@@ -1,0 +1,47 @@
+(tensor([[[0., 0.],
+         [1., 0.]]], device='cuda:0'), tensor([[[19, 26],
+         [69, 81]]], device='cuda:0'), tensor([[13628, 11623]], device='cuda:0'))
+[('Nazi Germany', '/music/group_member/membership./music/group_membership/group', 'Motivational speaker-GB')]
+
+(tensor([[[0., 1.],
+         [1., 0.]]], device='cuda:0'), tensor([[[ 91,  39],
+         [131, 131]]], device='cuda:0'), tensor([[12263, 12522]], device='cuda:0'))
+[('Sonny Rollins', '/government/governmental_body/members./government/government_position_held/legislative_sessions', 'Josh Griffith'), ('Josh Griffith', '/tv/tv_personality/tv_regular_appearances./tv/tv_regular_personal_appearance/program', 'Sonny Rollins')]
+
+(tensor([[[0., 0.],
+         [0., 0.]]], device='cuda:0'), tensor([[[207, 195],
+         [117,  22]]], device='cuda:0'), tensor([[3150, 3951]], device='cuda:0'))
+
+(tensor([[[0., 1.],
+         [0., 0.]]], device='cuda:0'), tensor([[[  5,  64],
+         [139,  78]]], device='cuda:0'), tensor([[13465,  4685]], device='cuda:0'))
+[('California State University, Northridge', '/base/schemastaging/organization_extra/phone_number./base/schemastaging/phone_sandbox/contact_category', 'Sheffield United F.C.')]
+
+(tensor([[[0., 1.],
+         [0., 0.]]], device='cuda:0'), tensor([[[141, 209],
+         [ 20,   7]]], device='cuda:0'), tensor([[ 8201, 10162]], device='cuda:0'))
+[('Wag the Dog', '/tv/tv_network/programs./tv/tv_network_duration/program', 'Leamington Spa')]
+
+(tensor([[[0., 1.],
+         [0., 0.]]], device='cuda:0'), tensor([[[153,  77],
+         [143,  46]]], device='cuda:0'), tensor([[ 239, 5954]], device='cuda:0'))
+[('Bappi Lahiri', '/sports/sports_team/roster./basketball/basketball_roster_position/position', 'Twin Peaks: Fire Walk With Me')]
+
+(tensor([[[0., 1.],
+         [0., 0.]]], device='cuda:0'), tensor([[[204,  44],
+         [190, 177]]], device='cuda:0'), tensor([[ 4032, 12303]], device='cuda:0'))
+[('Austrian Empire', '/people/person/religion', 'Edinburgh')]
+
+(tensor([[[0., 1.],
+         [1., 0.]]], device='cuda:0'), tensor([[[178, 196],
+         [147,  70]]], device='cuda:0'), tensor([[5351, 7354]], device='cuda:0'))
+[('Andy Hallett', '/people/person/languages', 'Kevin Williamson'), ('Kevin Williamson', '/travel/travel_destination/climate./travel/travel_destination_monthly_climate/month', 'Andy Hallett')]
+
+(tensor([[[0., 0.],
+         [0., 0.]]], device='cuda:0'), tensor([[[ 22, 171],
+         [ 17, 230]]], device='cuda:0'), tensor([[ 137, 9950]], device='cuda:0'))
+
+(tensor([[[0., 1.],
+         [0., 0.]]], device='cuda:0'), tensor([[[140,  78],
+         [ 54, 236]]], device='cuda:0'), tensor([[8973,  387]], device='cuda:0'))
+[('Special Tony Award', '/organization/organization/child./organization/organization_relationship/child', 'Isaac Hayes')]

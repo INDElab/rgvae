@@ -19,7 +19,7 @@ def interpolate_triples(n: int, steps: int, data_set: str, model_path: str):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print('Using device:', device)
 
-    model = GVAE(n*2, d_e, d_n, dataset, z_dim=60).to(device)
+    model = GCVAE(n*2, d_e, d_n, dataset, h_dim=1024, z_dim=400).to(device)
     checkpoint = torch.load(model_path, map_location=lambda storage, loc: storage)
     model.load_state_dict(checkpoint['model_state_dict'])
     print('Model loaded.')
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     steps = 10   # Interpolation steps
 
     dataset = 'fb15k'
-    model_path = '/home/wolf/Desktop/results/results/tune_GVAE_fb15k_b10_20201201' + '/rgvae_dict.pt'
+    model_path = '/home/fwolf/results/tune_GCVAE_fb15k_b100_20201206' + '/rgvae_dict.pt'
 
     # Load the entity dictionary
     entity2text = pd.read_csv('data/fb15k/entity2text.txt', header=None, sep='\t')
