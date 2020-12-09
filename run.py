@@ -28,16 +28,16 @@ if __name__ == "__main__":
 
 
     # Arg parsing
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument('--configs', nargs=1,
-    #                     help="YAML file with configurations",
-    #                     type=argparse.FileType('r'),
-    #                     default='configs/config_file.yml')
-    # arguments = parser.parse_args()
-    # args = yaml.full_load(arguments.configs[0])
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--configs', nargs=1,
+                        help="YAML file with configurations",
+                        type=argparse.FileType('r'),
+                        default='configs/config_file.yml')
+    arguments = parser.parse_args()
+    args = yaml.full_load(arguments.configs[0])
 
-    with open('configs/config_file.yml', 'r') as file:
-        args = yaml.load(file, Loader=yaml.FullLoader)
+    # with open('configs/config_file.yml', 'r') as file:
+    #     args = yaml.load(file, Loader=yaml.FullLoader)
 
     # model_name = args['model_params']['model_name']
     model_name = 'VEmbed'
@@ -92,7 +92,7 @@ if __name__ == "__main__":
     # Train model
     if args['experiment']['train']:
         if model_name == "VEmbed":
-            train_lp_vembed(model, optimizer, train_set[:3], test_set[:9], all_triples, epochs, batch_size, result_dir)
+            train_lp_vembed(model, optimizer, train_set, test_set, all_triples, epochs, batch_size, result_dir)
         else:
             train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer, result_dir)
 
