@@ -1,9 +1,11 @@
 import numpy as np
 from torch_rgvae.GVAE import GVAE
 from torch_rgvae.GCVAE import GCVAE
+from torch_rgvae.VEmbed import VEmbed 
 from lp_utils import *
 from experiments.train_eval_vae import train_eval_vae
 from experiments.link_prediction import link_prediction
+from experiments.lp_vembed import train_lp_vembed
 from datetime import date
 import yaml, json
 import argparse
@@ -26,18 +28,19 @@ if __name__ == "__main__":
 
 
     # Arg parsing
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--configs', nargs=1,
-                        help="YAML file with configurations",
-                        type=argparse.FileType('r'),
-                        default='configs/config_file.yml')
-    arguments = parser.parse_args()
-    args = yaml.full_load(arguments.configs[0])
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument('--configs', nargs=1,
+    #                     help="YAML file with configurations",
+    #                     type=argparse.FileType('r'),
+    #                     default='configs/config_file.yml')
+    # arguments = parser.parse_args()
+    # args = yaml.full_load(arguments.configs[0])
 
-    # with open('configs/config_file.yml', 'r') as file:
-    #     args = yaml.load(file, Loader=yaml.FullLoader)
+    with open('configs/config_file.yml', 'r') as file:
+        args = yaml.load(file, Loader=yaml.FullLoader)
 
-    model_name = args['model_params']['model_name']
+    # model_name = args['model_params']['model_name']
+    model_name = 'VEmbed'
     n = args['model_params']['n']       # number of triples per matrix ( =  matrix_n/2)
     batch_size = 2**args['model_params']['batch_size_exp2']        # Choose an apropiate batch size. cpu: 2**9
     h_dim = args['model_params']['h_dim']       # number of hidden dimensions
@@ -72,6 +75,8 @@ if __name__ == "__main__":
         model = GCVAE(n*2, d_e, d_n, dataset, h_dim=h_dim, z_dim=z_dim, beta=beta).to(device)
     elif model_name == 'GVAE':
         model = GVAE(n*2, d_e, d_n, dataset, h_dim=h_dim, z_dim=z_dim, beta=beta).to(device)
+    elif model_name == 'VEmbed':
+        model = VEmbed(d_n, d_e, z_dim=z_dim)
     else:
         raise ValueError('{} not defined!'.format(model_name))
 
@@ -86,18 +91,23 @@ if __name__ == "__main__":
 
     # Train model
     if args['experiment']['train']:
-        train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer, result_dir)
+        if model_name == "VEmbed":
+            train_lp_vembed(model, optimizer, train_set[:3], test_set[:9], all_triples, epochs, batch_size, result_dir)
+        else:
+            train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer, result_dir)
 
-    # # Link prediction
-    # if args['experiment']['link_prediction']:
-        
-    print('Start link prediction!')
-    testsub = torch.tensor(test_set[:300], device=d())      # TODO remove the testset croping
-    truedict = truedicts(all_triples)
+    # Link prediction
+    if args['experiment']['link_prediction']:
+        if model_name == 'VEmbed':
+            pass
+        else:
+            print('Start link prediction!')
+            testsub = torch.tensor(test_set[:300], device=d())      # TODO remove the testset croping
+            truedict = truedicts(all_triples)
 
-    lp_results =  link_prediction(model, testsub, truedict, batch_size)
-    
-    lp_file_path = result_dir + '/lp_{}_{}.json'.format(exp_name, todate)
-    with open(lp_file_path, 'w') as outfile:
-        json.dump(lp_results, outfile)
-    print('Saved link prediction results!')
+            lp_results =  link_prediction(model, testsub, truedict, batch_size)
+            
+            lp_file_path = result_dir + '/lp_{}_{}.json'.format(exp_name, todate)
+            with open(lp_file_path, 'w') as outfile:
+                json.dump(lp_results, outfile)
+            print('Saved link prediction results!')

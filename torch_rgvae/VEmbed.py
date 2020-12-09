@@ -6,14 +6,16 @@ from torch_rgvae.decoders import DistMult
 
 
 class VEmbed(nn.Module):
-    def __init__(self, n_ents: int, n_rels: int, z_dim: int=2):
+    def __init__(self, n_e: int, n_r: int, z_dim: int=2):
         super().__init__()
         self.z_dim = z_dim
+        self.n_e = n_e
+        self.n_r = n_r
 
         # Encoder
-        self.s_embed = nn.Embedding(n_ents, 2*z_dim)
-        self.r_embed = nn.Embedding(n_rels, 2*z_dim)
-        self.o_embed = nn.Embedding(n_ents, 2*z_dim)
+        self.s_embed = nn.Embedding(n_e, 2*z_dim)
+        self.r_embed = nn.Embedding(n_r, 2*z_dim)
+        self.o_embed = nn.Embedding(n_e, 2*z_dim)
 
         # Decoder
         self.decoder = DistMult(z_dim)
