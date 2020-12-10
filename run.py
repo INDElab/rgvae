@@ -16,13 +16,23 @@ import os
 
 if __name__ == "__main__":
 
+    # Arg parsing
     parser = argparse.ArgumentParser()
+    parser.add_argument('--configs', nargs=1,
+                        help="YAML file with configurations",
+                        dest="configs",
+                        type=str,
+                        default=['configs/config_file.yml'])
     parser.add_argument("--dev",
                         dest="dev",
                         help="Run in develop mode",
                         nargs=1,
                         default=[1], type=int)
     args = parser.parse_args()
+
+    with open(parser.parse_args().configs[0], 'r') as file:
+        args = yaml.full_load(file)
+
     if args.dev[0] == 1:
         develope = True
         limit = 30
@@ -39,17 +49,6 @@ if __name__ == "__main__":
         torch.cuda.set_device(0)
     my_dtype = torch.float64
     torch.set_default_dtype(my_dtype)
-
-
-    # Arg parsing
-
-    parser.add_argument('--configs', nargs=1,
-                        help="YAML file with configurations",
-                        dest="configs",
-                        type=str,
-                        default=['configs/config_file.yml'])
-    with open(parser.parse_args().configs[0], 'r') as file:
-        args = yaml.full_load(file)
 
     if develope:
         model_name = 'VEmbed'
