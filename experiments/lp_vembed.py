@@ -1,6 +1,7 @@
-from torch_rgvae.VEmbed import VEmbed
+from torch_rgvae.VEmbed import VLinkPredictor
 from lp_utils import d, tic, toc, get_slug, load_link_prediction_data, truedicts
 from experiments.embed_util import util
+from ranger import Ranger
 
 import torch
 
@@ -26,10 +27,6 @@ from torch.utils.tensorboard import SummaryWriter
 """
 Experiment to see if bias terms help link prediction
 """
-
-EPSILON = 0.000000001
-
-global repeats
 
 def corrupt(batch, n):
     """
@@ -68,15 +65,13 @@ def corrupt_one(batch, candidates, target):
 
     batch[:, :, target] = corruptions
 
-def prt(str, end='\n'):
-    if repeats == 1:
-        print(str, end=end)
+def prt(to_p, end='\n'):
+    print(to_p + end)
 
-def train_lp_vembed(model, optimizer, train, test, alltriples, epochs: int, batch_size: int, result_dir: str, test_batch: int=30, eval_int: int=10):
+def train_lp_vembed(n_e, n_r, train, test, alltriples, epochs: int, batch_size: int, result_dir: str, test_batch: int=10, eval_int: int=10):
     """
     Source: pbloem/embed
     """
-
     # Fix some hyperparameters
     repeats = 1
     sched = True
@@ -93,7 +88,14 @@ def train_lp_vembed(model, optimizer, train, test, alltriples, epochs: int, batc
     bias = True
     patience = 1
     result_file = result_dir + '/lp_log.txt'
+
+    lr = 1e-4
+    k = 11
+
+    model = VLinkPredictor(torch.tensor(list(alltriples)), n_e, n_r, embedding=512, decoder='distmult', edropout=None, rdropout=None, init=0.85, biases=False, init_method='uniform', init_parms=(-1.0, 1.0), reciprocal=reciprocal)
     
+    optimizer = Ranger(model.parameters(),lr=lr, k=k, betas=(.95,0.999), use_gc=True, gc_conv_only=False)
+
     tbw = SummaryWriter(log_dir=result_dir)
     dev = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -108,8 +110,8 @@ def train_lp_vembed(model, optimizer, train, test, alltriples, epochs: int, batc
     ccandidates = (subjects, predicates, objects)
 
     with open(result_file, 'w') as f:
-        print(model.n_e, 'nodes', file=f)
-        print(model.n_r, 'relations', file=f)
+        print(n_e, 'nodes', file=f)
+        print(n_r, 'relations', file=f)
         print(train.size(0), 'training triples', file=f)
         print(test.size(0), 'test triples', file=f)
         print(train.size(0) + test.size(0), 'total triples', file=f)
@@ -171,7 +173,7 @@ def train_lp_vembed(model, optimizer, train, test, alltriples, epochs: int, batc
                                 idx = torch.empty(bs, ng, dtype=torch.long, device=d()).random_(0, mx)
                                 corruptions = cand[idx]
                             else:
-                                mx = model.n_r if ctarget == 1 else model.n_e
+                                mx = n_r if ctarget == 1 else n_e
                                 corruptions = torch.empty(bs, ng, dtype=torch.long, device=d()).random_(0, mx)
                             tprep += toc()
 
@@ -262,16 +264,17 @@ def train_lp_vembed(model, optimizer, train, test, alltriples, epochs: int, batc
                         testsub = test[random.sample(range(test.size(0)), k=eval_size)]
 
                     mrr, hits, ranks = util.eval(
-                        model=model, valset=testsub, truedicts=truedict, n=model.n_e, batch_size=test_batch, verbose=True)
+                        model=model, valset=testsub, truedicts=truedict, n=n_e, batch_size=test_batch, verbose=True)
 
                     # if check_simple: # double-check using a separate, slower implementation
                     #     mrrs, hitss, rankss = util.eval_simple(
-                    #         model=model, valset=testsub, alltriples=alltriples, n=model.n_e, verbose=True)
+                    #         model=model, valset=testsub, alltriples=alltriples, n=n_e, verbose=True)
                         # assert ranks == rankss
                         # assert mrr == mrrs
                     with open(result_file, 'a+') as f:
                         print(f'epoch {e}: MRR {mrr:.4}\t hits@1 {hits[0]:.4}\t  hits@3 {hits[1]:.4}\t  hits@10 {hits[2]:.4}', file=f)
 
+                    print(f'epoch {e}: MRR {mrr:.4}\t hits@1 {hits[0]:.4}\t  hits@3 {hits[1]:.4}\t  hits@10 {hits[2]:.4}')
                     tbw.add_scalar('biases/mrr', mrr, e)
                     tbw.add_scalar('biases/h@1', hits[0], e)
                     tbw.add_scalar('biases/h@3', hits[1], e)
@@ -283,8 +286,10 @@ def train_lp_vembed(model, optimizer, train, test, alltriples, epochs: int, batc
         test_mrrs.append(mrr)
     with open(result_file, 'a+') as f:
         print('training finished.', file=f)
+    print('training finished.')
 
     temrrs = torch.tensor(test_mrrs)
     with open(result_file, 'a+') as f:
         print(f'mean test MRR    {temrrs.mean():.3} ({temrrs.std():.3})  \t{test_mrrs}', file=f)
+    print(f'mean test MRR    {temrrs.mean():.3} ({temrrs.std():.3})  \t{test_mrrs}')
 

@@ -12,12 +12,12 @@ from lp_utils import d
 
 
 class GVAE(nn.Module):
-    def __init__(self, n: int, ea: int, na: int, dataset_name: str, h_dim: int=1024, z_dim: int=2, beta: float=1., softmax_E: bool=True):
+    def __init__(self, n: int, n_r: int, n_e: int, dataset_name: str, h_dim: int=1024, z_dim: int=2, beta: float=1., softmax_E: bool=True):
         """
         Graph Variational Auto Encoder
         :param n : Number of nodes
-        :param na : Number of node attributes
-        :param ea : Number of edge attributes
+        :param n_e : Number of node attributes
+        :param n_r : Number of edge attributes
         :param dataset_name : name of the dataset which the model will train on.
         :param h_dim : Hidden dimension
         :param z_dim : latent dimension
@@ -27,9 +27,9 @@ class GVAE(nn.Module):
         super().__init__()
         self.name = 'GVAE'
         self.n = n
-        self.na = na
-        self.ea = ea
-        input_dim = n*n + n*na + n*n*ea
+        self.n_e = n_e
+        self.n_r = n_r
+        input_dim = n*n + n*n_e + n*n*n_r
         self.input_dim = input_dim
         self.z_dim = z_dim
         self.beta = torch.tensor(beta)
@@ -52,15 +52,15 @@ class GVAE(nn.Module):
         The encoder predicts a mean and logarithm of std of the prior distribution for the decoder.
         Args:
             A: Adjacency matrix of size n*n
-            E: Edge attribute matrix of size n*n*ea
-            F: Node attribute matrix of size n*na
+            E: Edge attribute matrix of size n*n*n_r
+            F: Node attribute matrix of size n*n_e
         """
         (A, E, F) = args_in
         self.edge_count = torch.norm(A[0], p=1)
 
         a = torch.reshape(A, (-1, self.n*self.n))
-        e = torch.reshape(E, (-1, self.n*self.n*self.ea))
-        f = torch.reshape(F, (-1, self.n*self.na))
+        e = torch.reshape(E, (-1, self.n*self.n*self.n_r))
+        f = torch.reshape(F, (-1, self.n*self.n_e))
         x = torch.cat([a, e, f], dim=1)
         mean, logvar = torch.split(self.encoder(x), self.z_dim, dim=1)
         return mean, logvar
@@ -77,14 +77,14 @@ class GVAE(nn.Module):
             prediction: the predicted output of the decoder.
         """
         delimit_a = self.n*self.n
-        delimit_e = self.n*self.n + self.n*self.n*self.ea
+        delimit_e = self.n*self.n + self.n*self.n*self.n_r
 
         a, e, f = pred[:,:delimit_a], pred[:,delimit_a:delimit_e], pred[:, delimit_e:]
         A = torch.reshape(a, [-1, self.n, self.n])
-        E = torch.reshape(e, [-1, self.n, self.n, self.ea])
+        E = torch.reshape(e, [-1, self.n, self.n, self.n_r])
         if self.softmax_E:
             E = self.softmax(E)
-        F = self.softmax(torch.reshape(f, [-1, self.n, self.na]))
+        F = self.softmax(torch.reshape(f, [-1, self.n, self.n_e]))
         return A, E, F
 
     def reparameterize(self, mean, logvar):

@@ -1,7 +1,6 @@
 import numpy as np
 from torch_rgvae.GVAE import GVAE
 from torch_rgvae.GCVAE import GCVAE
-from torch_rgvae.VEmbed import VEmbed 
 from lp_utils import *
 from experiments.train_eval_vae import train_eval_vae
 from experiments.link_prediction import link_prediction
@@ -16,7 +15,22 @@ import os
 
 
 if __name__ == "__main__":
-    
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dev",
+                        dest="dev",
+                        help="Run in develop mode",
+                        nargs=1,
+                        default=[1], type=int)
+    args = parser.parse_args()
+    if args.dev[0] == 1:
+        develope = True
+        limit = 30
+    else:
+        develope = False
+        limit = -1
+
+    print('Dev mode: {}'.format(develope))
 
     # Torch settings
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -28,19 +42,20 @@ if __name__ == "__main__":
 
 
     # Arg parsing
-    parser = argparse.ArgumentParser()
+
     parser.add_argument('--configs', nargs=1,
                         help="YAML file with configurations",
-                        type=argparse.FileType('r'),
-                        default='configs/config_file.yml')
-    arguments = parser.parse_args()
-    args = yaml.full_load(arguments.configs[0])
+                        dest="configs",
+                        type=str,
+                        default=['configs/config_file.yml'])
+    with open(parser.parse_args().configs[0], 'r') as file:
+        args = yaml.full_load(file)
 
-    # with open('configs/config_file.yml', 'r') as file:
-    #     args = yaml.load(file, Loader=yaml.FullLoader)
+    if develope:
+        model_name = 'VEmbed'
+    else:
+        model_name = args['model_params']['model_name']
 
-    # model_name = args['model_params']['model_name']
-    model_name = 'VEmbed'
     n = args['model_params']['n']       # number of triples per matrix ( =  matrix_n/2)
     batch_size = 2**args['model_params']['batch_size_exp2']        # Choose an apropiate batch size. cpu: 2**9
     h_dim = args['model_params']['h_dim']       # number of hidden dimensions
@@ -59,8 +74,8 @@ if __name__ == "__main__":
 
     # Get data
     (n2i, i2n), (r2i, i2r), train_set, test_set, all_triples = load_link_prediction_data(dataset, use_test_set=False)
-    d_n = len(n2i)
-    d_e = len(r2i)
+    n_e = len(n2i)
+    n_r = len(r2i)
 
     todate = date.today().strftime("%Y%m%d")
     exp_name = args['experiment']['exp_name']
@@ -72,16 +87,16 @@ if __name__ == "__main__":
 
     # Initialize model and optimizer.
     if model_name == 'GCVAE':
-        model = GCVAE(n*2, d_e, d_n, dataset, h_dim=h_dim, z_dim=z_dim, beta=beta).to(device)
+        model = GCVAE(n*2, n_r, n_e, dataset, h_dim=h_dim, z_dim=z_dim, beta=beta).to(device)
     elif model_name == 'GVAE':
-        model = GVAE(n*2, d_e, d_n, dataset, h_dim=h_dim, z_dim=z_dim, beta=beta).to(device)
+        model = GVAE(n*2, n_r, n_e, dataset, h_dim=h_dim, z_dim=z_dim, beta=beta).to(device)
     elif model_name == 'VEmbed':
-        model = VEmbed(d_n, d_e, z_dim=z_dim)
+        model = None
     else:
         raise ValueError('{} not defined!'.format(model_name))
 
-    # optimizer = optim.Ranger(model.parameters(),lr=lr, k=11, betas=(.95,0.999), use_gc=True, gc_conv_only=False, )
-    optimizer = Ranger(model.parameters(),lr=lr, k=k, betas=(.95,0.999), use_gc=True, gc_conv_only=False)
+    if model_name != 'VEmbed':
+        optimizer = Ranger(model.parameters(),lr=lr, k=k, betas=(.95,0.999), use_gc=True, gc_conv_only=False)
 
     # Load model
     if args['experiment']['load_model']:
@@ -92,9 +107,9 @@ if __name__ == "__main__":
     # Train model
     if args['experiment']['train']:
         if model_name == "VEmbed":
-            train_lp_vembed(model, optimizer, train_set, test_set, all_triples, epochs, batch_size, result_dir)
+            train_lp_vembed(n_e, n_r, train_set[:limit], test_set[:limit], all_triples, epochs, batch_size, result_dir)
         else:
-            train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer, result_dir)
+            train_eval_vae(n, batch_size, epochs, train_set[:limit], test_set[:limit], model, optimizer, result_dir)
 
     # Link prediction
     if args['experiment']['link_prediction']:

@@ -22,7 +22,7 @@ if __name__ == "__main__":
     configs['model_params']['batch_size_exp2'] = 13                 # 2**(batch_size_exp) fb_max=13 wn_max=12
     configs['model_params']['k'] = 6
 
-    configs['dataset_params']['dataset_name'] = dataset = 'fb15k'  # [fb15k. wn18rr]
+    configs['dataset_params']['dataset_name'] = dataset = 'fb15k'  # ['fb15k', 'wn18rr']
 
 
 
@@ -31,8 +31,8 @@ if __name__ == "__main__":
         os.makedirs(folder)
 
         
-    for dataset in [fb15k. wn18rr]:
-        configs['experiment']['exp_name'] = 'tune_{}_{}_b{}'.format(model_name, dataset, beta)  # Most important
+    for dataset in ['fb15k', 'wn18rr']:
+        configs['experiment']['exp_name'] = 'tune_{}_{}'.format(model_name, dataset)  # Most important
         configs['dataset_params']['dataset_name'] = dataset
         yml_name = '{}.yml'.format(configs['experiment']['exp_name'])
         with open(folder + yml_name,'w') as f:

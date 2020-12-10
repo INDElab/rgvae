@@ -25,8 +25,8 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer,
     :param result_dir: path where to save model state_dict
     :returns : dict with train and val loss per epoch
     """
-    d_n = model.na
-    d_e = model.ea
+    n_e = model.n_e
+    n_r = model.n_r
 
     old_loss = best_loss = 3333
     loss_dict = {'val': dict(), 'train': dict()}
@@ -44,7 +44,7 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer,
 
         for b_from in tqdm(range(0,len(train_set),(batch_size*n)), desc='Epoch {}'.format(epoch), position=2):
             b_to = min(b_from + batch_size, len(train_set))
-            target = batch_t2m(torch.tensor(train_set[b_from:b_to], device=d()), n, d_n, d_e)
+            target = batch_t2m(torch.tensor(train_set[b_from:b_to], device=d()), n, n_e, n_r)
 
             loss, sanity, x_permute = train_sparse_batch(target, model, optimizer, epoch)
             loss_train.append(loss)
@@ -65,7 +65,7 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer,
             permute_list = list()
             for b_from in tqdm(range(0,len(test_set),(batch_size*n)), desc='Epoch {}'.format(epoch), position=2):
                 b_to = min(b_from + batch_size, len(test_set))
-                target = batch_t2m(torch.tensor(test_set[b_from:b_to], device=d()), n, d_n, d_e)
+                target = batch_t2m(torch.tensor(test_set[b_from:b_to], device=d()), n, n_e, n_r)
                 loss, x_permute = train_sparse_batch(target, model, optimizer, epoch, eval=True)
                 loss_val.append(loss)
                 permute_list.append(x_permute)
