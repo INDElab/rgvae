@@ -28,12 +28,12 @@ if __name__ == "__main__":
                         help="Run in develop mode",
                         nargs=1,
                         default=[1], type=int)
-    args = parser.parse_args()
+    arguments = parser.parse_args()
 
-    with open(parser.parse_args().configs[0], 'r') as file:
+    with open(arguments.configs[0], 'r') as file:
         args = yaml.full_load(file)
 
-    if args.dev[0] == 1:
+    if arguments.dev[0] == 1:
         develope = True
         limit = 30
     else:
