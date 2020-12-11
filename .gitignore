@@ -8,10 +8,11 @@ data/fb15k/text*
 results/
 plots/
 jobs/
+wandb/
 slurm*
 *.pr
 *.sh
-eval `ssh-agent`
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
