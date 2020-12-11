@@ -48,8 +48,8 @@ def filter_scores_(scores, batch, truedicts, head=True):
         #-- We add the indices of all know triples except the one corresponding to the target triples.
     
     indices = torch.tensor(indices, device=d()).view(-1,2)
-
-    scores[indices[:, 0], indices[:, 1]] = float('-inf')
+    if len(indices) != 0:
+        scores[indices[:, 0], indices[:, 1]] = float('-inf')
 
 def truedicts(all):
     """

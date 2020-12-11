@@ -36,7 +36,6 @@ if __name__ == "__main__":
 
     with open(arguments.configs[0], 'r') as file:
         args = yaml.full_load(file)
-    wandb.init(config=args)
 
     if arguments.dev[0] == 1:
         develope = True
@@ -61,18 +60,20 @@ if __name__ == "__main__":
 
     n = args['model_params']['n']       # number of triples per matrix ( =  matrix_n/2)
     batch_size = 2**args['model_params']['batch_size_exp2']        # Choose an apropiate batch size. cpu: 2**9
-    if dataset == 'wn18rr' and batch_size > 2**11:                  # Avoid out of memory errors on LISA
-        batch_size = 2**11
+    if dataset == 'wn18rr' and batch_size > 2**10:                  # Avoid out of memory errors on LISA
+        batch_size = 2**10
+        rgs['model_params']['batch_size_exp2'] = 10
 
     h_dim = args['model_params']['h_dim']       # number of hidden dimensions
     z_dim = args['model_params']['z_dim']      # number of latent dimensions
     beta = args['model_params']['beta']         # beta parameter of betaVAE
-    seed = 11
+    args['seed'] = seed = np.random.randint(1,21)
     np.random.seed(seed=seed)
     torch.manual_seed(seed)
     epochs = args['model_params']['epochs']
     lr = args['model_params']['lr']
     k = args['model_params']['k'] if 'k' in args['model_params'] else 6
+    wandb.init(config=args)
 
 
 
@@ -84,8 +85,9 @@ if __name__ == "__main__":
 
     todate = date.today().strftime("%Y%m%d")
     exp_name = args['experiment']['exp_name']
-    print('Experiment: ' + exp_name)
-    
+    print('Experiment on the {}: {}'.format(todate, exp_name))
+    print(args)
+
     result_dir = 'results/{}_{}'.format(exp_name, todate)
     if not os.path.isdir(result_dir):
         os.makedirs(result_dir)
