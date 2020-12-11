@@ -1,5 +1,5 @@
 model_params:
-    model_name: GCVAE   # Choose between [GVAE, GCVAE]
+    model_name: GCVAE2   # Choose between [GVAE, GCVAE, GCVAE2]
     h_dim:  512         # Hidden dimensions
     z_dim:  60          # Latent dimensions
     n:  1               # Triples per graph
@@ -12,7 +12,7 @@ dataset_params:
     dataset_name: fb15k
 
 experiment:
-    exp_name: test_config
+    exp_name: test_config_GCVAE2
     train:  true
     link_prediction:    true
     load_model: false

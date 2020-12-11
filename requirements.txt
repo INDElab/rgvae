@@ -10,3 +10,4 @@ matplotlib
 pandas
 torch_optimizer
 tensorboard
+wandb

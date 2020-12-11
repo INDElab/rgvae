@@ -21,7 +21,7 @@ class MLP(nn.Module):
                                             nn.Dropout(.2),
                                             nn.Linear(h_dim, 2*h_dim),
                                             nn.ReLU(),
-                                            nn.Linear(2*h_dim, 2*z_dim))
+                                            nn.Linear(2*h_dim, z_dim))
 
     def forward(self, x):
         return self.mlp(x)

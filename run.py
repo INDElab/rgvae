@@ -1,6 +1,7 @@
 import numpy as np
 from torch_rgvae.GVAE import GVAE
 from torch_rgvae.GCVAE import GCVAE
+from torch_rgvae.GCVAE2 import GCVAE2
 from lp_utils import *
 from experiments.train_eval_vae import train_eval_vae
 from experiments.link_prediction import link_prediction
@@ -54,14 +55,15 @@ if __name__ == "__main__":
     my_dtype = torch.float64
     torch.set_default_dtype(my_dtype)
 
-    # if develope:
-    #     model_name = 'VEmbed'
-    # else:
-    #     model_name = args['model_params']['model_name']
     model_name = args['model_params']['model_name']
+    dataset = args['dataset_params']['dataset_name']
+    model_path = args['experiment']['load_model_path']
 
     n = args['model_params']['n']       # number of triples per matrix ( =  matrix_n/2)
     batch_size = 2**args['model_params']['batch_size_exp2']        # Choose an apropiate batch size. cpu: 2**9
+    if dataset == 'wn18rr' and batch_size > 2**11:                  # Avoid out of memory errors on LISA
+        batch_size = 2**11
+
     h_dim = args['model_params']['h_dim']       # number of hidden dimensions
     z_dim = args['model_params']['z_dim']      # number of latent dimensions
     beta = args['model_params']['beta']         # beta parameter of betaVAE
@@ -72,8 +74,6 @@ if __name__ == "__main__":
     lr = args['model_params']['lr']
     k = args['model_params']['k'] if 'k' in args['model_params'] else 6
 
-    dataset = args['dataset_params']['dataset_name']
-    model_path = args['experiment']['load_model_path']
 
 
     # Get data
@@ -93,10 +93,10 @@ if __name__ == "__main__":
     # Initialize model and optimizer.
     if model_name == 'GCVAE':
         model = GCVAE(n*2, n_r, n_e, dataset, h_dim=h_dim, z_dim=z_dim, beta=beta).to(device)
-        wandb.watch(model)
+    if model_name == 'GCVAE2':
+        model = GCVAE2(n*2, n_r, n_e, dataset, h_dim=h_dim, z_dim=z_dim, beta=beta).to(device)
     elif model_name == 'GVAE':
         model = GVAE(n*2, n_r, n_e, dataset, h_dim=h_dim, z_dim=z_dim, beta=beta).to(device)
-        wandb.watch(model)
     elif model_name == 'VEmbed':
         model = None
     else:
@@ -104,6 +104,8 @@ if __name__ == "__main__":
 
     if model_name != 'VEmbed':
         optimizer = Ranger(model.parameters(),lr=lr, k=k, betas=(.95,0.999), use_gc=True, gc_conv_only=False)
+        wandb.watch(model)
+
 
     # Load model
     if args['experiment']['load_model']:

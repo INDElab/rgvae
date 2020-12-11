@@ -12,7 +12,7 @@ if __name__ == "__main__":
     configs['experiment']['load_model'] = False
     configs['experiment']['load_model_path'] = []
 
-    configs['model_params']['model_name'] = model_name =  'VEmbed'    # Choose between [GVAE, GCVAE]
+    configs['model_params']['model_name'] = model_name =  'GVAE'    # Choose between ['GVAE', 'GCVAE']
     configs['model_params']['z_dim'] = 100                          # Latent dimensions
     configs['model_params']['h_dim'] = 2048                          # Hidden dimensions
     configs['model_params']['n'] = 1                                # Triples per graph
@@ -26,14 +26,15 @@ if __name__ == "__main__":
 
 
 
-    folder = 'configs/vembed/'            # TODO change folder
+    folder = 'configs/beta/'            # TODO change folder
     if not os.path.isdir(folder):
         os.makedirs(folder)
 
         
     for dataset in ['fb15k', 'wn18rr']:
-        configs['experiment']['exp_name'] = 'tune_{}_{}'.format(model_name, dataset)  # Most important
-        configs['dataset_params']['dataset_name'] = dataset
-        yml_name = '{}.yml'.format(configs['experiment']['exp_name'])
-        with open(folder + yml_name,'w') as f:
-            yaml.dump(configs, f)
+        for beta in [1,100,1000]:
+            configs['experiment']['exp_name'] = 'tune_{}_{}_b{}'.format(model_name, dataset, beta)  # Most important
+            configs['dataset_params']['dataset_name'] = dataset
+            yml_name = '{}.yml'.format(configs['experiment']['exp_name'])
+            with open(folder + yml_name,'w') as f:
+                yaml.dump(configs, f)

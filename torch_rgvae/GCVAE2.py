@@ -1,5 +1,5 @@
 """
-Graph Convolution VAE implementation in pytorch.
+Graph Convolution VAE implementation in pytorch. Convolutions + MLP!
 The encoder is a graph convolution NN with sparse matrix input of adjacency and edge node attribute matrix.
 The decoder a MLP with a flattened normal matrix output.
 """
@@ -14,7 +14,7 @@ from utils import *
 from scipy import sparse
 
 
-class GCVAE(GVAE):
+class GCVAE2(GVAE):
     def __init__(self, n: int, n_r: int, n_e: int, dataset_name: str, h_dim: int=512, z_dim: int=2, beta: float=1, softmax_E: bool=True):
         """
         Graph Variational Auto Encoder
@@ -35,9 +35,10 @@ class GCVAE(GVAE):
         self.input_dim = input_dim
         n_feat = n_e + n * n_r
 
-        self.encoder = GCN(n, n_feat, h_dim, 2*z_dim).to(torch.double)
+        self.encoder = GCN(n, n_feat, 3*h_dim, 2*h_dim).to(torch.double)        # TODO try with different h_dims for the 3
+        self.encoder2 = MLP(2*h_dim, h_dim, 2*z_dim)
         self.decoder = RMLP(input_dim, h_dim, z_dim)
-        
+    
     def encode(self, args_in):
         """
         The encoder predicts a mean and logarithm of std of the prior distribution for the decoder.
@@ -54,4 +55,4 @@ class GCVAE(GVAE):
         # features = np.concatenate((np.reshape(E, (bs, self.n, self.n*self.n_r)), F), axis=-1)
         features = torch.cat((torch.reshape(E, (bs, self.n, self.n*self.n_r)), F), -1)
         # features = torch.Tensor(np.array(features))
-        return torch.split(self.encoder(features, A), self.z_dim, dim=1)
+        return torch.split(self.encoder2(self.encoder(features, A)), self.z_dim, dim=1)

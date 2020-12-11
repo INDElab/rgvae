@@ -56,6 +56,7 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer,
             # sanity_bar.set_description('Sanity check: {:.2f}% nodes, {:.2f}% edges, {:.2f}% permuted.'.format(*sanity,x_permute*100))
             writer.add_scalar('Loss/train', loss, epoch)
             wandb.log({"train_loss_step": loss})
+            wandb.log({"prediction_permuted": x_permute*100})
         
         loss_dict['train'][epoch] = loss_train
         wandb.log({"train_loss": loss_train})

@@ -36,7 +36,7 @@ class GVAE(nn.Module):
         self.softmax_E = softmax_E
         self.dataset_name = dataset_name
 
-        self.encoder = MLP(input_dim, h_dim, z_dim)
+        self.encoder = MLP(input_dim, h_dim, 2*z_dim)
 
         self.decoder = RMLP(input_dim, h_dim, z_dim)
 

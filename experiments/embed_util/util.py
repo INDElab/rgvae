@@ -35,7 +35,7 @@ def filter_scores_(scores, batch, truedicts, head=True):
     :return:
     """
 
-    indices = [] # indices of triples whose scores should be set to -infty
+    indices = [] # indices of triples whose scores should be set to -inf
 
     heads, tails = truedicts
 
@@ -46,14 +46,14 @@ def filter_scores_(scores, batch, truedicts, head=True):
         else:
             indices.extend([(i, oi) for oi in tails[s, p] if oi != o])
         #-- We add the indices of all know triples except the one corresponding to the target triples.
-
-    indices = torch.tensor(indices, device=d())
+    
+    indices = torch.tensor(indices, device=d()).view(-1,2)
 
     scores[indices[:, 0], indices[:, 1]] = float('-inf')
 
 def truedicts(all):
     """
-    Generates a pair of dictionairies containg all true tail and head completions.
+    Generates a pair of dictionaries containing all true tail and head completions.
     :param all: A list of 3-tuples containing all known true triples
     :return:
     """
