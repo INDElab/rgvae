@@ -1,1 +1,0 @@
-{"loss": 31.636761514141515, "_step": 135, "_runtime": 834, "_timestamp": 1607670939, "graph_0": {"_type": "graph-file", "path": "media/graph/graph_0_summary_9c8c43d5.graph.json", "sha256": "9c8c43d58803038f51e92be53e497e65ed453e33f683e0cd31044da66fe0f7af", "size": 182}, "mrr": 0.0002598922060485803, "h@1": 0.0, "h@3": 0.0, "h@10": 0.0}
