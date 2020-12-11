@@ -20,25 +20,20 @@ def link_prediction(model, testsub, truedict, batch_size):
     :param batch_size: batch size
     """
 
-    d_n = model.na
-    d_e = model.ea
+    n_e = model.n_e
+    n_r = model.n_r
 
     with torch.no_grad():
 
         model.train(False)
 
         mrr, hits, ranks = eval(
-            model=model, valset=testsub, truedicts=truedict, n=d_n, r=d_e,
+            model=model, valset=testsub, truedicts=truedict, n=n_e, r=n_r,
             batch_size=batch_size, verbose=True, elbo=True)
 
     print(f'MRR {mrr:.4}\t hits@1 {hits[0]:.4}\t  hits@3 {hits[1]:.4}\t  hits@10 {hits[2]:.4}')
 
-    lp_results = {}
-    lp_results[model.name] = []
-    lp_results[model.name].append({'mrr': mrr,
-                                'h@1': hits[0],
-                                'h@3': hits[1],
-                                'h@10': hits[2]})
+    lp_results = {'mrr': mrr, 'h@1': hits[0], 'h@3': hits[1], 'h@10': hits[2]}
     return lp_results
 
 
@@ -64,19 +59,19 @@ if __name__ == "__main__":
 
     # Get data
     (n2i, i2n), (r2i, i2r), train_set, test_set, all_triples = load_link_prediction_data(dataset)
-    d_n = len(n2i)
-    d_e = len(r2i)
+    n_e = len(n2i)
+    n_r = len(r2i)
 
     testsub = torch.tensor(test_set)
     truedict = truedicts(all_triples)
 
     # Initialize model.
-    model = GCVAE(n*2, d_e, d_n).to(device)
+    model = GCVAE(n*2, n_r, n_e).to(device)
     if model_path:
         model.load_state_dict(torch.load(model_path, map_location=torch.device(device)))
         print('Saved model loaded.')
 
-    lp_results =  load_link_prediction(model, test_set, truedict, d_n, d_r, batch_size)
+    lp_results =  load_link_prediction(model, test_set, truedict, n_e, d_r, batch_size)
 
     outfile_path = 'data/'+dataset+'/lp_results_{}_{}.txt'.format(model.name, date.today().strftime("%Y%m%d"))
     with open(outfile_path, 'w') as outfile:

@@ -1,0 +1,1 @@
+{"format": "torch", "nodes": [{"name": "decoder", "id": 140628462250784, "class_name": "DistMult()", "parameters": [], "output_shape": [[8, 11]], "num_parameters": []}], "edges": []}

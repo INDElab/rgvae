@@ -4,15 +4,17 @@ from torch.utils.tensorboard import SummaryWriter
 from torch_rgvae.GVAE import GVAE
 from torch_rgvae.GCVAE import GCVAE
 from torch_rgvae.train_fn import train_sparse_batch
+from experiments.link_prediction import link_prediction
 import torch
 import numpy as np
 from lp_utils import *
 from tqdm import tqdm
 from datetime import date
+import wandb
 
 
 
-def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer, result_dir):
+def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer, truedict, result_dir):
     """
     Train and evaluate the model on the test and train set.
     :param n: triples per graph
@@ -29,8 +31,10 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer,
     n_r = model.n_r
 
     old_loss = best_loss = 3333
-    loss_dict = {'val': dict(), 'train': dict()}
+    loss_dict = {'val': dict(), 'train': dict(), 'lp': dict()}
     writer = SummaryWriter(log_dir=result_dir)
+
+    testsub = torch.tensor(test_set[:50], device=d())      # TODO remove the testset croping
 
     # Start training.
     for epoch in range(epochs):
@@ -46,13 +50,15 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer,
             b_to = min(b_from + batch_size, len(train_set))
             target = batch_t2m(torch.tensor(train_set[b_from:b_to], device=d()), n, n_e, n_r)
 
-            loss, sanity, x_permute = train_sparse_batch(target, model, optimizer, epoch)
+            loss, x_permute = train_sparse_batch(target, model, optimizer, epoch)
             loss_train.append(loss)
             loss_bar.set_description_str('Loss: {:.6f}'.format(loss))
             # sanity_bar.set_description('Sanity check: {:.2f}% nodes, {:.2f}% edges, {:.2f}% permuted.'.format(*sanity,x_permute*100))
-            writer.add_scalar('Loss/train', loss, b_from + epoch*len(train_set))
+            writer.add_scalar('Loss/train', loss, epoch)
+            wandb.log({"train_loss_step": loss})
         
-        loss_dict['train'][epoch] = np.mean(loss_train)
+        loss_dict['train'][epoch] = loss_train
+        wandb.log({"train_loss": loss_train})
         end_time = time.time()
         print('Time elapsed for epoch{} : {:.3f}'.format(epoch, end_time - start_time))
 
@@ -69,10 +75,26 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer,
                 loss, x_permute = train_sparse_batch(target, model, optimizer, epoch, eval=True)
                 loss_val.append(loss)
                 permute_list.append(x_permute)
-                writer.add_scalar('Loss/test', loss, b_from + epoch*len(test_set))
+                writer.add_scalar('Loss/test', loss, epoch)
+                wandb.log({"val_loss_step": loss})
         mean_loss = np.mean(loss_val)
-        loss_dict['val'][epoch] = mean_loss
+        loss_dict['val'][epoch] = loss_val
+        wandb.log({"val_loss": loss_val})
         print('Epoch: {}, Test set ELBO: {:.3f}, permuted {:.3f}%'.format(epoch, mean_loss, np.mean(permute_list)*100))
+
+        # Do Link prediction
+        if epoch+1 % 30 == 0:
+            print('Start link prediction at epoch {}:'.format(epoch))
+            lp_start = time.time()
+            lp_results =  link_prediction(model, testsub, truedict, batch_size)
+            loss_dict['lp'][epoch] = lp_results
+            wandb.log(lp_results)
+            lp_end = time.time()
+            print('Time elapsed for Link prediction at epoch{} : {:.3f}'.format(epoch, lp_end - lp_start))
+            print('MRR {:.4}\t hits@1 {:.4}\t  hits@3 {:.4}\t  hits@10 {:.4}'.format(lp_results['mrr'],
+                                                                                                lp_results['hits@1'],
+                                                                                                lp_results['hits@3'],
+                                                                                                lp_results['hits@10']))
 
         torch.save({
             'epoch': epoch,

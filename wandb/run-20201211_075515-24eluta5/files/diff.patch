@@ -1,0 +1,87 @@
+diff --git a/experiments/lp_vembed.py b/experiments/lp_vembed.py
+index 287ebca..a9365fa 100644
+--- a/experiments/lp_vembed.py
++++ b/experiments/lp_vembed.py
+@@ -3,7 +3,7 @@ from lp_utils import d, tic, toc, get_slug, load_link_prediction_data, truedicts
+ from experiments.embed_util import util
+ from ranger import Ranger
+ 
+-import torch
++import torch, wandb
+ 
+ from torch import nn
+ import torch.nn.functional as F
+@@ -93,6 +93,7 @@ def train_lp_vembed(n_e, n_r, train, test, alltriples, epochs: int, batch_size:
+     k = 11
+ 
+     model = VLinkPredictor(torch.tensor(list(alltriples)), n_e, n_r, embedding=512, decoder='distmult', edropout=None, rdropout=None, init=0.85, biases=False, init_method='uniform', init_parms=(-1.0, 1.0), reciprocal=reciprocal)
++    wandb.watch(model)
+     
+     optimizer = Ranger(model.parameters(),lr=lr, k=k, betas=(.95,0.999), use_gc=True, gc_conv_only=False)
+ 
+@@ -212,7 +213,7 @@ def train_lp_vembed(n_e, n_r, train, test, alltriples, epochs: int, batch_size:
+                             loss = F.binary_cross_entropy_with_logits(out, labels, weight=weight)
+                         elif loss_fn == 'ce':
+                             loss = F.cross_entropy(out, labels)
+-
++                        wandb.log({"loss": loss})
+                         assert not torch.isnan(loss), 'Loss has become NaN'
+ 
+                         sumloss += float(loss.item())
+@@ -238,6 +239,7 @@ def train_lp_vembed(n_e, n_r, train, test, alltriples, epochs: int, batch_size:
+                 if regloss is not None:
+                     sumloss += float(regloss.item())
+                     regloss.backward()
++                    wandb.log({"regloss": regloss})
+                 rbackward += toc()
+ 
+                 optimizer.step()
+@@ -279,6 +281,10 @@ def train_lp_vembed(n_e, n_r, train, test, alltriples, epochs: int, batch_size:
+                     tbw.add_scalar('biases/h@1', hits[0], e)
+                     tbw.add_scalar('biases/h@3', hits[1], e)
+                     tbw.add_scalar('biases/h@10', hits[2], e)
++                    wandb.log({"mrr": mrr})
++                    wandb.log({"h@1": hits[0]})
++                    wandb.log({"h@3": hits[1]})
++                    wandb.log({"h@10": hits[2]})
+ 
+                     if sched is not None:
+                         sched.step(mrr) # reduce lr if mrr stalls
+diff --git a/run.py b/run.py
+index 86550aa..f69eca7 100644
+--- a/run.py
++++ b/run.py
+@@ -11,11 +11,14 @@ import argparse
+ import torch
+ import torch_optimizer as optim
+ from ranger import Ranger
++import wandb
+ import os
+ 
+ 
+ if __name__ == "__main__":
+ 
++    wandb.login(key='6d802b44b97d25931bacec09c5f1095e6c28fe36')
++
+     # Arg parsing
+     parser = argparse.ArgumentParser()
+     parser.add_argument('--configs', nargs=1,
+@@ -32,6 +35,7 @@ if __name__ == "__main__":
+ 
+     with open(arguments.configs[0], 'r') as file:
+         args = yaml.full_load(file)
++    wandb.init(config=args)
+ 
+     if arguments.dev[0] == 1:
+         develope = True
+@@ -87,8 +91,10 @@ if __name__ == "__main__":
+     # Initialize model and optimizer.
+     if model_name == 'GCVAE':
+         model = GCVAE(n*2, n_r, n_e, dataset, h_dim=h_dim, z_dim=z_dim, beta=beta).to(device)
++        wandb.watch(model)
+     elif model_name == 'GVAE':
+         model = GVAE(n*2, n_r, n_e, dataset, h_dim=h_dim, z_dim=z_dim, beta=beta).to(device)
++        wandb.watch(model)
+     elif model_name == 'VEmbed':
+         model = None
+     else:

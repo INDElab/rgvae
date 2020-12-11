@@ -80,7 +80,6 @@ if __name__ == "__main__":
     (n2i, i2n), (r2i, i2r), train_set, test_set, all_triples = load_link_prediction_data(dataset, use_test_set=False)
     n_e = len(n2i)
     n_r = len(r2i)
-    truedict = truedicts(all_triples)
 
     todate = date.today().strftime("%Y%m%d")
     exp_name = args['experiment']['exp_name']
@@ -116,7 +115,7 @@ if __name__ == "__main__":
         if model_name == "VEmbed":
             train_lp_vembed(n_e, n_r, train_set[:limit], test_set[:limit], all_triples, epochs, batch_size, result_dir)
         else:
-            train_eval_vae(n, batch_size, epochs, train_set[:limit], test_set[:limit], model, optimizer, truedict, result_dir)
+            train_eval_vae(n, batch_size, epochs, train_set[:limit], test_set[:limit], model, optimizer, result_dir)
     
     # Link prediction
     if args['experiment']['link_prediction']:
@@ -125,6 +124,7 @@ if __name__ == "__main__":
         else:
             print('Start link prediction!')
             testsub = torch.tensor(test_set[:300], device=d())      # TODO remove the testset croping
+            truedict = truedicts(all_triples)
 
             lp_results =  link_prediction(model, testsub, truedict, batch_size)
             

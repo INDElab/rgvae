@@ -4,7 +4,7 @@ model_params:
     z_dim:  60          # Latent dimensions
     n:  1               # Triples per graph
     beta:   0.6         # betaVAE ratio
-    epochs: 111
+    epochs: 11
     lr: 0.000001
     batch_size_exp2: 3 # 2**(batch_size_exp)
 

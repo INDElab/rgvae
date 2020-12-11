@@ -1,0 +1,239 @@
+diff --git a/configs/config_file.yml b/configs/config_file.yml
+index 46e7d7e..d6bab63 100644
+--- a/configs/config_file.yml
++++ b/configs/config_file.yml
+@@ -4,7 +4,7 @@ model_params:
+     z_dim:  60          # Latent dimensions
+     n:  1               # Triples per graph
+     beta:   0.6         # betaVAE ratio
+-    epochs: 111
++    epochs: 11
+     lr: 0.000001
+     batch_size_exp2: 3 # 2**(batch_size_exp)
+ 
+diff --git a/experiments/link_prediction.py b/experiments/link_prediction.py
+index c596770..b56a46f 100644
+--- a/experiments/link_prediction.py
++++ b/experiments/link_prediction.py
+@@ -33,12 +33,7 @@ def link_prediction(model, testsub, truedict, batch_size):
+ 
+     print(f'MRR {mrr:.4}\t hits@1 {hits[0]:.4}\t  hits@3 {hits[1]:.4}\t  hits@10 {hits[2]:.4}')
+ 
+-    lp_results = {}
+-    lp_results[model.name] = []
+-    lp_results[model.name].append({'mrr': mrr,
+-                                'h@1': hits[0],
+-                                'h@3': hits[1],
+-                                'h@10': hits[2]})
++    lp_results = {'mrr': mrr, 'h@1': hits[0], 'h@3': hits[1], 'h@10': hits[2]}
+     return lp_results
+ 
+ 
+diff --git a/experiments/lp_vembed.py b/experiments/lp_vembed.py
+index 287ebca..8e7980e 100644
+--- a/experiments/lp_vembed.py
++++ b/experiments/lp_vembed.py
+@@ -3,7 +3,7 @@ from lp_utils import d, tic, toc, get_slug, load_link_prediction_data, truedicts
+ from experiments.embed_util import util
+ from ranger import Ranger
+ 
+-import torch
++import torch, wandb
+ 
+ from torch import nn
+ import torch.nn.functional as F
+@@ -68,7 +68,7 @@ def corrupt_one(batch, candidates, target):
+ def prt(to_p, end='\n'):
+     print(to_p + end)
+ 
+-def train_lp_vembed(n_e, n_r, train, test, alltriples, epochs: int, batch_size: int, result_dir: str, test_batch: int=10, eval_int: int=10):
++def train_lp_vembed(n_e, n_r, train, test, alltriples, epochs: int, batch_size: int, result_dir: str, test_batch: int=5, eval_int: int=3):
+     """
+     Source: pbloem/embed
+     """
+@@ -93,7 +93,8 @@ def train_lp_vembed(n_e, n_r, train, test, alltriples, epochs: int, batch_size:
+     k = 11
+ 
+     model = VLinkPredictor(torch.tensor(list(alltriples)), n_e, n_r, embedding=512, decoder='distmult', edropout=None, rdropout=None, init=0.85, biases=False, init_method='uniform', init_parms=(-1.0, 1.0), reciprocal=reciprocal)
+-    
++    wandb.watch(model)
++
+     optimizer = Ranger(model.parameters(),lr=lr, k=k, betas=(.95,0.999), use_gc=True, gc_conv_only=False)
+ 
+     tbw = SummaryWriter(log_dir=result_dir)
+@@ -127,7 +128,7 @@ def train_lp_vembed(n_e, n_r, train, test, alltriples, epochs: int, batch_size:
+         # elif arg.opt == 'adamw':
+         #     opt = torch.optim.AdamW(model.parameters(), lr=arg.lr)
+         # elif arg.opt == 'adagrad':
+-        #     opt = torch.optim.Adagrad(model.parameters(), lr=arg.lr)
++        optimizer = torch.optim.Adagrad(model.parameters(), lr=0.15953749294870845)
+         # elif arg.opt == 'sgd':
+         #     opt = torch.optim.SGD(model.parameters(), lr=arg.lr, nesterov=True, momentum=arg.momentum)
+         # else:
+@@ -212,7 +213,7 @@ def train_lp_vembed(n_e, n_r, train, test, alltriples, epochs: int, batch_size:
+                             loss = F.binary_cross_entropy_with_logits(out, labels, weight=weight)
+                         elif loss_fn == 'ce':
+                             loss = F.cross_entropy(out, labels)
+-
++                        wandb.log({"loss": loss})
+                         assert not torch.isnan(loss), 'Loss has become NaN'
+ 
+                         sumloss += float(loss.item())
+@@ -238,6 +239,7 @@ def train_lp_vembed(n_e, n_r, train, test, alltriples, epochs: int, batch_size:
+                 if regloss is not None:
+                     sumloss += float(regloss.item())
+                     regloss.backward()
++                    wandb.log({"regloss": regloss})
+                 rbackward += toc()
+ 
+                 optimizer.step()
+@@ -279,6 +281,8 @@ def train_lp_vembed(n_e, n_r, train, test, alltriples, epochs: int, batch_size:
+                     tbw.add_scalar('biases/h@1', hits[0], e)
+                     tbw.add_scalar('biases/h@3', hits[1], e)
+                     tbw.add_scalar('biases/h@10', hits[2], e)
++                    wandb.log({"mrr": mrr, "h@1": hits[0], "h@3": hits[1], "h@10": hits[2]})
++                    wandb.sync()
+ 
+                     if sched is not None:
+                         sched.step(mrr) # reduce lr if mrr stalls
+diff --git a/experiments/train_eval_vae.py b/experiments/train_eval_vae.py
+index 0e1a78f..8b4c633 100644
+--- a/experiments/train_eval_vae.py
++++ b/experiments/train_eval_vae.py
+@@ -9,6 +9,8 @@ import numpy as np
+ from lp_utils import *
+ from tqdm import tqdm
+ from datetime import date
++from lp_utils import truedicts
++import wandb
+ 
+ 
+ 
+@@ -29,9 +31,12 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer,
+     n_r = model.n_r
+ 
+     old_loss = best_loss = 3333
+-    loss_dict = {'val': dict(), 'train': dict()}
++    loss_dict = {'val': dict(), 'train': dict(), 'lp': dict()}
+     writer = SummaryWriter(log_dir=result_dir)
+ 
++    testsub = torch.tensor(test_set[:50], device=d())      # TODO remove the testset croping
++    truedict = truedicts(all_triples)
++
+     # Start training.
+     for epoch in range(epochs):
+         start_time = time.time()
+@@ -46,13 +51,15 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer,
+             b_to = min(b_from + batch_size, len(train_set))
+             target = batch_t2m(torch.tensor(train_set[b_from:b_to], device=d()), n, n_e, n_r)
+ 
+-            loss, sanity, x_permute = train_sparse_batch(target, model, optimizer, epoch)
++            loss, x_permute = train_sparse_batch(target, model, optimizer, epoch)
+             loss_train.append(loss)
+             loss_bar.set_description_str('Loss: {:.6f}'.format(loss))
+             # sanity_bar.set_description('Sanity check: {:.2f}% nodes, {:.2f}% edges, {:.2f}% permuted.'.format(*sanity,x_permute*100))
+-            writer.add_scalar('Loss/train', loss, b_from + epoch*len(train_set))
++            writer.add_scalar('Loss/train', loss, epoch)
++            wandb.log({"train_loss_step": loss})
+         
+-        loss_dict['train'][epoch] = np.mean(loss_train)
++        loss_dict['train'][epoch] = loss_train
++        wandb.log({"train_loss": loss_train})
+         end_time = time.time()
+         print('Time elapsed for epoch{} : {:.3f}'.format(epoch, end_time - start_time))
+ 
+@@ -69,11 +76,27 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer,
+                 loss, x_permute = train_sparse_batch(target, model, optimizer, epoch, eval=True)
+                 loss_val.append(loss)
+                 permute_list.append(x_permute)
+-                writer.add_scalar('Loss/test', loss, b_from + epoch*len(test_set))
++                writer.add_scalar('Loss/test', loss, epoch)
++                wandb.log({"val_loss_step": loss})
+         mean_loss = np.mean(loss_val)
+-        loss_dict['val'][epoch] = mean_loss
++        loss_dict['val'][epoch] = loss_val
++        wandb.log({"val_loss": loss_val})
+         print('Epoch: {}, Test set ELBO: {:.3f}, permuted {:.3f}%'.format(epoch, mean_loss, np.mean(permute_list)*100))
+ 
++        # Do Link prediction
++        if epoch % 30 == 0:
++            print('Start link prediction at epoch {}:'.format(epoch))
++            lp_start = time.time()
++            lp_results =  link_prediction(model, testsub, truedict, batch_size)
++            loss_dict['lp'][epoch] = lp_results
++            wandb.log(lp_results)
++            lp_end = time.time()
++            print('Time elapsed for Link prediction at epoch{} : {:.3f}'.format(epoch, lp_end - lp_start))
++            print('MRR {:.4}\t hits@1 {:.4}\t  hits@3 {:.4}\t  hits@10 {:.4}'.format(lp_results['mrr'],
++                                                                                                lp_results['hits@1'],
++                                                                                                lp_results['hits@3'],
++                                                                                                lp_results['hits@10']))
++
+         torch.save({
+             'epoch': epoch,
+             'model_state_dict': model.state_dict(),
+diff --git a/run.py b/run.py
+index 86550aa..ef35afc 100644
+--- a/run.py
++++ b/run.py
+@@ -11,11 +11,14 @@ import argparse
+ import torch
+ import torch_optimizer as optim
+ from ranger import Ranger
++import wandb
+ import os
+ 
+ 
+ if __name__ == "__main__":
+ 
++    wandb.login(key='6d802b44b97d25931bacec09c5f1095e6c28fe36')
++
+     # Arg parsing
+     parser = argparse.ArgumentParser()
+     parser.add_argument('--configs', nargs=1,
+@@ -32,6 +35,7 @@ if __name__ == "__main__":
+ 
+     with open(arguments.configs[0], 'r') as file:
+         args = yaml.full_load(file)
++    wandb.init(config=args)
+ 
+     if arguments.dev[0] == 1:
+         develope = True
+@@ -87,8 +91,10 @@ if __name__ == "__main__":
+     # Initialize model and optimizer.
+     if model_name == 'GCVAE':
+         model = GCVAE(n*2, n_r, n_e, dataset, h_dim=h_dim, z_dim=z_dim, beta=beta).to(device)
++        wandb.watch(model)
+     elif model_name == 'GVAE':
+         model = GVAE(n*2, n_r, n_e, dataset, h_dim=h_dim, z_dim=z_dim, beta=beta).to(device)
++        wandb.watch(model)
+     elif model_name == 'VEmbed':
+         model = None
+     else:
+@@ -109,7 +115,7 @@ if __name__ == "__main__":
+             train_lp_vembed(n_e, n_r, train_set[:limit], test_set[:limit], all_triples, epochs, batch_size, result_dir)
+         else:
+             train_eval_vae(n, batch_size, epochs, train_set[:limit], test_set[:limit], model, optimizer, result_dir)
+-
++    
+     # Link prediction
+     if args['experiment']['link_prediction']:
+         if model_name == 'VEmbed':
+diff --git a/torch_rgvae/train_fn.py b/torch_rgvae/train_fn.py
+index b7750b6..11fee86 100644
+--- a/torch_rgvae/train_fn.py
++++ b/torch_rgvae/train_fn.py
+@@ -57,11 +57,11 @@ def train_sparse_batch(target, model, optimizer, epoch, eval: bool=False):
+         loss.backward()
+         optimizer.step()
+ 
+-    sanity = model.sanity_check()
++    # sanity = model.sanity_check()
+ 
+     # This is the percentage of permuted predictions.
+     x_permute = 1 - torch.mean(torch.diagonal(model.x_permute, dim1=1, dim2=2)).item()
+     if eval:
+         return loss.item(), x_permute
+     else:
+-        return loss.item(), sanity, x_permute
++        return loss.item(), x_permute

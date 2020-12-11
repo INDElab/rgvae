@@ -57,11 +57,11 @@ def train_sparse_batch(target, model, optimizer, epoch, eval: bool=False):
         loss.backward()
         optimizer.step()
 
-    sanity = model.sanity_check()
+    # sanity = model.sanity_check()
 
     # This is the percentage of permuted predictions.
     x_permute = 1 - torch.mean(torch.diagonal(model.x_permute, dim1=1, dim2=2)).item()
     if eval:
         return loss.item(), x_permute
     else:
-        return loss.item(), sanity, x_permute
+        return loss.item(), x_permute

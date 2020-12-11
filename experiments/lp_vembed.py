@@ -3,7 +3,7 @@ from lp_utils import d, tic, toc, get_slug, load_link_prediction_data, truedicts
 from experiments.embed_util import util
 from ranger import Ranger
 
-import torch
+import torch, wandb
 
 from torch import nn
 import torch.nn.functional as F
@@ -68,7 +68,7 @@ def corrupt_one(batch, candidates, target):
 def prt(to_p, end='\n'):
     print(to_p + end)
 
-def train_lp_vembed(n_e, n_r, train, test, alltriples, epochs: int, batch_size: int, result_dir: str, test_batch: int=10, eval_int: int=10):
+def train_lp_vembed(n_e, n_r, train, test, alltriples, epochs: int, batch_size: int, result_dir: str, test_batch: int=5, eval_int: int=3):
     """
     Source: pbloem/embed
     """
@@ -93,7 +93,8 @@ def train_lp_vembed(n_e, n_r, train, test, alltriples, epochs: int, batch_size: 
     k = 11
 
     model = VLinkPredictor(torch.tensor(list(alltriples)), n_e, n_r, embedding=512, decoder='distmult', edropout=None, rdropout=None, init=0.85, biases=False, init_method='uniform', init_parms=(-1.0, 1.0), reciprocal=reciprocal)
-    
+    wandb.watch(model)
+
     optimizer = Ranger(model.parameters(),lr=lr, k=k, betas=(.95,0.999), use_gc=True, gc_conv_only=False)
 
     tbw = SummaryWriter(log_dir=result_dir)
@@ -127,7 +128,7 @@ def train_lp_vembed(n_e, n_r, train, test, alltriples, epochs: int, batch_size: 
         # elif arg.opt == 'adamw':
         #     opt = torch.optim.AdamW(model.parameters(), lr=arg.lr)
         # elif arg.opt == 'adagrad':
-        #     opt = torch.optim.Adagrad(model.parameters(), lr=arg.lr)
+        optimizer = torch.optim.Adagrad(model.parameters(), lr=0.15953749294870845)
         # elif arg.opt == 'sgd':
         #     opt = torch.optim.SGD(model.parameters(), lr=arg.lr, nesterov=True, momentum=arg.momentum)
         # else:
@@ -212,7 +213,7 @@ def train_lp_vembed(n_e, n_r, train, test, alltriples, epochs: int, batch_size: 
                             loss = F.binary_cross_entropy_with_logits(out, labels, weight=weight)
                         elif loss_fn == 'ce':
                             loss = F.cross_entropy(out, labels)
-
+                        wandb.log({"loss": loss})
                         assert not torch.isnan(loss), 'Loss has become NaN'
 
                         sumloss += float(loss.item())
@@ -238,6 +239,7 @@ def train_lp_vembed(n_e, n_r, train, test, alltriples, epochs: int, batch_size: 
                 if regloss is not None:
                     sumloss += float(regloss.item())
                     regloss.backward()
+                    wandb.log({"regloss": regloss})
                 rbackward += toc()
 
                 optimizer.step()
@@ -279,6 +281,7 @@ def train_lp_vembed(n_e, n_r, train, test, alltriples, epochs: int, batch_size: 
                     tbw.add_scalar('biases/h@1', hits[0], e)
                     tbw.add_scalar('biases/h@3', hits[1], e)
                     tbw.add_scalar('biases/h@10', hits[2], e)
+                    wandb.log({"mrr": mrr, "h@1": hits[0], "h@3": hits[1], "h@10": hits[2]})
 
                     if sched is not None:
                         sched.step(mrr) # reduce lr if mrr stalls

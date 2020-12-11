@@ -18,7 +18,7 @@ import os
 if __name__ == "__main__":
 
     wandb.login(key='6d802b44b97d25931bacec09c5f1095e6c28fe36')
-
+    
     # Arg parsing
     parser = argparse.ArgumentParser()
     parser.add_argument('--configs', nargs=1,
@@ -54,11 +54,10 @@ if __name__ == "__main__":
     my_dtype = torch.float64
     torch.set_default_dtype(my_dtype)
 
-    # if develope:
-    #     model_name = 'VEmbed'
-    # else:
-    #     model_name = args['model_params']['model_name']
-    model_name = args['model_params']['model_name']
+    if develope:
+        model_name = 'VEmbed'
+    else:
+        model_name = args['model_params']['model_name']
 
     n = args['model_params']['n']       # number of triples per matrix ( =  matrix_n/2)
     batch_size = 2**args['model_params']['batch_size_exp2']        # Choose an apropiate batch size. cpu: 2**9
@@ -80,7 +79,6 @@ if __name__ == "__main__":
     (n2i, i2n), (r2i, i2r), train_set, test_set, all_triples = load_link_prediction_data(dataset, use_test_set=False)
     n_e = len(n2i)
     n_r = len(r2i)
-    truedict = truedicts(all_triples)
 
     todate = date.today().strftime("%Y%m%d")
     exp_name = args['experiment']['exp_name']
@@ -93,14 +91,13 @@ if __name__ == "__main__":
     # Initialize model and optimizer.
     if model_name == 'GCVAE':
         model = GCVAE(n*2, n_r, n_e, dataset, h_dim=h_dim, z_dim=z_dim, beta=beta).to(device)
-        wandb.watch(model)
     elif model_name == 'GVAE':
         model = GVAE(n*2, n_r, n_e, dataset, h_dim=h_dim, z_dim=z_dim, beta=beta).to(device)
-        wandb.watch(model)
     elif model_name == 'VEmbed':
         model = None
     else:
         raise ValueError('{} not defined!'.format(model_name))
+    wandb.watch(model)
 
     if model_name != 'VEmbed':
         optimizer = Ranger(model.parameters(),lr=lr, k=k, betas=(.95,0.999), use_gc=True, gc_conv_only=False)
@@ -116,8 +113,8 @@ if __name__ == "__main__":
         if model_name == "VEmbed":
             train_lp_vembed(n_e, n_r, train_set[:limit], test_set[:limit], all_triples, epochs, batch_size, result_dir)
         else:
-            train_eval_vae(n, batch_size, epochs, train_set[:limit], test_set[:limit], model, optimizer, truedict, result_dir)
-    
+            train_eval_vae(n, batch_size, epochs, train_set[:limit], test_set[:limit], model, optimizer, result_dir)
+
     # Link prediction
     if args['experiment']['link_prediction']:
         if model_name == 'VEmbed':
@@ -125,6 +122,7 @@ if __name__ == "__main__":
         else:
             print('Start link prediction!')
             testsub = torch.tensor(test_set[:300], device=d())      # TODO remove the testset croping
+            truedict = truedicts(all_triples)
 
             lp_results =  link_prediction(model, testsub, truedict, batch_size)
             
