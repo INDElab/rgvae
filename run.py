@@ -62,7 +62,7 @@ if __name__ == "__main__":
     batch_size = 2**args['model_params']['batch_size_exp2']        # Choose an apropiate batch size. cpu: 2**9
     if dataset == 'wn18rr' and batch_size > 2**10:                  # Avoid out of memory errors on LISA
         batch_size = 2**10
-        rgs['model_params']['batch_size_exp2'] = 10
+        args['model_params']['batch_size_exp2'] = 10
 
     h_dim = args['model_params']['h_dim']       # number of hidden dimensions
     z_dim = args['model_params']['z_dim']      # number of latent dimensions
