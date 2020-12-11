@@ -76,7 +76,6 @@ if __name__ == "__main__":
     wandb.init(config=args)
 
 
-
     # Get data
     (n2i, i2n), (r2i, i2r), train_set, test_set, all_triples = load_link_prediction_data(dataset, use_test_set=False)
     n_e = len(n2i)
