@@ -18,7 +18,6 @@ import os
 
 if __name__ == "__main__":
 
-    wandb.login(key='6d802b44b97d25931bacec09c5f1095e6c28fe36')
 
     # Arg parsing
     parser = argparse.ArgumentParser()
@@ -44,6 +43,10 @@ if __name__ == "__main__":
         develope = False
         limit = -1
 
+    if develope:
+        wandb.init(project="offline-dev", mode='offline')
+    else:
+        wandb.login(key='6d802b44b97d25931bacec09c5f1095e6c28fe36')
     print('Dev mode: {}'.format(develope))
 
     # Torch settings
@@ -80,7 +83,10 @@ if __name__ == "__main__":
     (n2i, i2n), (r2i, i2r), train_set, test_set, all_triples = load_link_prediction_data(dataset, use_test_set=False)
     n_e = len(n2i)
     n_r = len(r2i)
+    args['model_params']['n_e'] = n_e
+    args['model_params']['n_r'] = n_r
     truedict = truedicts(all_triples)
+    dataset_tools = [truedict, i2n, i2r]
 
     todate = date.today().strftime("%Y%m%d")
     exp_name = args['experiment']['exp_name']
@@ -93,11 +99,11 @@ if __name__ == "__main__":
 
     # Initialize model and optimizer.
     if model_name == 'GCVAE':
-        model = GCVAE(n*2, n_r, n_e, dataset, h_dim=h_dim, z_dim=z_dim, beta=beta).to(device)
+        model = GCVAE(args, n*2, n_r, n_e, dataset, h_dim=h_dim, z_dim=z_dim, beta=beta).to(device)
     if model_name == 'GCVAE2':
-        model = GCVAE2(n*2, n_r, n_e, dataset, h_dim=h_dim, z_dim=z_dim, beta=beta).to(device)
+        model = GCVAE2(args, n*2, n_r, n_e, dataset, h_dim=h_dim, z_dim=z_dim, beta=beta).to(device)
     elif model_name == 'GVAE':
-        model = GVAE(n*2, n_r, n_e, dataset, h_dim=h_dim, z_dim=z_dim, beta=beta).to(device)
+        model = GVAE(args, n*2, n_r, n_e, dataset, h_dim=h_dim, z_dim=z_dim, beta=beta).to(device)
     elif model_name == 'VEmbed':
         model = None
     else:
@@ -119,7 +125,7 @@ if __name__ == "__main__":
         if model_name == "VEmbed":
             train_lp_vembed(n_e, n_r, train_set[:limit], test_set[:limit], all_triples, epochs, batch_size, result_dir)
         else:
-            train_eval_vae(n, batch_size, epochs, train_set[:limit], test_set[:limit], model, optimizer, truedict, result_dir)
+            train_eval_vae(batch_size, epochs, train_set[:limit], test_set[:limit], model, optimizer, dataset_tools, result_dir)
     
     # Link prediction
     if args['experiment']['link_prediction']:

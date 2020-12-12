@@ -5,6 +5,7 @@ from torch_rgvae.GVAE import GVAE
 from torch_rgvae.GCVAE import GCVAE
 from torch_rgvae.train_fn import train_sparse_batch
 from experiments.link_prediction import link_prediction
+from experiments.interpolation import interpolate_triples 
 import torch
 import numpy as np
 from lp_utils import *
@@ -14,7 +15,7 @@ import wandb
 
 
 
-def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer, truedict, result_dir):
+def train_eval_vae(batch_size, epochs, train_set, test_set, model, optimizer, dataset_tools, result_dir):
     """
     Train and evaluate the model on the test and train set.
     :param n: triples per graph
@@ -27,8 +28,10 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer,
     :param result_dir: path where to save model state_dict
     :returns : dict with train and val loss per epoch
     """
+    n = int(model.n / 2)
     n_e = model.n_e
     n_r = model.n_r
+    truedict, i2n, i2r = dataset_tools
 
     old_loss = best_loss = 3333
     loss_dict = {'val': dict(), 'train': dict(), 'lp': dict()}
@@ -84,7 +87,12 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer,
         print('Epoch: {}, Test set ELBO: {:.3f}, permuted {:.3f}%'.format(epoch, mean_loss, np.mean(permute_list)*100))
 
         # Do Link prediction
-        if epoch+1 % 30 == 0:
+        if epoch % 30 == 0:
+        # if epoch+1 % 30 == 0:
+            interpolations = interpolate_triples(i2n,i2r, 5, model)
+            with open(result_dir+'/interpolation_e{}.pkl'.format(epoch), 'wb') as f:
+                pickle.dump(interpolations, f)
+
             print('Start link prediction at epoch {}:'.format(epoch))
             lp_start = time.time()
             lp_results =  link_prediction(model, testsub, truedict, batch_size)
@@ -101,6 +109,7 @@ def train_eval_vae(n, batch_size, epochs, train_set, test_set, model, optimizer,
             'epoch': epoch,
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
+            'model_params': model.model_params,
             'loss_val': mean_loss,
             'loss_log': loss_dict},
             result_dir + '/rgvae_dict.pt')

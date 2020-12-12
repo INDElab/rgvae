@@ -165,14 +165,14 @@ def translate_triple(triples, i2n, i2r, entity_dict):
     return triples_text
 
 
-def batch_t2m(batch, n, d_n, d_e):
+def batch_t2m(batch, n: int, n_e: int, n_r: int):
     """
     Converts batches of triples into matrix form.
 
     :param batch: batch of triples
     :param n: number of triples per. matrix
-    :param d_n: total node count.
-    :param d_e: total edge attribute count.
+    :param n_e: total node count.
+    :param n_r: total edge attribute count.
     :return: the batched matrices A, E, F.
     """
     # This condition is needed for batch size = 1.
@@ -185,7 +185,7 @@ def batch_t2m(batch, n, d_n, d_e):
     batch_e = list()
     batch_f = list()
     for ii in range(bs):
-        (A, E, F) = triple2matrix(batch[ii:ii+n,:], d_n, d_e)
+        (A, E, F) = triple2matrix(batch[ii:ii+n,:], n_e, n_r)
         assert A.shape[1] != 1
         batch_a.append(A)
         batch_e.append(E)

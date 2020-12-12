@@ -27,7 +27,7 @@ class GCVAE(GVAE):
         :param beta: for beta < 1, makes the model is a beta-VAE
         :param softmax_E : use softmax for edge attributes
         """
-        super().__init__(n, n_r, n_e, dataset_name, h_dim, z_dim, beta, softmax_E)
+        super().__init__(model_params, n, n_r, n_e, dataset_name, h_dim, z_dim, beta, softmax_E)
 
         self.name = 'GCVAE'
 

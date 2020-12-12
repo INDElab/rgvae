@@ -116,7 +116,7 @@ class MPGM():
                     S[i,j,a,b] = 0.
         return S
     
-    def max_pool(self, S, n_iterations: int=300):
+    def max_pool(self, S, n_iterations: int=11):
         """
         The famous Cho max-pooling in matrix multiplication style.
         Xs: X_star meaning X in continuos space.
@@ -129,19 +129,6 @@ class MPGM():
             Xs_norm = torch.norm(Xs, p='fro', dim=[-2,-1])
             Xs = (Xs / Xs_norm.unsqueeze(-1).unsqueeze(-1))
         return Xs
-        
-
-        # # Just a crazy idea, but what if we flatten the X (n,k) matrix so that we can take the dot product with S (n,flat,K).
-        # Xs = torch.rand([self.bs, self.n, self.k])
-        # self.Xs = Xs
-        # S = torch.reshape(S, [S.shape[0],S.shape[1],S.shape[-2],-1])
-        # for n in range(n_iterations):
-        #     Xs = torch.reshape(Xs, [self.bs,-1]).unsqueeze(1).unsqueeze(-1)
-        #     SXs = torch.matmul(S,Xs).squeeze()
-        #     xnorm = torch.norm(SXs, p='fro', dim=[-2,-1])
-        #     Xs = (SXs / xnorm.unsqueeze(-1).unsqueeze(-1))
-        #     assert torch.isnan(Xs).any() == False
-        # return Xs
 
     def max_pool_loop(self, S, n_iterations: int=300):
         """
@@ -215,3 +202,9 @@ class MPGM():
             X[i] = M
         X = torch.tensor(X, device=d())
         return X
+
+
+if __name__ == "__main__":
+    
+    mgpm = MPGM()
+

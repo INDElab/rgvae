@@ -12,7 +12,7 @@ from lp_utils import d
 
 
 class GVAE(nn.Module):
-    def __init__(self, n: int, n_r: int, n_e: int, dataset_name: str, h_dim: int=1024, z_dim: int=2, beta: float=1., softmax_E: bool=True):
+    def __init__(self, model_params, n: int, n_r: int, n_e: int, dataset_name: str, h_dim: int=1024, z_dim: int=2, beta: float=1., softmax_E: bool=True):
         """
         Graph Variational Auto Encoder
         :param n : Number of nodes
@@ -35,6 +35,7 @@ class GVAE(nn.Module):
         self.beta = torch.tensor(beta)
         self.softmax_E = softmax_E
         self.dataset_name = dataset_name
+        self.model_params = model_params
 
         self.encoder = MLP(input_dim, h_dim, 2*z_dim)
 
