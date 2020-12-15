@@ -87,11 +87,12 @@ def train_eval_vae(batch_size, epochs, train_set, test_set, model, optimizer, da
         print('Epoch: {}, Test set ELBO: {:.3f}, permuted {:.3f}%'.format(epoch, mean_loss, np.mean(permute_list)*100))
 
         # Do Link prediction
-        if epoch % 30 == 0:
-        # if epoch+1 % 30 == 0:
+        # if epoch % 30 == 0:
+        if epoch+1 % 30 == 0:
             interpolations = interpolate_triples(i2n,i2r, 5, model)
             with open(result_dir+'/interpolation_e{}.pkl'.format(epoch), 'wb') as f:
                 pickle.dump(interpolations, f)
+            wandb.save(result_dir + '/interpolation_e{}.pkl')
 
             print('Start link prediction at epoch {}:'.format(epoch))
             lp_start = time.time()
@@ -99,6 +100,11 @@ def train_eval_vae(batch_size, epochs, train_set, test_set, model, optimizer, da
             loss_dict['lp'][epoch] = lp_results
             wandb.log(lp_results)
             lp_end = time.time()
+            lp_file_path = result_dir + '/lp_e{}.json'.format(epoch)
+            with open(lp_file_path, 'w') as outfile:
+                json.dump(lp_results, outfile)
+            wandb.save(lp_file_path)
+            print('Saved link prediction results!')
             print('Time elapsed for Link prediction at epoch{} : {:.3f}'.format(epoch, lp_end - lp_start))
             print('MRR {:.4}\t hits@1 {:.4}\t  hits@3 {:.4}\t  hits@10 {:.4}'.format(lp_results['mrr'],
                                                                                                 lp_results['hits@1'],

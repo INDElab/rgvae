@@ -75,30 +75,16 @@ def interpolate_triples(i2n, i2r, steps: int=5, model=None, model_path: str=None
                 print(prediction)
                 pred_list.append(prediction)
                 pred_dense = matrix2triple(prediction)
-            if len(pred_dense) > 0:
-                text_triple = translate_triple(pred_dense, i2n, i2r, entity_dict)
-                triples.append(text_triple)
-                print(text_triple)
-            else:
-                triples.append([])  
+                if len(pred_dense) > 0:
+                    text_triple = translate_triple(pred_dense, i2n, i2r, entity_dict)
+                    triples.append(text_triple)
+                    print(text_triple)
+                else:
+                    triples.append([])  
         interpolations['confidence95']['numbers'] = pred_list
         interpolations['confidence95']['text'] = triples       
     return interpolations
 
 
-
-
 if __name__ == "__main__":
-
-    # This sets the default torch dtype. Double-power
-    my_dtype = torch.float64
-    torch.set_default_dtype(my_dtype)
-
-    seed = 11
-    np.random.seed(seed=seed)
-    torch.manual_seed(seed)
-    n = 1       # Number of triples per graph
-    steps = 10   # Interpolation steps
-
-    dataset = 'fb15k'
-    model_path = '/home/fwolf/results/tune_GCVAE_fb15k_b100_20201206' + '/rgvae_dict.pt'
+    pass

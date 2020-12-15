@@ -126,16 +126,25 @@ class GVAE(nn.Module):
         prediction = self.decode(z)
         return self.beta * self.regularization_loss(mean, logvar) - self.reconstruction_loss(target, prediction)
 
-    def sample(self, z, n_samples: int=1):
+    def sample(self, z, n_samples: int=1, adj_argmax=True):
         """
         Sample n times from the model using the target as bernoulli distribution. Return the sampled graph.
-        Args:
-            z:  Decoder input signal, shape (batch_size, z_dim)
+        :param z:  Decoder input signal, shape (batch_size, z_dim).
+        :param adj_argmax: If true, instead of bernouli sampling, we return the only the argmax of a. 
         """
         assert z.shape[-1] == self.z_dim
         a, e, f = self.reconstruct(self.decoder(z))
-        a_dist = torch.distributions.Bernoulli(a)
-        a_sample = a_dist.sample()
+        a_shape = a.shape
+
+        if adj_argmax:
+            a = a.view(a_shape[0], -1)
+            a_sample = torch.zeros_like(a)
+            a_sample[:,torch.argmax(a, -1, keepdim=True)] = torch.max(a, -1)[0]
+            a_sample = a_sample.view(a_shape)
+        else:
+            a_dist = torch.distributions.Bernoulli(a)
+            a_sample = a_dist.sample()
+
         if self.softmax_E:
             # in this case e will be dense
             e_dist = torch.distributions.Categorical(e)

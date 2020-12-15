@@ -132,7 +132,7 @@ def matrix2triple(graph):
     e = E.squeeze().detach().cpu().numpy()
     f = F.squeeze().detach().cpu().numpy()
     
-    s, o = np.where(a == 1)
+    s, o = np.where(a != 0)
     
     triples = list()
     for i in range(len(s)):
