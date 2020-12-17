@@ -3,26 +3,42 @@ Collection of loss functions.
 """
 from graph_matching.MPGM import MPGM
 from utils import *
+import wandb
 
 
-def graph_BCEloss(target, prediction, l_A=1., l_E=1., l_F=1.):
+def graph_CEloss(target, prediction, softmax_E: bool=True, l_A=1., l_E=1., l_F=1.):
     """
-    Binary cross entropy loss function for the predicted graph. Each matrix is taken into account separately.
+    Cross entropy loss function for the predicted graph. The loss for each matrix is computed separately.
     Args:
         target: list of the 3 target matrices A, E, F.
         prediction: list of the 3 predicted matrices A_hat, E_hat, F_hat.
         l_A: weight for BCE of A
-        l_E: weight for BCE of E
-        l_F: weight for BCE of F
+        l_E: weight for BCE or CE of E
+        l_F: weight for CE of F
+        softmax_E: use CE for E
     """
     # Cast target vectors to tensors.
     A, E, F = target
     A_hat, E_hat, F_hat = prediction
 
-    # Match number of nodes
+    # Define loss function
     bce = torch.nn.BCELoss()
-    loss = l_A*bce(A_hat, A) + l_E*bce(E_hat, E) + l_F*bce(F_hat, F)
-    return loss
+    cce = torch.nn.CrossEntropyLoss()
+
+    if softmax_E:
+        loss_E = l_E*cce(E_hat, E)
+    else:
+        loss_E = l_E*bce(E_hat, E)
+    loss_A = l_A*bce(A_hat, A)
+    loss_F = l_F*cce(F_hat, F)
+
+
+    # Weight and add loss
+    loss = loss_A + loss_E + loss_F
+    x_permute = torch.ones_like(A)
+    wandb.log({"Recon Loss": loss, "Recon Loss A": loss_A, "Recon Loss E": loss_E, "Recon Loss F": loss_F})
+
+    return loss, x_permute
 
 
 def mpgm_loss(target, prediction, l_A=1., l_E=1., l_F=1., zero_diag: bool=False, softmax_E: bool=True):
@@ -98,7 +114,9 @@ def mpgm_loss(target, prediction, l_A=1., l_E=1., l_F=1., zero_diag: bool=False,
             k_zero = k - 1
         log_p_E = ((1/(k*(k_zero))) * torch.sum(torch.sum(E_t * torch.log(E_hat) + (1 - E_t) * torch.log(1 - E_hat), -1) * mask, (-2,-1))).unsqueeze(-1)
 
-    log_p = l_A * log_p_A + l_F * log_p_F + l_E * log_p_E
+    log_p = l_A * log_p_A + l_E * log_p_E + l_F * log_p_F
+    wandb.log({"Recon Loss": log_p, "Recon Loss A": l_A * log_p_A, "Recon Loss E": l_E * log_p_E, "Recon Loss F": l_F * log_p_F})
+
     return log_p, X
 
 
@@ -111,4 +129,6 @@ def kl_divergence(mean, logvar, raxis=1):
     Returns Kl divergence in batch shape.
     """
     kl_term = 1/2 * torch.sum((logvar.exp() + mean.pow(2) - logvar - 1), dim=raxis)
+    wandb.log({"Reg Loss": kl_term})
+    
     return kl_term.unsqueeze(-1)

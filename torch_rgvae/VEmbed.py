@@ -6,16 +6,16 @@ from torch_rgvae.decoders import DistMult
 
 
 class Venco(nn.Module):
-    def __init__(self, model_params, n_e: int, n_r: int, z_dim: int=2):
+    def __init__(self, args, n_e: int, n_r: int):
         super().__init__()
-        self.z_dim = z_dim
+        self.z_dim = args['z_dim'] if 'z_dim' in args else 2
         self.n_e = n_e
         self.n_r = n_r
-        self.model_params = model_params
+        self.model_params = args
 
         # Encoder
-        self.e_embed = nn.Embedding(n_e, 2*z_dim)
-        self.r_embed = nn.Embedding(n_r, 2*z_dim)
+        self.e_embed = nn.Embedding(n_e, 2*self.z_dim)
+        self.r_embed = nn.Embedding(n_r, 2*self.z_dim)
 
     def encode(self, s, r, o):
         """

@@ -23,23 +23,22 @@ def train_epoch(ds_set, model, optimizer, epoch, eval: bool=False):
     else:
         model.train()
     loss_bar = tqdm(total=0, position=0, bar_format='{desc}')
-    sanity_bar = tqdm(total=0, position=1, bar_format='{desc}')
+    # sanity_bar = tqdm(total=0, position=1, bar_format='{desc}')
     for target in tqdm(ds_set, total=len(ds_set), desc='Epoch {}. Batch'.format(epoch), position=2):
 
         loss = torch.mean(model.elbo(target))
         if not eval:
             loss.backward()
             optimizer.step()
-        sanity = model.sanity_check()
         if eval:
             loss_val.append(loss.item())
         else:
             loss_bar.set_description_str('Loss: {:.6f}'.format(loss.item()))
-            sanity_bar.set_description('Sanity check: {:.2f}% nodes, {:.2f}% edges, {:.2f}% adj syntax.'.format(*sanity))
+            # sanity_bar.set_description('Sanity check: {:.2f}% nodes, {:.2f}% edges, {:.2f}% adj syntax.'.format(*sanity))
     if eval:
         return np.mean(loss_val)
 
-def train_sparse_batch(target, model, optimizer, epoch, eval: bool=False):
+def train_sparse_batch(target, model, optimizer, epoch, eval: bool=False, perm_inv: bool=True):
     """
     :param target: Dataset to train/eval on.
     Args:
@@ -50,7 +49,6 @@ def train_sparse_batch(target, model, optimizer, epoch, eval: bool=False):
         eval: Option to switch between training and evaluation.
         sparse: the data is sparse and has to be converted.
     """
-    start1 = time.time()
     loss = torch.mean(model.elbo(target))
 
     if not eval:
@@ -58,7 +56,6 @@ def train_sparse_batch(target, model, optimizer, epoch, eval: bool=False):
         optimizer.step()
 
     # sanity = model.sanity_check()
-
     # This is the percentage of permuted predictions.
     x_permute = 1 - torch.mean(torch.diagonal(model.x_permute, dim1=1, dim2=2)).item()
     if eval:

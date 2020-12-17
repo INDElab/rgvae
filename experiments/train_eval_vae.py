@@ -1,8 +1,5 @@
-import time
-import os
+import os, json, time
 from torch.utils.tensorboard import SummaryWriter
-from torch_rgvae.GVAE import GVAE
-from torch_rgvae.GCVAE import GCVAE
 from torch_rgvae.train_fn import train_sparse_batch
 from experiments.link_prediction import link_prediction
 from experiments.interpolation import interpolate_triples 
@@ -46,8 +43,8 @@ def train_eval_vae(batch_size, epochs, train_set, test_set, model, optimizer, da
         torch.backends.cudnn.benchmark = True
         model.train()
         loss_bar = tqdm(total=0, position=0, bar_format='{desc}')
-        sanity_bar = tqdm(total=0, position=1, bar_format='{desc}')
         loss_train = list()
+        permute_list = list()
 
         for b_from in tqdm(range(0,len(train_set),(batch_size*n)), desc='Epoch {}'.format(epoch), position=2):
             b_to = min(b_from + batch_size, len(train_set))
@@ -55,16 +52,15 @@ def train_eval_vae(batch_size, epochs, train_set, test_set, model, optimizer, da
 
             loss, x_permute = train_sparse_batch(target, model, optimizer, epoch)
             loss_train.append(loss)
+            permute_list.append(x_permute)
             loss_bar.set_description_str('Loss: {:.6f}'.format(loss))
-            # sanity_bar.set_description('Sanity check: {:.2f}% nodes, {:.2f}% edges, {:.2f}% permuted.'.format(*sanity,x_permute*100))
             writer.add_scalar('Loss/train', loss, epoch)
             wandb.log({"train_loss_step": loss})
-            wandb.log({"prediction_permuted": x_permute*100})
         
         loss_dict['train'][epoch] = loss_train
-        wandb.log({"train_loss": loss_train})
+        wandb.log({"train_loss": loss_train, "train_permutation": permute_list})
         end_time = time.time()
-        print('Time elapsed for epoch{} : {:.3f}'.format(epoch, end_time - start_time))
+        print('Time elapsed for epoch{} : {:.3f}\n Mean train loss: {}'.format(epoch, end_time - start_time, np.mean(loss_train)))
 
 
         # Evaluate
@@ -83,8 +79,8 @@ def train_eval_vae(batch_size, epochs, train_set, test_set, model, optimizer, da
                 wandb.log({"val_loss_step": loss})
         mean_loss = np.mean(loss_val)
         loss_dict['val'][epoch] = loss_val
-        wandb.log({"val_loss": loss_val})
-        print('Epoch: {}, Test set ELBO: {:.3f}, permuted {:.3f}%'.format(epoch, mean_loss, np.mean(permute_list)*100))
+        wandb.log({"val_loss": loss_val, "val_permutation": permute_list})
+        print('Epoch: {}, Test set ELBO: {:.3f}, permuted {:.2f}%'.format(epoch, mean_loss, np.mean(permute_list)*100))
 
         # Do Link prediction
         # if epoch % 30 == 0:

@@ -17,8 +17,7 @@ class RMLP(nn.Module):
                                     nn.Dropout(.2),
                                     nn.Linear(2*h_dim, h_dim),
                                     nn.ReLU(),
-                                    nn.Linear(h_dim, input_dim),
-                                    nn.Sigmoid())
+                                    nn.Linear(h_dim, input_dim))
 
     def forward(self, x):
         return self.rmlp(x)

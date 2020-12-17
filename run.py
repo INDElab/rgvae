@@ -18,7 +18,6 @@ import os
 
 if __name__ == "__main__":
 
-
     # Arg parsing
     parser = argparse.ArgumentParser()
     parser.add_argument('--configs', nargs=1,
@@ -57,25 +56,18 @@ if __name__ == "__main__":
     my_dtype = torch.float64
     torch.set_default_dtype(my_dtype)
 
-    model_name = args['model_params']['model_name']
-    dataset = args['dataset_params']['dataset_name']
-    model_path = args['experiment']['load_model_path']
+    model_name = args['model_name']
+    dataset = args['dataset_name']
 
-    n = args['model_params']['n']       # number of triples per matrix ( =  matrix_n/2)
-    batch_size = 2**args['model_params']['batch_size_exp2']        # Choose an apropiate batch size. cpu: 2**9
+    n = args['n']       # number of triples per matrix ( =  matrix_n/2)
+    batch_size = 2**args['batch_size_exp2']        # Choose an apropiate batch size. cpu: 2**9
     if dataset == 'wn18rr' and batch_size > 2**10:                  # Avoid out of memory errors on LISA
         batch_size = 2**10
-        args['model_params']['batch_size_exp2'] = 10
+        args['batch_size_exp2'] = 10
 
-    h_dim = args['model_params']['h_dim']       # number of hidden dimensions
-    z_dim = args['model_params']['z_dim']      # number of latent dimensions
-    beta = args['model_params']['beta']         # beta parameter of betaVAE
     args['seed'] = seed = np.random.randint(1,21)
     np.random.seed(seed=seed)
     torch.manual_seed(seed)
-    epochs = args['model_params']['epochs']
-    lr = args['model_params']['lr']
-    k = args['model_params']['k'] if 'k' in args['model_params'] else 6
     wandb.init(config=args)
 
 
@@ -83,13 +75,13 @@ if __name__ == "__main__":
     (n2i, i2n), (r2i, i2r), train_set, test_set, all_triples = load_link_prediction_data(dataset, use_test_set=False)
     n_e = len(n2i)
     n_r = len(r2i)
-    args['model_params']['n_e'] = n_e
-    args['model_params']['n_r'] = n_r
+    args['n_e'] = n_e
+    args['n_r'] = n_r
     truedict = truedicts(all_triples)
     dataset_tools = [truedict, i2n, i2r]
 
     todate = date.today().strftime("%Y%m%d")
-    exp_name = args['experiment']['exp_name']
+    exp_name = args['exp_name']
     print('Experiment on the {}: {}'.format(todate, exp_name))
     print(args)
 
@@ -99,36 +91,36 @@ if __name__ == "__main__":
 
     # Initialize model and optimizer.
     if model_name == 'GCVAE':
-        model = GCVAE(args, n*2, n_r, n_e, dataset, h_dim=h_dim, z_dim=z_dim, beta=beta).to(device)
+        model = GCVAE(args, n_r, n_e, dataset,).to(device)
     if model_name == 'GCVAE2':
-        model = GCVAE2(args, n*2, n_r, n_e, dataset, h_dim=h_dim, z_dim=z_dim, beta=beta).to(device)
+        model = GCVAE2(args, n_r, n_e, dataset).to(device)
     elif model_name == 'GVAE':
-        model = GVAE(args, n*2, n_r, n_e, dataset, h_dim=h_dim, z_dim=z_dim, beta=beta).to(device)
+        model = GVAE(args, n_r, n_e, dataset).to(device)
     elif model_name == 'VEmbed':
         model = None
     else:
         raise ValueError('{} not defined!'.format(model_name))
 
     if model_name != 'VEmbed':
-        optimizer = Ranger(model.parameters(),lr=lr, k=k, betas=(.95,0.999), use_gc=True, gc_conv_only=False)
+        optimizer = Ranger(model.parameters(),lr=args['lr'], k=args['k'] if 'k' in args else 9, betas=(.95,0.999), use_gc=True, gc_conv_only=False)
         wandb.watch(model)
 
 
     # Load model
-    if args['experiment']['load_model']:
+    if args['load_model']:
         # model.load_state_dict(torch.load(model_path, map_location=torch.device(device))['model_state_dict'])
-        model.load_state_dict(torch.load(model_path, map_location=torch.device(device))['model_state_dict'])
+        model.load_state_dict(torch.load(args['load_model_path'], map_location=torch.device(device))['model_state_dict'])
         print('Saved model loaded.')
 
     # Train model
-    if args['experiment']['train']:
+    if args['train']:
         if model_name == "VEmbed":
-            train_lp_vembed(n_e, n_r, train_set[:limit], test_set[:limit], all_triples, epochs, batch_size, result_dir)
+            train_lp_vembed(n_e, n_r, train_set[:limit], test_set[:limit], all_triples, args['epochs'], batch_size, result_dir)
         else:
-            train_eval_vae(batch_size, epochs, train_set[:limit], test_set[:limit], model, optimizer, dataset_tools, result_dir)
+            train_eval_vae(batch_size, args['epochs'], train_set[:limit], test_set[:limit], model, optimizer, dataset_tools, result_dir)
     
     # Link prediction
-    if args['experiment']['link_prediction']:
+    if args['link_prediction']:
         if model_name == 'VEmbed':
             pass
         else:
