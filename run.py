@@ -56,7 +56,8 @@ if __name__ == "__main__":
     my_dtype = torch.float64
     torch.set_default_dtype(my_dtype)
 
-    model_name = args['model_name']
+    model_name = 'VEmbed'
+    # model_name = args['model_name']
     dataset = args['dataset_name']
 
     n = args['n']       # number of triples per matrix ( =  matrix_n/2)

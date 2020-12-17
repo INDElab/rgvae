@@ -95,8 +95,6 @@ def train_lp_vembed(n_e, n_r, train, test, alltriples, epochs: int, batch_size: 
     model = VLinkPredictor(torch.tensor(list(alltriples)), n_e, n_r, embedding=512, decoder='distmult', edropout=None, rdropout=None, init=0.85, biases=False, init_method='uniform', init_parms=(-1.0, 1.0), reciprocal=reciprocal)
     wandb.watch(model)
 
-    optimizer = Ranger(model.parameters(),lr=lr, k=k, betas=(.95,0.999), use_gc=True, gc_conv_only=False)
-
     tbw = SummaryWriter(log_dir=result_dir)
     dev = 'cuda' if torch.cuda.is_available() else 'cpu'
 

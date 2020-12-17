@@ -19,7 +19,7 @@ if __name__ == "__main__":
     configs['beta'] = 100                           # betaVAE ratio
     configs['adj_argmax'] = True
     configs['perm_inv'] = True
-    configs['softmax_E'] = False
+    configs['softmax_E'] = True
 
     configs['epochs'] = 200
     configs['lr'] = 5e-5

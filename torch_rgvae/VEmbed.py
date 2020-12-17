@@ -6,12 +6,12 @@ from torch_rgvae.decoders import DistMult
 
 
 class Venco(nn.Module):
-    def __init__(self, args, n_e: int, n_r: int):
+    def __init__(self, n_e: int, n_r: int, z_dim: int):
         super().__init__()
-        self.z_dim = args['z_dim'] if 'z_dim' in args else 2
+        self.z_dim = z_dim
         self.n_e = n_e
         self.n_r = n_r
-        self.model_params = args
+        # self.model_params = args
 
         # Encoder
         self.e_embed = nn.Embedding(n_e, 2*self.z_dim)
@@ -67,8 +67,8 @@ class VLinkPredictor(nn.Module):
 
         if decoder == 'distmult':
             self.decoder = DistMult(embedding)
-        elif decoder == 'transe':
-            self.decoder = TransE(embedding)
+        # elif decoder == 'transe':
+        #     self.decoder = TransE(embedding)
         else:
             raise Exception()
 
