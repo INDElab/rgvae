@@ -89,6 +89,7 @@ def train_eval_vae(batch_size, epochs, train_set, test_set, model, optimizer, da
         if (epoch+1) % 30 == 0 or (epoch+1) == epochs:
             print('Start interpolating the latent space and generating triples at epoch {}.'.format(epoch))
             interpolations = interpolate_triples(i2n,i2r, 5, model)
+            wandb.log({"interpolations": interpolations, "epoch": epoch})
             with open(result_dir+'/interpolation_e{}.pkl'.format(epoch), 'wb') as f:
                 pickle.dump(interpolations, f)
             wandb.save(result_dir + '/interpolation_e{}.pkl')
@@ -97,7 +98,7 @@ def train_eval_vae(batch_size, epochs, train_set, test_set, model, optimizer, da
             lp_start = time.time()
             lp_results =  link_prediction(model, testsub, truedict, batch_size)
             loss_dict['lp'][epoch] = lp_results
-            wandb.log(lp_results, step=epoch)
+            wandb.log(lp_results)
             lp_end = time.time()
             lp_file_path = result_dir + '/lp_e{}.json'.format(epoch)
             with open(lp_file_path, 'w') as outfile:
