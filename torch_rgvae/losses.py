@@ -26,11 +26,12 @@ def graph_CEloss(target, prediction, softmax_E: bool=True, l_A=1., l_E=1., l_F=1
     cce = torch.nn.CrossEntropyLoss()
 
     if softmax_E:
-        log_p_E = l_E*cce(E_hat, E)
+        # dce = torch.distributions.Categorical(E.permute(0,3,1,2))
+        log_p_E = l_E*cce(E_hat.permute(0,3,1,2), torch.argmax(E, -1, keepdim=False))
     else:
         log_p_E = l_E*bce(E_hat, E)
     log_p_A = l_A*bce(A_hat, A)
-    log_p_F = l_F*cce(F_hat, F)
+    log_p_F = l_F*cce(F_hat.permute(0,2,1), torch.argmax(F, -1, keepdim=False))
 
 
     # Weight and add loss

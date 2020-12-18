@@ -13,3 +13,4 @@ model_name: GCVAE2
 n: 1
 train: true
 z_dim: 100
+perm_inv: false
