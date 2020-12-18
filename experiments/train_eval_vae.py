@@ -58,9 +58,10 @@ def train_eval_vae(batch_size, epochs, train_set, test_set, model, optimizer, da
             wandb.log({"train_loss_step": loss})
         
         loss_dict['train'][epoch] = loss_train
-        wandb.log({"train_loss": loss_train, "train_permutation": permute_list})
+        wandb.log({"train_loss_mean": np.mean(loss_train), "train_loss_std": np.std(loss_train), 
+                    "train_permutation_mean": np.mean(permute_list), "train_permutation_std": np.std(permute_list), "epoch": epoch})
         end_time = time.time()
-        print('Time elapsed for epoch{} : {:.3f}\n Mean train loss: {}'.format(epoch, end_time - start_time, np.mean(loss_train)))
+        print('Time elapsed for epoch{} : {:.3f}\n Mean train elbo: {:.3f}'.format(epoch, end_time - start_time, np.mean(loss_train)))
 
 
         # Evaluate
@@ -79,12 +80,14 @@ def train_eval_vae(batch_size, epochs, train_set, test_set, model, optimizer, da
                 wandb.log({"val_loss_step": loss})
         mean_loss = np.mean(loss_val)
         loss_dict['val'][epoch] = loss_val
-        wandb.log({"val_loss": loss_val, "val_permutation": permute_list})
-        print('Epoch: {}, Test set ELBO: {:.3f}, permuted {:.2f}%'.format(epoch, mean_loss, np.mean(permute_list)*100))
+        wandb.log({"val_loss_mean": mean_loss, "val_loss_std": np.std(loss_val), 
+                    "val_permutation_mean": np.mean(permute_list), "val_permutation_std": np.std(permute_list), "epoch": epoch})
+        print('Epoch: {}, Mean eval elbo: {:.3f}, permuted {:.2f}%'.format(epoch, mean_loss, np.mean(permute_list)*100))
 
         # Do Link prediction
         # if epoch % 30 == 0:
-        if epoch+1 % 30 == 0:
+        if (epoch+1) % 30 == 0 or (epoch+1) == epochs:
+            print('Start interpolating the latent space and generating triples at epoch {}.'.format(epoch))
             interpolations = interpolate_triples(i2n,i2r, 5, model)
             with open(result_dir+'/interpolation_e{}.pkl'.format(epoch), 'wb') as f:
                 pickle.dump(interpolations, f)
@@ -94,7 +97,7 @@ def train_eval_vae(batch_size, epochs, train_set, test_set, model, optimizer, da
             lp_start = time.time()
             lp_results =  link_prediction(model, testsub, truedict, batch_size)
             loss_dict['lp'][epoch] = lp_results
-            wandb.log(lp_results)
+            wandb.log(lp_results, step=epoch)
             lp_end = time.time()
             lp_file_path = result_dir + '/lp_e{}.json'.format(epoch)
             with open(lp_file_path, 'w') as outfile:
@@ -110,7 +113,6 @@ def train_eval_vae(batch_size, epochs, train_set, test_set, model, optimizer, da
         torch.save({
             'epoch': epoch,
             'model_state_dict': model.state_dict(),
-            'optimizer_state_dict': optimizer.state_dict(),
             'model_params': model.model_params,
             'loss_val': mean_loss,
             'loss_log': loss_dict},

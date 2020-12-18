@@ -13,8 +13,11 @@ import pickle as pkl
 
 def interpolate_triples(i2n, i2r, steps: int=5, model=None, model_path: str=None, i_type: str='confidence95', i_dims: tuple=(0,10,20,30)):
 
-    with open('data/fb15k/e2t_dict.pkl', 'rb') as f:
-        entity_dict = pkl.load(f)
+    if model.dataset_name == 'fb15k':
+        with open('data/fb15k/e2t_dict.pkl', 'rb') as f:
+            entity_dict = pkl.load(f)
+    else:
+        entity_dict = None
     
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print('Using device:', device)

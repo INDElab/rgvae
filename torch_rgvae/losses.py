@@ -26,19 +26,21 @@ def graph_CEloss(target, prediction, softmax_E: bool=True, l_A=1., l_E=1., l_F=1
     cce = torch.nn.CrossEntropyLoss()
 
     if softmax_E:
-        loss_E = l_E*cce(E_hat, E)
+        log_p_E = l_E*cce(E_hat, E)
     else:
-        loss_E = l_E*bce(E_hat, E)
-    loss_A = l_A*bce(A_hat, A)
-    loss_F = l_F*cce(F_hat, F)
+        log_p_E = l_E*bce(E_hat, E)
+    log_p_A = l_A*bce(A_hat, A)
+    log_p_F = l_F*cce(F_hat, F)
 
 
     # Weight and add loss
-    loss = loss_A + loss_E + loss_F
+    log_p = log_p_A + log_p_E + log_p_F
     x_permute = torch.ones_like(A)
-    wandb.log({"Recon Loss": loss, "Recon Loss A": loss_A, "Recon Loss E": loss_E, "Recon Loss F": loss_F})
-
-    return loss, x_permute
+    wandb.log({"recon_loss_mean": torch.mean(log_p), "recon_loss_A_mean": torch.mean(log_p_A),
+             "recon_loss_E_mean": torch.mean(log_p_E), "recon_loss_F_mean": torch.mean(log_p_F),
+             "recon_loss_std": torch.std(log_p), "recon_loss_A_std": torch.std(log_p_A),
+             "recon_loss_E_std": torch.std(log_p_E), "recon_loss_F_std": torch.std(log_p_F),})
+    return log_p, x_permute
 
 
 def mpgm_loss(target, prediction, l_A=1., l_E=1., l_F=1., zero_diag: bool=False, softmax_E: bool=True):
@@ -115,7 +117,10 @@ def mpgm_loss(target, prediction, l_A=1., l_E=1., l_F=1., zero_diag: bool=False,
         log_p_E = ((1/(k*(k_zero))) * torch.sum(torch.sum(E_t * torch.log(E_hat) + (1 - E_t) * torch.log(1 - E_hat), -1) * mask, (-2,-1))).unsqueeze(-1)
 
     log_p = l_A * log_p_A + l_E * log_p_E + l_F * log_p_F
-    wandb.log({"Recon Loss": log_p, "Recon Loss A": l_A * log_p_A, "Recon Loss E": l_E * log_p_E, "Recon Loss F": l_F * log_p_F})
+    wandb.log({"recon_loss_mean": torch.mean(log_p), "recon_loss_A_mean": torch.mean(l_A * log_p_A),
+             "recon_loss_E_mean": torch.mean(l_E * log_p_E), "recon_loss_F_mean": torch.mean(l_F * log_p_F),
+             "recon_loss_std": torch.std(log_p), "recon_loss_A_std": torch.std(l_A * log_p_A),
+             "recon_loss_E_std": torch.std(l_E * log_p_E), "recon_loss_F_std": torch.std(l_F * log_p_F),})
 
     return log_p, X
 
@@ -129,6 +134,6 @@ def kl_divergence(mean, logvar, raxis=1):
     Returns Kl divergence in batch shape.
     """
     kl_term = 1/2 * torch.sum((logvar.exp() + mean.pow(2) - logvar - 1), dim=raxis)
-    wandb.log({"Reg Loss": kl_term})
+    wandb.log({"reg_loss_mean": torch.mean(kl_term), "reg_loss_std": torch.std(kl_term)})
     
     return kl_term.unsqueeze(-1)

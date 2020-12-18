@@ -151,7 +151,7 @@ def matrix2triple(graph):
     return triples
 
 
-def translate_triple(triples, i2n, i2r, entity_dict):
+def translate_triple(triples, i2n, i2r, entity_dict=None):
     """
     Translate an indexed triple back to text.
     Args:
@@ -161,7 +161,10 @@ def translate_triple(triples, i2n, i2r, entity_dict):
     triples_text = list()
     for triple in triples:
         (s,r,o) = triple
-        triples_text.append((entity_dict[i2n[s]][0], i2r[r], entity_dict[i2n[o]][0]))
+        if entity_dict is None:
+            triples_text.append((i2n[s], i2r[r], i2n[o]))
+        else:
+            triples_text.append((entity_dict[i2n[s]][0], i2r[r], entity_dict[i2n[o]][0]))
     return triples_text
 
 

@@ -26,3 +26,5 @@ del entity2text
 file_path = 'data/fb15k/e2t_dict.pkl'
 with open(file_path, 'wb') as f:
     pkl.dump(entity_dict, f)
+
+kee = '08794366'

@@ -13,4 +13,3 @@ tensorboard
 wandb
 pickle
 json
-pyyaml

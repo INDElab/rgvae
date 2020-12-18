@@ -42,10 +42,7 @@ if __name__ == "__main__":
         develope = False
         limit = -1
 
-    if develope:
-        wandb.init(project="offline-dev", mode='offline')
-    else:
-        wandb.login(key='6d802b44b97d25931bacec09c5f1095e6c28fe36')
+    wandb.login(key='6d802b44b97d25931bacec09c5f1095e6c28fe36')
     print('Dev mode: {}'.format(develope))
 
     # Torch settings
@@ -56,8 +53,8 @@ if __name__ == "__main__":
     my_dtype = torch.float64
     torch.set_default_dtype(my_dtype)
 
-    model_name = 'VEmbed'
-    # model_name = args['model_name']
+    # model_name = 'VEmbed'
+    model_name = args['model_name']
     dataset = args['dataset_name']
 
     n = args['n']       # number of triples per matrix ( =  matrix_n/2)
@@ -69,7 +66,11 @@ if __name__ == "__main__":
     args['seed'] = seed = np.random.randint(1,21)
     np.random.seed(seed=seed)
     torch.manual_seed(seed)
-    wandb.init(config=args)
+    if develope:
+        # wandb.init(project="dev-mode")
+        wandb.init(project="offline-dev", mode='offline')
+    else:
+        wandb.init(config=args)
 
 
     # Get data
@@ -129,7 +130,7 @@ if __name__ == "__main__":
             testsub = torch.tensor(test_set[:300], device=d())      # TODO remove the testset croping
 
             lp_results =  link_prediction(model, testsub, truedict, batch_size)
-            
+            wandb.log({"full_link_prediction": lp_results})
             lp_file_path = result_dir + '/lp_{}_{}.json'.format(exp_name, todate)
             with open(lp_file_path, 'w') as outfile:
                 json.dump(lp_results, outfile)
