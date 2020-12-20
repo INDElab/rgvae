@@ -9,7 +9,7 @@ link_prediction: false
 load_model: false
 load_model_path: []
 lr: 5.0e-05
-model_name: GCVAE2
+model_name: GCVAE
 n: 1
 train: true
 z_dim: 100

@@ -94,7 +94,7 @@ if __name__ == "__main__":
     # Initialize model and optimizer.
     if model_name == 'GCVAE':
         model = GCVAE(args, n_r, n_e, dataset,).to(device)
-    if model_name == 'GCVAE2':
+    elif model_name == 'GCVAE2':
         model = GCVAE2(args, n_r, n_e, dataset).to(device)
     elif model_name == 'GVAE':
         model = GVAE(args, n_r, n_e, dataset).to(device)
