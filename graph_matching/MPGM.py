@@ -126,10 +126,10 @@ class MPGM():
         self.Xs = Xs
         for n in range(n_iterations):
             Xs = Xs * S_iaia + torch.sum(torch.max(S_iajb * Xs.unsqueeze(1).unsqueeze(1),-1, out=None)[0],-1)
-            Xs = torch.nan_to_num(Xs)
+            Xs = torch.where(torch.isnan(Xs), torch.zeros_like(Xs), Xs)
             Xs_norm = torch.norm(Xs, p='fro', dim=[-2,-1])
             Xs = (Xs / Xs_norm.unsqueeze(-1).unsqueeze(-1))
-        Xs = torch.nan_to_num(Xs)
+        Xs = torch.where(torch.isnan(Xs), torch.zeros_like(Xs), Xs)        
         return Xs
 
     def max_pool_loop(self, S, n_iterations: int=300):
