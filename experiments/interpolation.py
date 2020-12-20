@@ -42,7 +42,7 @@ def interpolate_triples(i2n, i2r, steps: int=5, model=None, model_path: str=None
     pred_list = list()
     triples = list()
     interpolations = dict()
-    interpolations['z1'] = z1
+    # interpolations['z1'] = z1
     interpolations['between2'] = dict()
     interpolations['confidence95'] = dict()
 
@@ -61,7 +61,7 @@ def interpolate_triples(i2n, i2r, steps: int=5, model=None, model_path: str=None
                 print(text_triple)
             else:
                 triples.append([])
-        interpolations['between2']['confi'] = pred_list.cpu().numpy()
+        interpolations['between2']['confi'] = pred_list
         interpolations['between2']['text'] = triples
         pred_list = list()
         triples = list()
