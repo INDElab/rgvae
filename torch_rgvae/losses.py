@@ -37,10 +37,10 @@ def graph_CEloss(target, prediction, softmax_E: bool=True, l_A=1., l_E=1., l_F=1
     # Weight and add loss
     log_p = log_p_A + log_p_E + log_p_F
     x_permute = torch.ones_like(A)
-    wandb.log({"recon_loss_mean": torch.mean(log_p).cpu().numpy(), "recon_loss_A_mean": torch.mean(log_p_A).cpu().numpy(),
-             "recon_loss_E_mean": torch.mean(log_p_E).cpu().numpy(), "recon_loss_F_mean": torch.mean(log_p_F).cpu().numpy(),
-             "recon_loss_std": torch.std(log_p).cpu().numpy(), "recon_loss_A_std": torch.std(log_p_A).cpu().numpy(),
-             "recon_loss_E_std": torch.std(log_p_E).cpu().numpy(), "recon_loss_F_std": torch.std(log_p_F).cpu().numpy(),})
+    wandb.log({"recon_loss_mean": torch.mean(log_p).detach().cpu().numpy(), "recon_loss_A_mean": torch.mean(log_p_A).detach().cpu().numpy(),
+             "recon_loss_E_mean": torch.mean(log_p_E).detach().cpu().numpy(), "recon_loss_F_mean": torch.mean(log_p_F).detach().cpu().numpy(),
+             "recon_loss_std": torch.std(log_p).detach().cpu().numpy(), "recon_loss_A_std": torch.std(log_p_A).detach().cpu().numpy(),
+             "recon_loss_E_std": torch.std(log_p_E).detach().cpu().numpy(), "recon_loss_F_std": torch.std(log_p_F).detach().cpu().numpy(),})
     return log_p, x_permute
 
 
@@ -118,10 +118,10 @@ def mpgm_loss(target, prediction, l_A=1., l_E=1., l_F=1., zero_diag: bool=False,
         log_p_E = ((1/(k*(k_zero))) * torch.sum(torch.sum(E_t * torch.log(E_hat) + (1 - E_t) * torch.log(1 - E_hat), -1) * mask, (-2,-1))).unsqueeze(-1)
 
     log_p = l_A * log_p_A + l_E * log_p_E + l_F * log_p_F
-    wandb.log({"recon_loss_mean": torch.mean(log_p).cpu().numpy(), "recon_loss_A_mean": torch.mean(l_A * log_p_A).cpu().numpy(),
-             "recon_loss_E_mean": torch.mean(l_E * log_p_E).cpu().numpy(), "recon_loss_F_mean": torch.mean(l_F * log_p_F).cpu().numpy(),
-             "recon_loss_std": torch.std(log_p).cpu().numpy(), "recon_loss_A_std": torch.std(l_A * log_p_A).cpu().numpy(),
-             "recon_loss_E_std": torch.std(l_E * log_p_E).cpu().numpy(), "recon_loss_F_std": torch.std(l_F * log_p_F).cpu().numpy(),})
+    wandb.log({"recon_loss_mean": torch.mean(log_p).detach().cpu().numpy(), "recon_loss_A_mean": torch.mean(l_A * log_p_A).detach().cpu().numpy(),
+             "recon_loss_E_mean": torch.mean(l_E * log_p_E).detach().cpu().numpy(), "recon_loss_F_mean": torch.mean(l_F * log_p_F).detach().cpu().numpy(),
+             "recon_loss_std": torch.std(log_p).detach().cpu().numpy(), "recon_loss_A_std": torch.std(l_A * log_p_A).detach().cpu().numpy(),
+             "recon_loss_E_std": torch.std(l_E * log_p_E).detach().cpu().numpy(), "recon_loss_F_std": torch.std(l_F * log_p_F).detach().cpu().numpy(),})
 
     return log_p, X
 
@@ -135,6 +135,6 @@ def kl_divergence(mean, logvar, raxis=1):
     Returns Kl divergence in batch shape.
     """
     kl_term = 1/2 * torch.sum((logvar.exp() + mean.pow(2) - logvar - 1), dim=raxis)
-    wandb.log({"reg_loss_mean": torch.mean(kl_term).cpu().numpy(), "reg_loss_std": torch.std(kl_term).cpu().numpy()})
+    wandb.log({"reg_loss_mean": torch.mean(kl_term).detach().cpu().numpy(), "reg_loss_std": torch.std(kl_term).detach().cpu().numpy()})
     
     return kl_term.unsqueeze(-1)
