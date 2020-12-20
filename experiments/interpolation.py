@@ -42,7 +42,7 @@ def interpolate_triples(i2n, i2r, steps: int=5, model=None, model_path: str=None
     pred_list = list()
     triples = list()
     interpolations = dict()
-    interpolations['z1'] = z1
+    # interpolations['z1'] = z1
     interpolations['between2'] = dict()
     interpolations['confidence95'] = dict()
 
@@ -57,11 +57,11 @@ def interpolate_triples(i2n, i2r, steps: int=5, model=None, model_path: str=None
             pred_dense = matrix2triple(prediction)
             if len(pred_dense) > 0:
                 text_triple = translate_triple(pred_dense, i2n, i2r, entity_dict)
-                triples.append(text_triple)
+                triples.append(torch.max(text_triple[0], -1)[0])
                 print(text_triple)
             else:
                 triples.append([])
-        interpolations['between2']['numbers'] = pred_list.cpu().numpy()
+        interpolations['between2']['confi'] = pred_list
         interpolations['between2']['text'] = triples
         pred_list = list()
         triples = list()
@@ -80,11 +80,11 @@ def interpolate_triples(i2n, i2r, steps: int=5, model=None, model_path: str=None
                 pred_dense = matrix2triple(prediction)
                 if len(pred_dense) > 0:
                     text_triple = translate_triple(pred_dense, i2n, i2r, entity_dict)
-                    triples.append(text_triple)
+                    triples.append(torch.max(text_triple[0], -1)[0])
                     print(text_triple)
                 else:
                     triples.append([])  
-        interpolations['confidence95']['numbers'] = pred_list
+        interpolations['confidence95']['confi'] = pred_list
         interpolations['confidence95']['text'] = triples       
     return interpolations
 
