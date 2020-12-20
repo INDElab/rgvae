@@ -36,8 +36,8 @@ def interpolate_triples(i2n, i2r, steps: int=5, model=None, model_path: str=None
         model.load_state_dict(checkpoint['model_state_dict'])
         print('Model loaded.')
 
-    z1 = torch.randn((1,model.z_dim))
-    z2 = torch.randn((1,model.z_dim))
+    z1 = torch.randn((1,model.z_dim), device=d())
+    z2 = torch.randn((1,model.z_dim), device=d())
 
     pred_list = list()
     triples = list()
