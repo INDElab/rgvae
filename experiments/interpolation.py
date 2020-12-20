@@ -55,7 +55,7 @@ def interpolate_triples(i2n, i2r, steps: int=5, model=None, model_path: str=None
             print(prediction)
             pred_dense = matrix2triple(prediction)
             if len(pred_dense) > 0:
-                pred_list.append(torch.max(prediction[0], -1)[0])
+                pred_list.append(torch.max(prediction[0], -1)[0].detach().cpu().numpy())
                 text_triple = translate_triple(pred_dense, i2n, i2r, entity_dict)
                 triples.append(text_triple)
                 print(text_triple)
@@ -78,7 +78,7 @@ def interpolate_triples(i2n, i2r, steps: int=5, model=None, model_path: str=None
                 print(prediction)
                 pred_dense = matrix2triple(prediction)
                 if len(pred_dense) > 0:
-                    pred_list.append(torch.max(prediction[0], -1)[0])
+                    pred_list.append(torch.max(prediction[0], -1)[0].detach().cpu().numpy())
                     text_triple = translate_triple(pred_dense, i2n, i2r, entity_dict)
                     triples.append(text_triple)
                     print(text_triple)
