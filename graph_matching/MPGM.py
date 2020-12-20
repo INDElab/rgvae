@@ -126,8 +126,10 @@ class MPGM():
         self.Xs = Xs
         for n in range(n_iterations):
             Xs = Xs * S_iaia + torch.sum(torch.max(S_iajb * Xs.unsqueeze(1).unsqueeze(1),-1, out=None)[0],-1)
+            Xs = torch.nan_to_num(Xs)
             Xs_norm = torch.norm(Xs, p='fro', dim=[-2,-1])
             Xs = (Xs / Xs_norm.unsqueeze(-1).unsqueeze(-1))
+        Xs = torch.nan_to_num(Xs)
         return Xs
 
     def max_pool_loop(self, S, n_iterations: int=300):
@@ -192,7 +194,6 @@ class MPGM():
 
     def hungarian_batch(self, Xs):
         X = Xs.clone().cpu().numpy()
-        print('X in lin_sum_al: ' + X)
         # Make it a cost matrix
         X = np.ones_like(X) - X
         for i in range(X.shape[0]):

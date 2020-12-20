@@ -61,7 +61,7 @@ def interpolate_triples(i2n, i2r, steps: int=5, model=None, model_path: str=None
                 print(text_triple)
             else:
                 triples.append([])
-        interpolations['between2']['numbers'] = pred_list
+        interpolations['between2']['numbers'] = pred_list.cpu().numpy()
         interpolations['between2']['text'] = triples
         pred_list = list()
         triples = list()
