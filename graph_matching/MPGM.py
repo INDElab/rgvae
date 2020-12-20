@@ -192,7 +192,7 @@ class MPGM():
 
     def hungarian_batch(self, Xs):
         X = Xs.clone().cpu().numpy()
-
+        print('X in lin_sum_al: ' + X)
         # Make it a cost matrix
         X = np.ones_like(X) - X
         for i in range(X.shape[0]):
