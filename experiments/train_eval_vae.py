@@ -30,7 +30,7 @@ def train_eval_vae(batch_size, epochs, train_set, test_set, model, optimizer, da
     n_r = model.n_r
     truedict, i2n, i2r = dataset_tools
 
-    old_loss = best_loss = 3333
+    old_loss = best_loss = 3333.
     loss_dict = {'val': dict(), 'train': dict(), 'lp': dict()}
     writer = SummaryWriter(log_dir=result_dir)
 

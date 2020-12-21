@@ -152,6 +152,7 @@ class GVAE(nn.Module):
         """
         assert z.shape[-1] == self.z_dim
         a, e, f = self.reconstruct(self.decoder(z))
+        a_shape = a.shape
 
         if self.adj_argmax:
             a = a.view(a_shape[0], -1)

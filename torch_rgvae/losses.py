@@ -36,7 +36,7 @@ def graph_CEloss(target, prediction, softmax_E: bool=True, l_A=1., l_E=1., l_F=1
     log_p_F = l_F*cce(F_hat.permute(0,2,1), torch.argmax(F, -1, keepdim=False))
 
     # Weight and add loss
-    log_p = log_p_A + log_p_E + log_p_F
+    log_p = - log_p_A - log_p_E - log_p_F
 
     x_permute = torch.ones_like(A)          # Just a placeholder
     wandb.log({"recon_loss_mean": log_p.detach().cpu().numpy(), "recon_loss_A_mean": log_p_A.detach().cpu().numpy(),
