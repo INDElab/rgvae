@@ -76,7 +76,7 @@ def train_lp_vembed(n_e, n_r, train, test, alltriples, beta: int, epochs: int, b
     repeats = 1
     sched = True
     check_simple = True
-    negative_rate = [0,0,0]         # No neg sampling in VAE
+    negative_rate = [10,0,10]         # No neg sampling in VAE
     limit_negatives = True
     loss_fn = 'bce'
     reciprocal = True
@@ -245,8 +245,6 @@ def train_lp_vembed(n_e, n_r, train, test, alltriples, beta: int, epochs: int, b
                 # rbackward += toc()
 
                 optimizer.step()
-
-                tbw.add_scalar('biases/train_loss', float(loss.item()), seen)
 
             if e == 0:
                 print(f'\n pred: forward {tforward:.4}, backward {tbackward:.4}')
