@@ -52,7 +52,7 @@ def interpolate_triples(i2n, i2r, steps: int=5, model=None, model_path: str=None
         step = (z2 - z1) / (steps-1)
         for i in range(steps):
             prediction = model.sample(z1 + step*i)
-            print(prediction)
+            print(prediction.detach().cpu().numpy())
             pred_dense = matrix2triple(prediction)
             if len(pred_dense) > 0:
                 pred_list.append(torch.max(prediction[0], -1)[0].detach().cpu().numpy())
@@ -75,7 +75,7 @@ def interpolate_triples(i2n, i2r, steps: int=5, model=None, model_path: str=None
             for i in range(steps):
                 z_pred[:, i_dim] = 1.96 + step * i
                 prediction = model.sample(z_pred)
-                print(prediction)
+                print(prediction.detach().cpu().numpy())
                 pred_dense = matrix2triple(prediction)
                 if len(pred_dense) > 0:
                     pred_list.append(torch.max(prediction[0], -1)[0].detach().cpu().numpy())

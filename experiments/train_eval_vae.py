@@ -107,9 +107,9 @@ def train_eval_vae(batch_size, epochs, train_set, test_set, model, optimizer, da
             print('Saved link prediction results!')
             print('Time elapsed for Link prediction at epoch{} : {:.3f}'.format(epoch, lp_end - lp_start))
             print('MRR {:.4}\t hits@1 {:.4}\t  hits@3 {:.4}\t  hits@10 {:.4}'.format(lp_results['mrr'],
-                                                                                                lp_results['hits@1'],
-                                                                                                lp_results['hits@3'],
-                                                                                                lp_results['hits@10']))
+                                                                                                lp_results['h@1'],
+                                                                                                lp_results['h@3'],
+                                                                                                lp_results['h@10']))
 
         torch.save({
             'epoch': epoch,

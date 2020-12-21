@@ -152,7 +152,6 @@ class GVAE(nn.Module):
         """
         assert z.shape[-1] == self.z_dim
         a, e, f = self.reconstruct(self.decoder(z))
-        a_shape = a.shape
 
         if self.adj_argmax:
             a = a.view(a_shape[0], -1)
@@ -165,13 +164,15 @@ class GVAE(nn.Module):
 
         if self.softmax_E:
             # in this case e will be dense
+            e = self.softmax(e)
             e_dist = torch.distributions.Categorical(e)
         else:
+            e = self.sigmoid(e)
             e_dist = torch.distributions.Bernoulli(e)
         e_dense = e_dist.sample()
+        f = self.softmax(f)
         f_dist = torch.distributions.Categorical(f)
         f_dense = f_dist.sample()
-
 
         return (a_sample, e_dense, f_dense)
 

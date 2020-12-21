@@ -6,11 +6,12 @@ from torch_rgvae.decoders import DistMult
 
 
 class Venco(nn.Module):
-    def __init__(self, n_e: int, n_r: int, z_dim: int):
+    def __init__(self, n_e: int, n_r: int, z_dim: int, var: bool=True):
         super().__init__()
         self.z_dim = z_dim
         self.n_e = n_e
         self.n_r = n_r
+        self.var = var
         # self.model_params = args
 
         # Encoder
@@ -33,7 +34,10 @@ class Venco(nn.Module):
         """
         mean = mean_logvar[:, :, :self.z_dim]
         logvar = mean_logvar[:, :, self.z_dim:]
-        eps = torch.normal(torch.zeros_like(mean), std=1.).to(d())
+        if self.var:
+            eps = torch.normal(torch.zeros_like(mean), std=1.).to(d())
+        else:
+            eps = 1.
         return eps * torch.exp(logvar * .5) + mean
 
 

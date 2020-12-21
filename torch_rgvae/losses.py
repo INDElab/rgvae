@@ -3,7 +3,8 @@ Collection of loss functions.
 """
 from graph_matching.MPGM import MPGM
 from utils import *
-import wandb
+import wandb, torch
+import torch.nn as nn
 
 
 def graph_CEloss(target, prediction, softmax_E: bool=True, l_A=1., l_E=1., l_F=1.):
@@ -23,27 +24,23 @@ def graph_CEloss(target, prediction, softmax_E: bool=True, l_A=1., l_E=1., l_F=1
 
     # Define loss function
     bce = torch.nn.BCELoss()
-    # cce = torch.nn.CrossEntropyLoss()
+    cce = torch.nn.CrossEntropyLoss()
+    sigmoid = nn.Sigmoid()
 
-    # if softmax_E:
-    #     # dce = torch.distributions.Categorical(E.permute(0,3,1,2))
-    #     log_p_E = l_E*cce(E_hat.permute(0,3,1,2), torch.argmax(E, -1, keepdim=False))
-    # else:
-    #     log_p_E = l_E*bce(E_hat, E)
-    log_p_A = l_A*bce(A_hat, A)
-    # log_p_F = l_F*cce(F_hat.permute(0,2,1), torch.argmax(F, -1, keepdim=False))
-    log_p_E = l_E*bce(E_hat, E)
-    log_p_F = l_F*bce(F_hat, F)
-
-
+    if softmax_E:
+        log_p_E = l_E*cce(E_hat.permute(0,3,1,2), torch.argmax(E, -1, keepdim=False))
+    else:
+        log_p_E = l_E*bce(sigmoid(E_hat), E)
+        
+    log_p_A = l_A*bce(sigmoid(A_hat), A)
+    log_p_F = l_F*cce(F_hat.permute(0,2,1), torch.argmax(F, -1, keepdim=False))
 
     # Weight and add loss
     log_p = log_p_A + log_p_E + log_p_F
-    x_permute = torch.ones_like(A)
-    wandb.log({"recon_loss_mean": torch.mean(log_p).detach().cpu().numpy(), "recon_loss_A_mean": torch.mean(log_p_A).detach().cpu().numpy(),
-             "recon_loss_E_mean": torch.mean(log_p_E).detach().cpu().numpy(), "recon_loss_F_mean": torch.mean(log_p_F).detach().cpu().numpy(),
-             "recon_loss_std": torch.std(log_p).detach().cpu().numpy(), "recon_loss_A_std": torch.std(log_p_A).detach().cpu().numpy(),
-             "recon_loss_E_std": torch.std(log_p_E).detach().cpu().numpy(), "recon_loss_F_std": torch.std(log_p_F).detach().cpu().numpy(),})
+
+    x_permute = torch.ones_like(A)          # Just a placeholder
+    wandb.log({"recon_loss_mean": log_p.detach().cpu().numpy(), "recon_loss_A_mean": log_p_A.detach().cpu().numpy(),
+             "recon_loss_E_mean": log_p_E.detach().cpu().numpy(), "recon_loss_F_mean": log_p_F.detach().cpu().numpy()})
     return log_p, x_permute
 
 
@@ -61,7 +58,14 @@ def mpgm_loss(target, prediction, l_A=1., l_E=1., l_F=1., zero_diag: bool=False,
         l_F: weight for BCE of F
         zero_diag: if to zero out the diagonal in log_A term_3 and log_E.
     """
+    sigmoid = nn.Sigmoid()
+    softmax = nn.Softmax(dim=-1)
+
     A, E, F = target
+    if softmax_E:
+        (A, E, F) = (sigmoid(A), softmax(E), softmax(F))
+    else:
+        (A, E, F) = (sigmoid(A), sigmoid(E), softmax(F))
 
     A_hat, E_hat, F_hat = prediction
     bs = A.shape[0]

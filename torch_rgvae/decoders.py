@@ -65,8 +65,7 @@ class DistMult(Decoder):
         :param r: relation embedded
         :param o: object embedded
         """
-        # TODO fix the si pi oi thing 
-
+        
         if len(s.size()) == len(p.size()) == len(o.size()): # optimizations for common broadcasting
             if p.size(-2) == 1 and o.size(-2) == 1:
                 singles = p * o # ignoring batch dimensions, this is a single vector

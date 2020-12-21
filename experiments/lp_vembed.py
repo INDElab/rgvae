@@ -76,7 +76,7 @@ def train_lp_vembed(n_e, n_r, train, test, alltriples, epochs: int, batch_size: 
     repeats = 1
     sched = True
     check_simple = True
-    negative_rate = [10,0,10]
+    negative_rate = [0,0,0]         # No neg sampling in VAE
     limit_negatives = True
     loss_fn = 'bce'
     reciprocal = True
