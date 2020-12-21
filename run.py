@@ -117,7 +117,7 @@ if __name__ == "__main__":
     # Train model
     if args['train']:
         if model_name == "VEmbed":
-            train_lp_vembed(n_e, n_r, train_set[:limit], test_set[:limit], all_triples, args['epochs'], batch_size, result_dir, eval_int=40)
+            train_lp_vembed(n_e, n_r, train_set[:limit], test_set[:limit], all_triples, args['beta'], args['epochs'], batch_size, result_dir, eval_int=40)
         else:
             train_eval_vae(batch_size, args['epochs'], train_set[:limit], test_set[:limit], model, optimizer, dataset_tools, result_dir)
     

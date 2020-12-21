@@ -68,7 +68,7 @@ def corrupt_one(batch, candidates, target):
 def prt(to_p, end='\n'):
     print(to_p + end)
 
-def train_lp_vembed(n_e, n_r, train, test, alltriples, epochs: int, batch_size: int, result_dir: str, test_batch: int=5, eval_int: int=3):
+def train_lp_vembed(n_e, n_r, train, test, alltriples, beta: int, epochs: int, batch_size: int, result_dir: str, test_batch: int=5, eval_int: int=3):
     """
     Source: pbloem/embed
     """
@@ -208,9 +208,13 @@ def train_lp_vembed(n_e, n_r, train, test, alltriples, epochs: int, batch_size: 
 
                         tic()
                         if loss_fn == 'bce':
-                            loss = F.binary_cross_entropy_with_logits(out, labels, weight=weight)
-                        elif loss_fn == 'ce':
-                            loss = F.cross_entropy(out, labels)
+                            out = F.sigmoid(out)
+                            recon_loss = F.binary_cross_entropy_with_logits(out, labels, weight=weight)
+                            wandb.log({"recon_loss": recon_loss})
+                            reg_loss = kl_divergence(model.mean, model.logvar)
+                            loss = beta * reg_loss - recon_loss
+                        # elif loss_fn == 'ce':
+                        #     loss = F.cross_entropy(out, labels)
                         wandb.log({"loss": loss})
                         assert not torch.isnan(loss), 'Loss has become NaN'
 
@@ -226,19 +230,19 @@ def train_lp_vembed(n_e, n_r, train, test, alltriples, epochs: int, batch_size: 
 
                 tic()
                 regloss = None
-                if reg_eweight is not None:
-                    regloss = model.penalty(which='entities', p=reg_exp, rweight=reg_eweight)
+                # if reg_eweight is not None:
+                #     regloss = model.penalty(which='entities', p=reg_exp, rweight=reg_eweight)
 
-                if reg_rweight is not None:
-                    regloss = model.penalty(which='relations', p=reg_exp, rweight=reg_rweight)
-                rforward += toc()
+                # if reg_rweight is not None:
+                #     regloss = model.penalty(which='relations', p=reg_exp, rweight=reg_rweight)
+                # rforward += toc()
 
-                tic()
-                if regloss is not None:
-                    sumloss += float(regloss.item())
-                    regloss.backward()
-                    wandb.log({"regloss": regloss})
-                rbackward += toc()
+                # tic()
+                # if regloss is not None:
+                #     sumloss += float(regloss.item())
+                #     regloss.backward()
+                #     wandb.log({"regloss": regloss})
+                # rbackward += toc()
 
                 optimizer.step()
 

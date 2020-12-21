@@ -1,6 +1,6 @@
 batch_size_exp2: 6
-beta: 100
-dataset_name: wn18rr
+beta: 1
+dataset_name: fb15k
 epochs: 200
 exp_name: config_file
 h_dim: 512

@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from lp_utils import d
 from torch_rgvae.decoders import DistMult
+from torch_rgvae.losses import kl_divergence
 
 
 
@@ -32,8 +33,8 @@ class Venco(nn.Module):
         """
         Reparametrization trick.
         """
-        mean = mean_logvar[:, :, :self.z_dim]
-        logvar = mean_logvar[:, :, self.z_dim:]
+        self.mean = mean = mean_logvar[:, :, :self.z_dim]
+        self.logvar = logvar = mean_logvar[:, :, self.z_dim:]
         if self.var:
             eps = torch.normal(torch.zeros_like(mean), std=1.).to(d())
         else:
