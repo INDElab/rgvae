@@ -23,6 +23,8 @@ import matplotlib.pyplot as plt
 # import multiprocessing as mp
 
 from torch.utils.tensorboard import SummaryWriter
+from torch_rgvae.losses import kl_divergence
+
 
 """
 Experiment to see if bias terms help link prediction

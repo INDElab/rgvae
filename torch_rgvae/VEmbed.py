@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 from lp_utils import d
 from torch_rgvae.decoders import DistMult
-from torch_rgvae.losses import kl_divergence
 
 
 
