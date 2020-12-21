@@ -217,7 +217,7 @@ def train_lp_vembed(n_e, n_r, train, test, alltriples, beta: int, epochs: int, b
                             loss = beta * reg_loss - recon_loss
                         # elif loss_fn == 'ce':
                         #     loss = F.cross_entropy(out, labels)
-                        wandb.log({"loss": loss})
+                        wandb.log({"loss": loss.item()})
                         assert not torch.isnan(loss), 'Loss has become NaN'
 
                         sumloss += float(loss.item())
