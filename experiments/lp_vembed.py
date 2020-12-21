@@ -213,7 +213,7 @@ def train_lp_vembed(n_e, n_r, train, test, alltriples, beta: int, epochs: int, b
                             out = F.sigmoid(out)
                             recon_loss = F.binary_cross_entropy_with_logits(out, labels, weight=weight)
                             wandb.log({"recon_loss": recon_loss})
-                            reg_loss = kl_divergence(model.mean, model.logvar)
+                            reg_loss = kl_divergence(model.encoder.mean, model.encoder.logvar)
                             loss = beta * reg_loss - recon_loss
                         # elif loss_fn == 'ce':
                         #     loss = F.cross_entropy(out, labels)

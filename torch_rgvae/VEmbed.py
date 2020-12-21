@@ -71,23 +71,12 @@ class VLinkPredictor(nn.Module):
 
         if decoder == 'distmult':
             self.decoder = DistMult(embedding)
-        # elif decoder == 'transe':
-        #     self.decoder = TransE(embedding)
+
         else:
             raise Exception()
 
-        self.edo = None if edropout is None else nn.Dropout(edropout)
-        self.rdo = None if rdropout is None else nn.Dropout(rdropout)
-
-        # self.biases = biases
-        # if biases:
-        #     self.gbias = nn.Parameter(torch.zeros((1,)))
-        #     self.sbias = nn.Parameter(torch.zeros((n,)))
-        #     self.obias = nn.Parameter(torch.zeros((n,)))
-        #     self.pbias = nn.Parameter(torch.zeros((r,)))
-
-            # if reciprocal:
-            #     self.pbias_bw = nn.Parameter(torch.zeros((r,)))
+        self.edo = None
+        self.rdo = None
 
     def forward(self, s, p, o, recip=None):
         """
