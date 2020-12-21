@@ -214,7 +214,7 @@ def train_lp_vembed(n_e, n_r, train, test, alltriples, beta: int, epochs: int, b
                             recon_loss = F.binary_cross_entropy_with_logits(out, labels, weight=weight)
                             wandb.log({"recon_loss": recon_loss})
                             reg_loss = kl_divergence(model.encoder.mean, model.encoder.logvar)
-                            loss = beta * reg_loss - recon_loss
+                            loss = torch.mean(beta * reg_loss - recon_loss)
                         # elif loss_fn == 'ce':
                         #     loss = F.cross_entropy(out, labels)
                         wandb.log({"loss": loss.item()})
@@ -249,8 +249,7 @@ def train_lp_vembed(n_e, n_r, train, test, alltriples, beta: int, epochs: int, b
                 optimizer.step()
 
             if e == 0:
-                print(f'\n pred: forward {tforward:.4}, backward {tbackward:.4}')
-                print (f'   reg: forward {rforward:.4}, backward {rbackward:.4}')
+                print('\n pred: forward {tforward:.4}, backward {tbackward:.4}')
                 print (f'           prep {tprep:.4}, loss {tloss:.4}')
                 print (f' total: {toc():.4}')
                 # -- NB: these numbers will not be accurate for GPU runs unless CUDA_LAUNCH_BLOCKING is set to 1
