@@ -38,6 +38,7 @@ class GVAE(nn.Module):
         self.softmax_E = args['softmax_E'] if 'softmax_E' in args else True
         self.perm_inv = args['perm_inv'] if 'perm_inv' in args else True
         self.adj_argmax = args['adj_argmax'] if 'adj_argmax' in args else True
+        self.clip_grad = args['clip_grad'] if 'clip_grad' in args else True
         self.dataset_name = dataset_name
         self.model_params = args
 

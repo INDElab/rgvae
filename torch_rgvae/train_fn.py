@@ -53,6 +53,8 @@ def train_sparse_batch(target, model, optimizer, epoch, eval: bool=False, perm_i
 
     if not eval:
         loss.backward()
+        if model.clip_grad:
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.)
         optimizer.step()
 
     # sanity = model.sanity_check()

@@ -58,14 +58,8 @@ def mpgm_loss(target, prediction, l_A=1., l_E=1., l_F=1., zero_diag: bool=False,
         l_F: weight for BCE of F
         zero_diag: if to zero out the diagonal in log_A term_3 and log_E.
     """
-    sigmoid = nn.Sigmoid()
-    softmax = nn.Softmax(dim=-1)
 
     A, E, F = target
-    if softmax_E:
-        (A, E, F) = (sigmoid(A), softmax(E), softmax(F))
-    else:
-        (A, E, F) = (sigmoid(A), sigmoid(E), softmax(F))
 
     A_hat, E_hat, F_hat = prediction
     bs = A.shape[0]
@@ -106,13 +100,6 @@ def mpgm_loss(target, prediction, l_A=1., l_E=1., l_F=1., zero_diag: bool=False,
 
     # log_p_F  
     log_p_F = (1/n) * torch.sum(torch.log(no_zero(torch.sum(F * F_hat_t, -1))), (-1)).unsqueeze(-1)
-
-    # log_p_E
-    # I changed the factor to the number of edges (k*(k-1)) the -1 is for the zero diagonal.
-    k_zero = k
-    if zero_diag:
-        k_zero = k - 1
-    log_p_E2 = ((1/(k*(k_zero))) * torch.sum(torch.sum(E_t * torch.log(E_hat) + (1 - E_t) * torch.log(1 - E_hat), -1) * mask, (-2,-1))).unsqueeze(-1)
 
     # log_p_E
     if softmax_E:
