@@ -206,6 +206,20 @@ class MPGM():
 
 
 if __name__ == "__main__":
-    
-    mgpm = MPGM()
 
+    my_dtype = torch.float64
+    torch.set_default_dtype(my_dtype)
+    
+    mpgm = MPGM()
+
+    A = torch.tensor([[[0,1],[0,0]],[[0,1],[0,0]]])* 1.
+    F = torch.tensor([[[0,1],[0,0]],[[0,1],[0,0]]])* 1.
+    E = torch.tensor([[[[0,1,0],[0,1,0]],[[0,1,0],[0,1,0]]],[[[0,1,0],[0,1,0]],[[0,1,0],[0,1,0]]]])* 1.
+
+    A_hat = torch.tensor([[[0,1],[0,0]],[[0,1],[0,0]]])*0.9 + torch.tensor(0.1).expand(A.size())
+    F_hat = torch.tensor([[[0,1],[0,0]],[[0,1],[0,0]]])*0.9 + torch.tensor(0.1).expand(A.size())
+    E_hat = torch.tensor([[[[0,1,0],[0,1,0]],[[0,1,0],[0,1,0]]],[[[0,1,0],[0,1,0]],[[0,1,0],[0,1,0]]]])*0.9 + torch.tensor(0.1).expand(E.size())
+
+    x = mpgm.call(A,A_hat,E,E_hat,F,F_hat)
+    print(x)
+    # Should return identity matrix
