@@ -8,7 +8,7 @@ import numpy as np
 from lp_utils import *
 from tqdm import tqdm
 from datetime import date
-import wandb
+import wandb, random
 
 
 
@@ -34,6 +34,7 @@ def train_eval_vae(batch_size, epochs, train_set, test_set, model, optimizer, da
     loss_dict = {'val': dict(), 'train': dict(), 'lp': dict()}
     writer = SummaryWriter(log_dir=result_dir)
 
+    random.shuffle(test_set)                                # Shuffle the test set since we taking only a part of it
     testsub = torch.tensor(test_set[:50], device=d())      # TODO remove the testset croping
 
     # Start training.
@@ -85,8 +86,8 @@ def train_eval_vae(batch_size, epochs, train_set, test_set, model, optimizer, da
         print('Epoch: {}, Mean eval elbo: {:.3f}, permuted {:.2f}%'.format(epoch, mean_loss, np.mean(permute_list)*100))
 
         # Do Link prediction
-        # if epoch % 30 == 0:
-        if (epoch+1) % 30 == 0 or (epoch+1) == epochs:
+        if epoch % 30 == 0:
+        # if (epoch+1) % 30 == 0 or (epoch+1) == epochs:
             print('Start interpolating the latent space and generating triples at epoch {}.'.format(epoch))
             interpolations = interpolate_triples(i2n,i2r, 5, model)
             wandb.log({"interpolations": interpolations, "epoch": epoch})

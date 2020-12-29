@@ -6,7 +6,7 @@ if __name__ == "__main__":
 
     configs = dict()
 
-    
+    configs['project'] = 'latent_dim_exp'           # TODO change this to the final experiment name for wandb
     configs['train'] = True
     configs['link_prediction'] = False
     configs['load_model'] = False

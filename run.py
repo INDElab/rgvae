@@ -70,7 +70,10 @@ if __name__ == "__main__":
         # wandb.init(project="dev-mode")
         wandb.init(project="offline-dev", mode='offline')
     else:
-        wandb.init(config=args)
+        if 'project' in args:
+            wandb.init(project=args['project'], config=args)
+        else:            
+            wandb.init(config=args)
 
 
     # Get data
@@ -98,14 +101,11 @@ if __name__ == "__main__":
         model = GCVAE2(args, n_r, n_e, dataset).to(device)
     elif model_name == 'GVAE':
         model = GVAE(args, n_r, n_e, dataset).to(device)
-    elif model_name == 'VEmbed':
-        model = None
     else:
         raise ValueError('{} not defined!'.format(model_name))
 
-    if model_name != 'VEmbed':
-        optimizer = Ranger(model.parameters(),lr=args['lr'], k=args['k'] if 'k' in args else 9, betas=(.95,0.999), use_gc=True, gc_conv_only=False)
-        wandb.watch(model)
+    optimizer = Ranger(model.parameters(),lr=args['lr'], k=args['k'] if 'k' in args else 9, betas=(.95,0.999), use_gc=True, gc_conv_only=False)
+    wandb.watch(model)
 
 
     # Load model
@@ -116,22 +116,16 @@ if __name__ == "__main__":
 
     # Train model
     if args['train']:
-        if model_name == "VEmbed":
-            train_lp_vembed(n_e, n_r, train_set[:limit], test_set[:limit], all_triples, args['beta'], args['epochs'], batch_size, result_dir, eval_int=40)
-        else:
-            train_eval_vae(batch_size, args['epochs'], train_set[:limit], test_set[:limit], model, optimizer, dataset_tools, result_dir)
+        train_eval_vae(batch_size, args['epochs'], train_set[:limit], test_set[:limit], model, optimizer, dataset_tools, result_dir)
     
     # Link prediction
     if args['link_prediction']:
-        if model_name == 'VEmbed':
-            pass
-        else:
-            print('Start link prediction!')
-            testsub = torch.tensor(test_set[:300], device=d())      # TODO remove the testset croping
+        print('Start link prediction!')
+        testsub = torch.tensor(test_set[:300], device=d())      # TODO remove the testset croping
 
-            lp_results =  link_prediction(model, testsub, truedict, batch_size)
-            wandb.log(lp_results)
-            lp_file_path = result_dir + '/lp_{}_{}.json'.format(exp_name, todate)
-            with open(lp_file_path, 'w') as outfile:
-                json.dump(lp_results, outfile)
-            print('Saved link prediction results!')
+        lp_results =  link_prediction(model, testsub, truedict, batch_size)
+        wandb.log(lp_results)
+        lp_file_path = result_dir + '/lp_{}_{}.json'.format(exp_name, todate)
+        with open(lp_file_path, 'w') as outfile:
+            json.dump(lp_results, outfile)
+        print('Saved link prediction results!')

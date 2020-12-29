@@ -68,8 +68,13 @@ def mpgm_loss(target, prediction, l_A=1., l_E=1., l_F=1., zero_diag: bool=False,
     d_e = E.shape[-1]
 
     mpgm = MPGM()
+    sigmoid = nn.Sigmoid()
     softmax = nn.Softmax(dim=-1)
-    E_hat = softmax(E_hat)
+    A_hat = sigmoid(A_hat)
+    if softmax_E:
+        E_hat = softmax(E_hat)
+    else:
+        E_hat = sigmoid(E_hat)
     F_hat = softmax(F_hat)
     
     X = mpgm.call(A, A_hat.detach(), E, E_hat.detach(), F, F_hat.detach())

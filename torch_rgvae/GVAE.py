@@ -87,12 +87,9 @@ class GVAE(nn.Module):
         delimit_e = self.n*self.n + self.n*self.n*self.n_r
 
         a, e, f = pred[:,:delimit_a], pred[:,delimit_a:delimit_e], pred[:, delimit_e:]
-        A = self.sigmoid(torch.reshape(a, [-1, self.n, self.n]))
-        if self.softmax_E:
-            E = self.softmax(torch.reshape(e, [-1, self.n, self.n, self.n_r]))
-        else:
-            E = self.sigmoid(torch.reshape(e, [-1, self.n, self.n, self.n_r]))
-        F = self.softmax(torch.reshape(f, [-1, self.n, self.n_e]))
+        A = torch.reshape(a, [-1, self.n, self.n])
+        E = torch.reshape(e, [-1, self.n, self.n, self.n_r])
+        F = torch.reshape(f, [-1, self.n, self.n_e])
         return A, E, F
 
     def reparameterize(self, mean, logvar):
@@ -154,11 +151,13 @@ class GVAE(nn.Module):
         assert z.shape[-1] == self.z_dim
         a, e, f = self.reconstruct(self.decoder(z))
         a_shape = a.shape
+        a = self.sigmoid(a)
 
         if self.adj_argmax:
             a = a.view(a_shape[0], -1)
             a_sample = torch.zeros_like(a)
-            a_sample[:,torch.argmax(a, -1, keepdim=True)] = torch.max(a, -1)[0]
+            a_max = torch.max(a, -1)
+            a_sample[torch.range(0, a_shape[0]-1, dtype=torch.long), a_max[1]] = a_max[0]
             a_sample = a_sample.view(a_shape)
         else:
             a_dist = torch.distributions.Bernoulli(a)
