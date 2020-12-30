@@ -5,12 +5,12 @@ epochs: 200
 exp_name: config_file
 h_dim: 512
 k: 9
-link_prediction: false
+link_prediction: true
 load_model: false
 load_model_path: []
 lr: 5.0e-05
 model_name: GCVAE
 n: 1
-train: true
+train: false
 z_dim: 100
 perm_inv: true

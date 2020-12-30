@@ -12,6 +12,7 @@ import torch.nn.functional as F
 from collections.abc import Iterable
 from torch import nn
 import re
+import wandb
 
 
 def locate_file(filepath):
@@ -274,59 +275,58 @@ def eval(model : nn.Module, valset, truedicts, n, r, batch_size=16, hitsat=[1, 3
 
     tic()
     ranks = []
-    head = False            # TODO change this back later to do both head tail
-    # for head in tqdm.tqdm([True, False], desc='LP Head, Tail', leave=True):  # head or tail prediction
+    # head = False            # TODO change this back later to do both head tail
+    for head in tqdm.tqdm([True, False], desc='LP Head, Tail', leave=True):  # head or tail prediction
+        for fr in rng(0, valset.shape[0], batch_size, desc='Validation Set', leave=True):
+            to = min(fr + batch_size, valset.shape[0])
 
-    for fr in rng(0, valset.shape[0], batch_size, desc='Validation Set', leave=True):
-        to = min(fr + batch_size, valset.shape[0])
+            batch = valset[fr:to, :].to(device=d())
+            bn, _ = batch.size()
 
-        batch = valset[fr:to, :].to(device=d())
-        bn, _ = batch.size()
+            # compute the full score matrix (filter later)
+            bases   = batch[:, 1:] if head else batch[:, :2]
+            targets = batch[:, 0]  if head else batch[:, 2]
 
-        # compute the full score matrix (filter later)
-        bases   = batch[:, 1:] if head else batch[:, :2]
-        targets = batch[:, 0]  if head else batch[:, 2]
+            # collect the triples for which to compute scores
+            bexp = bases.view(bn, 1, 2).expand(bn, n, 2)
+            ar   = torch.arange(n, device=d()).view(1, n, 1).expand(bn, n, 1)
+            toscore = torch.cat([ar, bexp] if head else [bexp, ar], dim=2)
+            assert toscore.size() == (bn, n, 3)
 
-        # collect the triples for which to compute scores
-        bexp = bases.view(bn, 1, 2).expand(bn, n, 2)
-        ar   = torch.arange(n, device=d()).view(1, n, 1).expand(bn, n, 1)
-        toscore = torch.cat([ar, bexp] if head else [bexp, ar], dim=2)
-        assert toscore.size() == (bn, n, 3)
+            tic()
+            scores = list()
+            for ii in rng(0, bn, 1, desc='Valset Batch', leave=False):
+                batch_scores = list()
+                for iii in rng(0, n, batch_size, desc='Batch of Batch', leave=False):
+                    tt = min(iii + batch_size, toscore.shape[1])
+                    tpg = model.n -1    # number of triples per graph
+                    sub_batch = batch_t2m(toscore[ii, iii:tt, :].squeeze(), tpg, n, r)
+                    if elbo:
+                        loss = model.elbo(sub_batch)
+                    else:
+                        prediction = model.forward(sub_batch)
+                        loss = model.reconstruction_loss(sub_batch, prediction)
+                    batch_scores.append(loss)
+                scores.append(torch.cat(batch_scores, dim=0).unsqueeze(0))
+            scores = torch.cat(scores, dim=0).squeeze()
+            tforward += toc()
+            assert scores.size() == (bn, n)
 
-        tic()
-        scores = list()
-        for ii in rng(0, bn, 1, desc='Valset Batch', leave=False):
-            batch_scores = list()
-            for iii in rng(0, n, batch_size, desc='Batch of Batch', leave=False):
-                tt = min(iii + batch_size, toscore.shape[1])
-                tpg = model.n -1    # number of triples per graph
-                sub_batch = batch_t2m(toscore[ii, iii:tt, :].squeeze(), tpg, n, r)
-                if elbo:
-                    loss = model.elbo(sub_batch)
-                else:
-                    prediction = model.forward(sub_batch)
-                    loss = model.reconstruction_loss(sub_batch, prediction)
-                batch_scores.append(loss)
-            scores.append(torch.cat(batch_scores, dim=0).unsqueeze(0))
-        scores = torch.cat(scores, dim=0).squeeze()
-        tforward += toc()
-        assert scores.size() == (bn, n)
+            # filter out the true triples that aren't the target
+            tic()
+            filter_scores_(scores, batch, truedicts, head=head)
+            tfilter += toc()
 
-        # filter out the true triples that aren't the target
-        tic()
-        filter_scores_(scores, batch, truedicts, head=head)
-        tfilter += toc()
+            # Select the true scores, and count the number of values larger than than
+            true_scores = scores[torch.arange(bn, device=d()), targets]
+            raw_ranks = torch.sum(scores > true_scores.view(bn, 1), dim=1, dtype=torch.long)
+            # -- This is the "optimistic" rank (assuming it's sorted to the front of the ties)
+            num_ties = torch.sum(scores == true_scores.view(bn, 1), dim=1, dtype=torch.long)
 
-        # Select the true scores, and count the number of values larger than than
-        true_scores = scores[torch.arange(bn, device=d()), targets]
-        raw_ranks = torch.sum(scores > true_scores.view(bn, 1), dim=1, dtype=torch.long)
-        # -- This is the "optimistic" rank (assuming it's sorted to the front of the ties)
-        num_ties = torch.sum(scores == true_scores.view(bn, 1), dim=1, dtype=torch.long)
+            # Account for ties (put the true example halfway down the ties)
+            branks = raw_ranks + (num_ties - 1) // 2
 
-        # Account for ties (put the true example halfway down the ties)
-        branks = raw_ranks + (num_ties - 1) // 2
-
-        ranks.extend((branks + 1).tolist())
+            ranks.extend((branks + 1).tolist())
 
     mrr = sum([1.0/rank for rank in ranks])/len(ranks)
 

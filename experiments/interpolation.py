@@ -7,7 +7,6 @@ from torch_rgvae.GVAE import GVAE
 from torch_rgvae.GCVAE import GCVAE
 from torch_rgvae.train_fn import train_sparse_batch
 from lp_utils import *
-import pandas as pd
 import pickle as pkl
 
 

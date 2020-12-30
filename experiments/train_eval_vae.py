@@ -96,22 +96,22 @@ def train_eval_vae(batch_size, epochs, train_set, test_set, model, optimizer, da
                 json.dump(interpolations, f)
             wandb.save(interpol_file_path)
 
-            print('Start link prediction at epoch {}:'.format(epoch))
-            lp_start = time.time()
-            lp_results =  link_prediction(model, testsub, truedict, batch_size)
-            loss_dict['lp'][epoch] = lp_results
-            wandb.log(lp_results)
-            lp_end = time.time()
-            lp_file_path = result_dir + '/lp_e{}.json'.format(epoch)
-            with open(lp_file_path, 'w') as outfile:
-                json.dump(lp_results, outfile)
-            wandb.save(lp_file_path)
-            print('Saved link prediction results!')
-            print('Time elapsed for Link prediction at epoch{} : {:.3f}'.format(epoch, lp_end - lp_start))
-            print('MRR {:.4}\t hits@1 {:.4}\t  hits@3 {:.4}\t  hits@10 {:.4}'.format(lp_results['mrr'],
-                                                                                                lp_results['h@1'],
-                                                                                                lp_results['h@3'],
-                                                                                                lp_results['h@10']))
+            # print('Start link prediction at epoch {}:'.format(epoch))
+            # lp_start = time.time()
+            # lp_results =  link_prediction(model, testsub, truedict, batch_size)
+            # loss_dict['lp'][epoch] = lp_results
+            # wandb.log(lp_results)
+            # lp_end = time.time()
+            # lp_file_path = result_dir + '/lp_e{}.json'.format(epoch)
+            # with open(lp_file_path, 'w') as outfile:
+            #     json.dump(lp_results, outfile)
+            # wandb.save(lp_file_path)
+            # print('Saved link prediction results!')
+            # print('Time elapsed for Link prediction at epoch{} : {:.3f}'.format(epoch, lp_end - lp_start))
+            # print('MRR {:.4}\t hits@1 {:.4}\t  hits@3 {:.4}\t  hits@10 {:.4}'.format(lp_results['mrr'],
+            #                                                                                     lp_results['h@1'],
+            #                                                                                     lp_results['h@3'],
+            #                                                                                     lp_results['h@10']))
 
         torch.save({
             'epoch': epoch,

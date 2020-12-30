@@ -121,7 +121,7 @@ if __name__ == "__main__":
     # Link prediction
     if args['link_prediction']:
         print('Start link prediction!')
-        testsub = torch.tensor(test_set[:300], device=d())      # TODO remove the testset croping
+        testsub = torch.tensor(test_set, device=d())      # TODO remove the testset croping
 
         lp_results =  link_prediction(model, testsub, truedict, batch_size)
         wandb.log(lp_results)

@@ -2,7 +2,6 @@
 The function we are going to use to train the models.
 In fact, this could also go in the utils file. Unsure what is the best practice.
 """
-import time
 import torch
 import numpy as np
 from tqdm import tqdm
