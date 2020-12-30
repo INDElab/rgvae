@@ -188,7 +188,7 @@ def batch_t2m(batch, n: int, n_e: int, n_r: int):
     batch_e = list()
     batch_f = list()
     for ii in range(bs):
-        (A, E, F) = triple2matrix(batch[ii:ii+n,:], n_e, n_r)
+        (A, E, F) = triple2matrix(batch[ii:ii+n,:], n_e, n_r)       # TODO adopt this to bigger n 
         assert A.shape[1] != 1
         batch_a.append(A)
         batch_e.append(E)
