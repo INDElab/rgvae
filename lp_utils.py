@@ -279,6 +279,7 @@ def eval(model : nn.Module, valset, truedicts, n, r, batch_size=16, hitsat=[1, 3
     for head in tqdm.tqdm([True, False], desc='LP Head, Tail', leave=True):  # head or tail prediction
         for fr in rng(0, valset.shape[0], batch_size, desc='Validation Set', leave=True):
             to = min(fr + batch_size, valset.shape[0])
+            wandb.log({'batch': fr, 'set_size': valset.shape[0], 'head': 1 if head else 0})
 
             batch = valset[fr:to, :].to(device=d())
             bn, _ = batch.size()
@@ -302,7 +303,7 @@ def eval(model : nn.Module, valset, truedicts, n, r, batch_size=16, hitsat=[1, 3
                     tpg = model.n -1    # number of triples per graph
                     sub_batch = batch_t2m(toscore[ii, iii:tt, :].squeeze(), tpg, n, r)
                     if elbo:
-                        loss = model.elbo(sub_batch)
+                        loss = - model.elbo(sub_batch)
                     else:
                         prediction = model.forward(sub_batch)
                         loss = model.reconstruction_loss(sub_batch, prediction)

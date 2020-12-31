@@ -5,15 +5,10 @@ from torch_rgvae.GCVAE2 import GCVAE2
 from lp_utils import *
 from experiments.train_eval_vae import train_eval_vae
 from experiments.link_prediction import link_prediction
-from experiments.lp_vembed import train_lp_vembed
 from datetime import date
-import yaml, json
-import argparse
-import torch
-import torch_optimizer as optim
 from ranger import Ranger
-import wandb
-import os
+import yaml, json, argparse, wandb, os, random
+import torch
 
 
 if __name__ == "__main__":
@@ -37,7 +32,7 @@ if __name__ == "__main__":
 
     if arguments.dev[0] == 1:
         develope = True
-        limit = 30
+        limit = 60
     else:
         develope = False
         limit = -1
@@ -77,7 +72,8 @@ if __name__ == "__main__":
 
 
     # Get data
-    (n2i, i2n), (r2i, i2r), train_set, test_set, all_triples = load_link_prediction_data(dataset, use_test_set=False)
+    use_test_set = args['final'] if 'final' in args else False
+    (n2i, i2n), (r2i, i2r), train_set, test_set, all_triples = load_link_prediction_data(dataset, use_test_set=use_test_set)
     n_e = len(n2i)
     n_r = len(r2i)
     args['n_e'] = n_e
@@ -121,7 +117,8 @@ if __name__ == "__main__":
     # Link prediction
     if args['link_prediction']:
         print('Start link prediction!')
-        testsub = torch.tensor(test_set, device=d())      # TODO remove the testset croping
+        testset_crop = int(len(test_set)/3)         # Yes, only one third
+        testsub = torch.tensor(test_set, device=d())[random.sample(range(len(test_set)), k=testset_crop)]   # TODO remove the testset croping
 
         lp_results =  link_prediction(model, testsub, truedict, batch_size)
         wandb.log(lp_results)

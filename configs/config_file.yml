@@ -11,6 +11,7 @@ load_model_path: []
 lr: 5.0e-05
 model_name: GCVAE
 n: 1
-train: false
+train: true
 z_dim: 100
 perm_inv: true
+final: false

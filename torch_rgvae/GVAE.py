@@ -120,6 +120,9 @@ class GVAE(nn.Module):
         return loss
     
     def regularization_loss(self, mean, logvar):
+        """
+        Regularization term of the elbo.
+        """
         return kl_divergence(mean, logvar)
 
     def cross_entropy(self, target, prediction):
