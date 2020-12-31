@@ -326,9 +326,15 @@ def eval(model : nn.Module, valset, truedicts, n, r, batch_size=16, hitsat=[1, 3
 
             # Account for ties (put the true example halfway down the ties)
             branks = raw_ranks + (num_ties - 1) // 2
-
             ranks.extend((branks + 1).tolist())
-
+            hits_temp = []
+            for k in hitsat:
+                hits_temp.append(sum([1.0 if rank <= k else 0.0 for rank in ranks]) / len(ranks))
+                
+            wandb.log({'MRR_temp': sum([1.0/rank for rank in ranks])/len(ranks),
+                        'Hits_1_temp': hits_temp[0], 'Hits_3_temp': hits_temp[1], 'Hits_10_temp': hits_temp[2],
+                        'test_set': fr, 'head': 1 if head else 0})
+                
     mrr = sum([1.0/rank for rank in ranks])/len(ranks)
 
     hits = []
@@ -337,7 +343,7 @@ def eval(model : nn.Module, valset, truedicts, n, r, batch_size=16, hitsat=[1, 3
 
     # if verbose:
     #     print(f'time {toc():.4}s total, {tforward:.4}s forward, {tfilter:.4}s filtering, {tsort:.4}s sorting.')
-
+    wandb.log({'MRR': mrr, 'Hits_1': hits[0], 'Hits_3': hits[1], 'Hits_10': hits[2]})
     return mrr, tuple(hits), ranks
 
 def tic():

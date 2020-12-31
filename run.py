@@ -121,8 +121,8 @@ if __name__ == "__main__":
         testsub = torch.tensor(test_set, device=d())[random.sample(range(len(test_set)), k=testset_crop)]   # TODO remove the testset croping
 
         lp_results =  link_prediction(model, testsub, truedict, batch_size)
-        wandb.log(lp_results)
         lp_file_path = result_dir + '/lp_{}_{}.json'.format(exp_name, todate)
         with open(lp_file_path, 'w') as outfile:
             json.dump(lp_results, outfile)
+        wandb.save(lp_file_path)
         print('Saved link prediction results!')
