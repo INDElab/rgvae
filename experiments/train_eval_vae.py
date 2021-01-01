@@ -110,6 +110,7 @@ def train_eval_vae(batch_size, epochs, train_set, test_set, model, optimizer, da
                 lp_start = time.time()
                 lp_results =  link_prediction(model, testsub, truedict, batch_size)
                 loss_dict['lp'][epoch] = lp_results
+                lp_results['epoch'] = epoch
                 wandb.log(lp_results)
                 lp_end = time.time()
                 lp_file_path = result_dir + '/lp_e{}.json'.format(epoch)

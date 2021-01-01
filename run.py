@@ -72,8 +72,8 @@ if __name__ == "__main__":
 
 
     # Get data
-    use_test_set = args['final'] if 'final' in args else False
-    (n2i, i2n), (r2i, i2r), train_set, test_set, all_triples = load_link_prediction_data(dataset, use_test_set=use_test_set)
+    final = args['final'] if 'final' in args else False
+    (n2i, i2n), (r2i, i2r), train_set, test_set, all_triples = load_link_prediction_data(dataset, use_test_set=final)
     n_e = len(n2i)
     n_r = len(r2i)
     args['n_e'] = n_e
@@ -112,7 +112,7 @@ if __name__ == "__main__":
 
     # Train model
     if args['train']:
-        train_eval_vae(batch_size, args['epochs'], train_set[:limit], test_set[:limit], model, optimizer, dataset_tools, result_dir)
+        train_eval_vae(batch_size, args['epochs'], train_set[:limit], test_set[:limit], model, optimizer, dataset_tools, result_dir, final)
     
     # Link prediction
     if args['link_prediction']:
