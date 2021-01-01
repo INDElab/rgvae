@@ -63,6 +63,25 @@ def train_eval_vae(batch_size, epochs, train_set, test_set, model, optimizer, da
 
 
         # Evaluate
+        print("Start evaluation epoch {}.".format(epoch))
+        with torch.no_grad():
+            model.eval()
+            loss_val = list()
+            permute_list = list()
+            for b_from in tqdm(range(0,len(test_set),(batch_size*n)), desc='Epoch {}'.format(epoch), position=2):
+                b_to = min(b_from + batch_size, len(test_set))
+                target = batch_t2m(torch.tensor(test_set[b_from:b_to], device=d()), n, n_e, n_r)
+                loss, x_permute = train_sparse_batch(target, model, optimizer, epoch, eval=True)
+                loss_val.append(loss)
+                permute_list.append(x_permute)
+                writer.add_scalar('Loss/test', loss, epoch)
+                wandb.log({"val_loss_step": loss})
+        mean_loss = np.mean(loss_val)
+        loss_dict['val'][epoch] = loss_val
+        wandb.log({"val_loss_mean": mean_loss, "val_loss_std": np.std(loss_val), 
+                    "val_permutation_mean": np.mean(permute_list), "val_permutation_std": np.std(permute_list), "epoch": epoch})
+        print('Epoch: {}, Mean eval elbo: {:.3f}, permuted {:.2f}%'.format(epoch, mean_loss, np.mean(permute_list)*100))
+
         if final and (epoch+1) == epochs:
             # save model last
             torch.save({
@@ -74,26 +93,6 @@ def train_eval_vae(batch_size, epochs, train_set, test_set, model, optimizer, da
         elif final:
             pass
         else:
-            print("Start evaluation epoch {}.".format(epoch))
-            testsub = torch.tensor(test_set, device=d())[random.sample(range(len(test_set)), k=50)]   # TODO remove the testset croping
-            
-            with torch.no_grad():
-                model.eval()
-                loss_val = list()
-                permute_list = list()
-                for b_from in tqdm(range(0,len(test_set),(batch_size*n)), desc='Epoch {}'.format(epoch), position=2):
-                    b_to = min(b_from + batch_size, len(test_set))
-                    target = batch_t2m(torch.tensor(test_set[b_from:b_to], device=d()), n, n_e, n_r)
-                    loss, x_permute = train_sparse_batch(target, model, optimizer, epoch, eval=True)
-                    loss_val.append(loss)
-                    permute_list.append(x_permute)
-                    writer.add_scalar('Loss/test', loss, epoch)
-                    wandb.log({"val_loss_step": loss})
-            mean_loss = np.mean(loss_val)
-            loss_dict['val'][epoch] = loss_val
-            wandb.log({"val_loss_mean": mean_loss, "val_loss_std": np.std(loss_val), 
-                        "val_permutation_mean": np.mean(permute_list), "val_permutation_std": np.std(permute_list), "epoch": epoch})
-            print('Epoch: {}, Mean eval elbo: {:.3f}, permuted {:.2f}%'.format(epoch, mean_loss, np.mean(permute_list)*100))
 
             # Do Link prediction
             # if epoch % 30 == 0:
@@ -107,6 +106,7 @@ def train_eval_vae(batch_size, epochs, train_set, test_set, model, optimizer, da
                 wandb.save(interpol_file_path)
 
                 print('Start link prediction at epoch {}:'.format(epoch))
+                testsub = torch.tensor(test_set, device=d())[random.sample(range(len(test_set)), k=50)]   # TODO remove the testset croping
                 lp_start = time.time()
                 lp_results =  link_prediction(model, testsub, truedict, batch_size)
                 loss_dict['lp'][epoch] = lp_results

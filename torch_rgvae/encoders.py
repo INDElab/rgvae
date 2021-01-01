@@ -5,7 +5,6 @@ from torch_rgvae.layers.RGC_layers import RelationalGraphConvolution
 import torch.nn.functional as F
 from torch import nn
 import torch
-import copy
 from torch_rgvae.layers.GCN_layers import GraphConvolution
 
 
