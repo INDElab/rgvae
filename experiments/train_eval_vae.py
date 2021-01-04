@@ -84,7 +84,7 @@ def train_eval_vae(batch_size, epochs, train_set, test_set, model, optimizer, da
 
         if final and (epoch+1) == epochs:
             # save model last
-            torch.save({
+            torch.save({    
             'epoch': epoch,
             'model_state_dict': model.state_dict(),
             'model_params': model.model_params,

@@ -26,6 +26,7 @@ if __name__ == "__main__":
     configs['batch_size_exp2'] = 13                 # 2**(batch_size_exp) fb_max=13 wn_max=12
     configs['k'] = 5
     configs['clip_grad'] = True
+    configs['final'] = True
 
     configs['dataset_name'] = dataset = 'wn18rr'  # ['fb15k', 'wn18rr']
 

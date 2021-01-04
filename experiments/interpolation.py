@@ -72,19 +72,20 @@ def interpolate_triples(i2n, i2r, steps: int=5, model=None, model_path: str=None
         step = (1.96 * 2) / steps
         z_pred = z1.clone().detach()
         for i_dim in i_dims:
-            for i in range(steps):
-                z_pred[:, i_dim] = 1.96 + step * i
-                prediction = model.sample(z_pred)
-                prediction_json = prediction[0].detach().cpu().numpy().tolist()
-                print(prediction_json)
-                pred_dense = matrix2triple(prediction)
-                if len(pred_dense) > 0:
-                    pred_list.append(prediction_json)
-                    text_triple = translate_triple(pred_dense, i2n, i2r, entity_dict)
-                    triples.append(text_triple)
-                    print(text_triple)
-                else:
-                    triples.append([])  
+            if i_dim < model.z_dim:
+                for i in range(steps):
+                    z_pred[:, i_dim] = 1.96 + step * i
+                    prediction = model.sample(z_pred)
+                    prediction_json = prediction[0].detach().cpu().numpy().tolist()
+                    print(prediction_json)
+                    pred_dense = matrix2triple(prediction)
+                    if len(pred_dense) > 0:
+                        pred_list.append(prediction_json)
+                        text_triple = translate_triple(pred_dense, i2n, i2r, entity_dict)
+                        triples.append(text_triple)
+                        print(text_triple)
+                    else:
+                        triples.append([])
         interpolations['confidence95']['confi'] = pred_list
         interpolations['confidence95']['text'] = triples       
     return interpolations

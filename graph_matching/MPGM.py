@@ -1,7 +1,6 @@
 """
 Pytorch implementation of the max-pooling graph matching algorithm.
 """
-import time
 import numpy as np
 from numpy import array
 import torch
