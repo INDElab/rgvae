@@ -10,7 +10,7 @@ from lp_utils import *
 import pickle as pkl
 
 
-def interpolate_triples(i2n, i2r, steps: int=5, model=None, model_path: str=None, i_type: str='confidence95', i_dims: tuple=(0,10,20,30)):
+def interpolate_triples(i2n, i2r, steps: int=10, model=None, model_path: str=None, i_type: str='confidence95', i_dims: tuple=(0,1,2,3,4,5,6,7,8,9)):
 
     if model.dataset_name == 'fb15k':
         with open('data/fb15k/e2t_dict.pkl', 'rb') as f:
@@ -43,7 +43,7 @@ def interpolate_triples(i2n, i2r, steps: int=5, model=None, model_path: str=None
     interpolations = dict()
     # interpolations['z1'] = z1
     interpolations['between2'] = dict()
-    interpolations['confidence95'] = dict()
+    interpolations['confidence95'] = {'confi': dict(), 'text': dict()}
 
     # Interpolate between z1 and z2
     if i_type == 'between2':
@@ -73,6 +73,8 @@ def interpolate_triples(i2n, i2r, steps: int=5, model=None, model_path: str=None
         z_pred = z1.clone().detach()
         for i_dim in i_dims:
             if i_dim < model.z_dim:
+                pred_list = list()
+                triples = list()
                 for i in range(steps):
                     z_pred[:, i_dim] = 1.96 + step * i
                     prediction = model.sample(z_pred)
@@ -86,8 +88,8 @@ def interpolate_triples(i2n, i2r, steps: int=5, model=None, model_path: str=None
                         print(text_triple)
                     else:
                         triples.append([])
-        interpolations['confidence95']['confi'] = pred_list
-        interpolations['confidence95']['text'] = triples       
+                interpolations['confidence95']['confi'] = {i_dim: pred_list}
+                interpolations['confidence95']['text'] = {i_dim: triples}       
     return interpolations
 
 
