@@ -85,11 +85,19 @@ def train_eval_vae(batch_size, epochs, train_set, test_set, model, optimizer, da
         if final and (epoch+1) == epochs:
             # save model last
             torch.save({    
-            'epoch': epoch,
-            'model_state_dict': model.state_dict(),
-            'model_params': model.model_params,
-            'loss_log': loss_dict},
-            result_dir + '/rgvae_dict_final.pt')
+                'epoch': epoch,
+                'model_state_dict': model.state_dict(),
+                'model_params': model.model_params,
+                'loss_log': loss_dict},
+                result_dir + '/rgvae_dict_final.pt')
+
+            print('Start interpolating the latent space and generating triples at epoch {}.'.format(epoch))
+            interpolations = interpolate_triples(i2n,i2r, 10, model)
+            wandb.log({"interpolations": interpolations, "epoch": epoch})
+            interpol_file_path = result_dir + '/interpolation_e{}.json'.format(epoch)
+            with open(interpol_file_path, 'w') as f:
+                json.dump(interpolations, f)
+            wandb.save(interpol_file_path)
         elif final:
             pass
         else:
