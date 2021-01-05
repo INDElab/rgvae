@@ -15,12 +15,12 @@ class MLP(nn.Module):
     def __init__(self, input_dim, h_dim, z_dim):
         super().__init__()
 
-        self.mlp = nn.Sequential(nn.Linear(input_dim, h_dim),
+        self.mlp = nn.Sequential(nn.Linear(input_dim, 2*h_dim),
                                             nn.ReLU(),
                                             nn.Dropout(.2),
-                                            nn.Linear(h_dim, 2*h_dim),
+                                            nn.Linear(2*h_dim, h_dim),
                                             nn.ReLU(),
-                                            nn.Linear(2*h_dim, z_dim))
+                                            nn.Linear(h_dim, z_dim))
 
     def forward(self, x):
         return self.mlp(x)
