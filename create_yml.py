@@ -6,7 +6,7 @@ if __name__ == "__main__":
 
     configs = dict()
 
-    configs['project'] = 'latent_dim_exp'           # TODO change this to the final experiment name for wandb
+    configs['project'] = 'interpol_exp'           # TODO change this to the final experiment name for wandb
     configs['train'] = True
     configs['link_prediction'] = False
     configs['load_model'] = False
@@ -32,17 +32,17 @@ if __name__ == "__main__":
 
 
 
-    folder = 'configs/LP_sota/'            # TODO change folder
+    folder = 'configs/final_interpol/'            # TODO change folder
     if not os.path.isdir(folder):
         os.makedirs(folder)
 
         
     # for dataset in ['fb15k', 'wn18rr']:
     #     for l in [10, 100, 1000]:
-    # for model_name in ['GVAE', 'GCVAE', 'GCVAE2']:
-    configs['exp_name'] = 'sota{}_{}_p{}'.format(model_name, dataset, '1' if configs['perm_inv'] else '0')  # Most important    '1' if configs['perm_inv'] else '0'
-    configs['dataset_name'] = dataset
-    # configs['z_dim'] = l
-    yml_name = '{}.yml'.format(configs['exp_name'])
-    with open(folder + yml_name,'w') as f:
-        yaml.dump(configs, f)
+    for model_name in ['GVAE', 'GCVAE', 'GCVAE2']:
+        configs['exp_name'] = 'ip{}_{}_p{}'.format(model_name, dataset, '1' if configs['perm_inv'] else '0')  # Most important    '1' if configs['perm_inv'] else '0'
+        configs['dataset_name'] = dataset
+        configs['model_name'] = model_name
+        yml_name = '{}.yml'.format(configs['exp_name'])
+        with open(folder + yml_name,'w') as f:
+            yaml.dump(configs, f)
