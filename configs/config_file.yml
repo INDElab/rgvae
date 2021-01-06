@@ -1,11 +1,11 @@
 batch_size_exp2: 6
 beta: 1
 dataset_name: fb15k
-epochs: 200
+epochs: 1
 exp_name: config_file
 h_dim: 512
 k: 9
-link_prediction: true
+link_prediction: false
 load_model: false
 load_model_path: []
 lr: 5.0e-05
@@ -14,4 +14,4 @@ n: 1
 train: true
 z_dim: 100
 perm_inv: true
-final: false
+final: true

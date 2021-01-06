@@ -35,8 +35,11 @@ def interpolate_triples(i2n, i2r, steps: int=10, model=None, model_path: str=Non
         model.load_state_dict(checkpoint['model_state_dict'])
         print('Model loaded.')
 
-    z1 = torch.randn((1,model.z_dim), device=d())
-    z2 = torch.randn((1,model.z_dim), device=d())
+    # z1 = torch.randn((1,model.z_dim), device=d())
+    # z2 = torch.randn((1,model.z_dim), device=d())
+
+    z = model.reparameterize(*model.encode(batch_t2m(model.model_params['obama_mangelo'], int(model.n / 2), model.n_e, model.n_r)))
+    z1, z2 = torch.split(z, 1, dim=0)
 
     pred_list = list()
     triples = list()
@@ -46,25 +49,25 @@ def interpolate_triples(i2n, i2r, steps: int=10, model=None, model_path: str=Non
     interpolations['confidence95'] = {'confi': dict(), 'text': dict()}
 
     # Interpolate between z1 and z2
-    if i_type == 'between2':
-        print('Interpolation experiment: ' + i_type)
-        step = (z2 - z1) / (steps-1)
-        for i in range(steps):
-            prediction = model.sample(z1 + step*i)
-            prediction_json = prediction[0].detach().cpu().numpy().tolist()
-            print(prediction_json)
-            pred_dense = matrix2triple(prediction)
-            if len(pred_dense) > 0:
-                pred_list.append(prediction_json)
-                text_triple = translate_triple(pred_dense, i2n, i2r, entity_dict)
-                triples.append(text_triple)
-                print(text_triple)
-            else:
-                triples.append([])
-        interpolations['between2']['confi'] = pred_list
-        interpolations['between2']['text'] = triples
-        pred_list = list()
-        triples = list()
+    print('Interpolation experiment: ' + i_type)
+    step = (z2 - z1) / (steps-1)
+    for i in range(steps):
+        prediction = model.sample(z1 + step*i)
+        prediction_json = prediction[0].detach().cpu().numpy().tolist()
+        print(prediction_json)
+        pred_dense = matrix2triple(prediction)
+        if len(pred_dense) > 0:
+            pred_list.append(prediction_json)
+            text_triple = translate_triple(pred_dense, i2n, i2r, entity_dict)
+            triples.append(text_triple)
+            print(text_triple)
+        else:
+            pred_list.append([])
+            triples.append([])
+    interpolations['between2']['confi'] = pred_list
+    interpolations['between2']['text'] = triples
+    pred_list = list()
+    triples = list()
 
     # Interpolating the latent space on the specified dimensions. Assuming a latent standard normal distribution.
     if i_type == 'confidence95':
@@ -87,9 +90,10 @@ def interpolate_triples(i2n, i2r, steps: int=10, model=None, model_path: str=Non
                         triples.append(text_triple)
                         print(text_triple)
                     else:
+                        pred_list.append([])
                         triples.append([])
-                interpolations['confidence95']['confi'] = {i_dim: pred_list}
-                interpolations['confidence95']['text'] = {i_dim: triples}       
+                interpolations['confidence95']['confi'][i_dim] = pred_list
+                interpolations['confidence95']['text'][i_dim] = triples       
     return interpolations
 
 

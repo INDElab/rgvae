@@ -81,6 +81,10 @@ if __name__ == "__main__":
     truedict = truedicts(all_triples)
     dataset_tools = [truedict, i2n, i2r]
 
+    # Obama triple: /m/02mjmr	/people/person/place_of_birth	/m/02hrh0_Michelangelo triple: /m/058w5	/people/deceased_person/place_of_death	/m/06c62
+    args['obama_mangelo'] = torch.tensor([[n2i['/m/02mjmr'], r2i['/people/person/place_of_birth'], n2i['/m/02hrh0_']],
+                                [n2i['/m/058w5'], r2i['/people/deceased_person/place_of_death'], n2i['/m/06c62']]], device=d())
+    
     todate = date.today().strftime("%Y%m%d")
     exp_name = args['exp_name']
     print('Experiment on the {}: {}'.format(todate, exp_name))
