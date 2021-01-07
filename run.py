@@ -136,14 +136,14 @@ if __name__ == "__main__":
     if 'eval_generation' in args:
         if args['eval_generation']:
             gen_list, new_triples = list(), list()
-            for _ in range(3):
-                gen_results, gen_triples = eval_generation(model, i2n, i2r, all_triples, 10)
+            for ii in range(3):
+                gen_results, gen_triples = eval_generation(model, i2n, i2r, all_triples, 10000)
                 gen_list.append(gen_triples)
                 new_triples.append(gen_results[2])
                 print('The {} generated {:.3f}% possibly true triples, of which {:.3f}% already exist in the dataset.'.format(model_name, gen_results[0]*100, gen_results[1]*100))
-                wandb.log({'gen_true': gen_results[0], 'gen_new': gen_results[1], 'new_triples': gen_results[2]})
+                wandb.log({'gen_true': gen_results[0], 'gen_new': gen_results[1], 'new_triples': gen_results[2], 'run': ii})
 
             with open(result_dir +'/gen_people_list.pkl', 'wb') as f:
-                pkl.dump(gen_triples, f)
+                pkl.dump(gen_list, f)
             with open(result_dir +'/gen_newpeople_list.pkl', 'wb') as f:
-                pkl.dump(gen_results[2], f)
+                pkl.dump(new_triples , f)
