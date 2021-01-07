@@ -5,8 +5,10 @@ from torch_rgvae.GCVAE2 import GCVAE2
 from lp_utils import *
 from experiments.train_eval_vae import train_eval_vae
 from experiments.link_prediction import link_prediction
+from experiments.gen_people import eval_generation 
 from datetime import date
 from ranger import Ranger
+import pickle as pkl
 import yaml, json, argparse, wandb, os, random
 import torch
 
@@ -130,3 +132,18 @@ if __name__ == "__main__":
             json.dump(lp_results, outfile)
         wandb.save(lp_file_path)
         print('Saved link prediction results!')
+
+    if 'eval_generation' in args:
+        if args['eval_generation']:
+            gen_list, new_triples = list(), list()
+            for _ in range(3):
+                gen_results, gen_triples = eval_generation(model, i2n, i2r, all_triples, 10)
+                gen_list.append(gen_triples)
+                new_triples.append(gen_results[2])
+                print('The {} generated {:.3f}% possibly true triples, of which {:.3f}% already exist in the dataset.'.format(model_name, gen_results[0]*100, gen_results[1]*100))
+                wandb.log({'gen_true': gen_results[0], 'gen_new': gen_results[1], 'new_triples': gen_results[2]})
+
+            with open(result_dir +'/gen_people_list.pkl', 'wb') as f:
+                pkl.dump(gen_triples, f)
+            with open(result_dir +'/gen_newpeople_list.pkl', 'wb') as f:
+                pkl.dump(gen_results[2], f)
