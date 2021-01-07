@@ -36,11 +36,12 @@ def eval_generation(model, i2n, i2r, all_triples, n_eval: int=1000, key_type: st
         entity_type_dict = pkl.load(f)
 
     i2keep = [index for (index,rel) in enumerate(i2r) if key_type in rel]
-    filt_triples = set()
+    all_filt_triples = set()
 
-    for i, triple in enumerate(all_triples):
+    for triple in all_triples:
         if triple[1] in i2keep:
-                filt_triples.add(triple)
+                all_filt_triples.add(triple)
+
     n2keep = []
     n_blacklist = []
     for n, entity in enumerate(i2n):
@@ -65,9 +66,9 @@ def eval_generation(model, i2n, i2r, all_triples, n_eval: int=1000, key_type: st
                 triples.append(i_triple)
                 breaker += 1
     
-    triples = translate_triple(triples, i2n, i2r, entity_text_dict)
-    p_true, p_new, new_triples =  eval_triple(triples, all_triples, n2keep)
-    return (p_true, p_new, translate_triple(new_triples, i2n, i2r, entity_text_dict)), triples
+    p_true, p_new, new_triples =  eval_triple(triples, all_filt_triples, n2keep)
+    text_triples = translate_triple(triples, i2n, i2r, entity_text_dict)
+    return (p_true, p_new, translate_triple(new_triples, i2n, i2r, entity_text_dict)), text_triples
             
 
 

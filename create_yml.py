@@ -42,7 +42,7 @@ if __name__ == "__main__":
     #     for l in [10, 100, 1000]:
     for model_name in ['GVAE', 'GCVAE', 'GCVAE2']:
         configs['exp_name'] = 'kg{}_{}_p{}'.format(model_name, dataset, '1' if configs['perm_inv'] else '0')  # Most important    '1' if configs['perm_inv'] else '0'
-        configs['load_model_path'] = 'data/model/yn{}_{}_p{}_20210105/rgvae_dict_final.pt'.format(model_name, dataset, '1' if configs['perm_inv'] else '0')
+        configs['load_model_path'] = 'data/model/Syn{}_{}_p{}_20210105/rgvae_dict_final.pt'.format(model_name, dataset, '1' if configs['perm_inv'] else '0')
         configs['model_name'] = model_name
         yml_name = '{}.yml'.format(configs['exp_name'])
         with open(folder + yml_name,'w') as f:
