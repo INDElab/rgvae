@@ -23,7 +23,7 @@ def eval_triple(triples, exist_triples, key_entities):
     return (n_true/len(triples), p_new, new_triples)
             
 
-def eval_generation(model, i2n, i2r, all_triples, n_eval: int=1000, key_type: str='people'):
+def eval_generation(model, i2n, i2r, all_triples, n_eval: int=1000, key_type: str='people', n_std=1):
     """
     Experiment: Generate triples from random latent space signals
                 Filter based on if the predicate including the key type
@@ -35,11 +35,11 @@ def eval_generation(model, i2n, i2r, all_triples, n_eval: int=1000, key_type: st
     with open('data/fb15k/e2type_dict.pkl', 'rb') as f:
         entity_type_dict = pkl.load(f)
 
-    i2keep = [index for (index,rel) in enumerate(i2r) if key_type in rel]
+    r2keep = [index for (index,rel) in enumerate(i2r) if key_type in rel]
     all_filt_triples = set()
 
     for triple in all_triples:
-        if triple[1] in i2keep:
+        if triple[1] in r2keep:
                 all_filt_triples.add(triple)
 
     n2keep = []
@@ -53,16 +53,16 @@ def eval_generation(model, i2n, i2r, all_triples, n_eval: int=1000, key_type: st
             print('No types for: {}'.format(entity_text_dict[entity][0]))
 
     print('From {} entities, {} contain the keyword {}, or {:.3f}%.'.format(len(i2n), len(n2keep), key_type, 100*len(n2keep)/len(i2n)))
-    print('From {} predicates, {} contain the keyword {}, or {:.3f}%.'.format(len(i2r), len(i2keep), key_type, 100*len(i2keep)/len(i2r)))
-    wandb.log({'total_n': len(i2n), 'key_n': len(n2keep), 'total_r': len(i2r), 'key_n': len(i2keep), 'key_type': key_type})
+    print('From {} predicates, {} contain the keyword {}, or {:.3f}%.'.format(len(i2r), len(r2keep), key_type, 100*len(r2keep)/len(i2r)))
+    wandb.log({'total_n': len(i2n), 'key_n': len(n2keep), 'total_r': len(i2r), 'key_r': len(r2keep), 'key_type': key_type})
 
     triples = list()
     breaker = 0
     while breaker < n_eval:
-        signal = torch.randn((1, model.z_dim), device=d())
+        signal = torch.randn((1, model.z_dim), device=d()) * n_std
         pred_dense = matrix2triple(model.sample(signal))
         for i_triple in pred_dense:
-            if i_triple[1] in i2keep:
+            if i_triple[1] in r2keep:
                 triples.append(i_triple)
                 breaker += 1
     

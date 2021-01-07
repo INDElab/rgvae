@@ -12,6 +12,7 @@ if __name__ == "__main__":
     configs['load_model'] = True
     configs['load_model_path'] = []
     configs['eval_generation'] = True
+    configs['n_std'] = 2
 
     configs['model_name'] = model_name =  'GVAE'    # Choose between ['GVAE', 'GCVAE']
     configs['z_dim'] = 100                          # Latent dimensions

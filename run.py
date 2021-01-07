@@ -136,8 +136,9 @@ if __name__ == "__main__":
     if 'eval_generation' in args:
         if args['eval_generation']:
             gen_list, new_triples = list(), list()
+            n_std = args['n_std'] if 'n_std' in args else 1
             for ii in range(3):
-                gen_results, gen_triples = eval_generation(model, i2n, i2r, all_triples, 100000)
+                gen_results, gen_triples = eval_generation(model, i2n, i2r, all_triples, n_eval=100000, n_std=n_std)
                 gen_list.append(gen_triples)
                 new_triples.append(gen_results[2])
                 print('The {} generated {:.3f}% possibly true triples, of which {:.3f}% already exist in the dataset.'.format(model_name, gen_results[0]*100, gen_results[1]*100))
