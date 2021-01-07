@@ -9,7 +9,7 @@ if __name__ == "__main__":
     configs['project'] = 'knowledge_generation'           # TODO change this to the final experiment name for wandb
     configs['train'] = False
     configs['link_prediction'] = False
-    configs['load_model'] = False
+    configs['load_model'] = True
     configs['load_model_path'] = []
     configs['eval_generation'] = True
 
