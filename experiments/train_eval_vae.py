@@ -82,7 +82,7 @@ def train_eval_vae(batch_size, epochs, train_set, test_set, model, optimizer, da
                     "val_permutation_mean": np.mean(permute_list), "val_permutation_std": np.std(permute_list), "epoch": epoch})
         print('Epoch: {}, Mean eval elbo: {:.3f}, permuted {:.2f}%'.format(epoch, mean_loss, np.mean(permute_list)*100))
 
-        if final and (epoch+1) == epochs:
+        if final and ((epoch+1) == epochs or (epoch+1) % 50 == 0):
             # save model last
             torch.save({    
                 'epoch': epoch,

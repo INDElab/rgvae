@@ -6,8 +6,8 @@ if __name__ == "__main__":
 
     configs = dict()
 
-    configs['project'] = 'knowledge_generation'           # TODO change this to the final experiment name for wandb
-    configs['train'] = False
+    configs['project'] = 'Interpolationv2'           # TODO change this to the final experiment name for wandb
+    configs['train'] = True
     configs['link_prediction'] = False
     configs['load_model'] = True
     configs['load_model_path'] = []
@@ -19,11 +19,12 @@ if __name__ == "__main__":
     configs['h_dim'] = 512                          # Hidden dimensions 2048, 512, 
     configs['n'] = 1                                # Triples per graph
     configs['beta'] = 100                           # betaVAE ratio
+    configs['beta'] = 0.6                           # deltaVAE ratio
     configs['adj_argmax'] = True
     configs['perm_inv'] = True
     configs['softmax_E'] = True
 
-    configs['epochs'] = 80
+    configs['epochs'] = 200
     configs['lr'] = 3e-5
     configs['batch_size_exp2'] = 13                 # 2**(batch_size_exp) fb_max=13 wn_max=12
     configs['k'] = 5

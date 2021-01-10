@@ -72,14 +72,14 @@ def interpolate_triples(i2n, i2r, steps: int=10, model=None, model_path: str=Non
     # Interpolating the latent space on the specified dimensions. Assuming a latent standard normal distribution.
     if i_type == 'confidence95':
         print('Interpolation experiment: ' + i_type)
-        step = (1.96 * 2) / steps
-        z_pred = z1.clone().detach()
+        step = (1.96 * 2) / (steps-1)
         for i_dim in i_dims:
             if i_dim < model.z_dim:
                 pred_list = list()
                 triples = list()
+                z_pred = z1.clone().detach()
                 for i in range(steps):
-                    z_pred[:, i_dim] = 1.96 + step * i
+                    z_pred[:, i_dim] = -1.96 + step * i
                     prediction = model.sample(z_pred)
                     prediction_json = prediction[0].detach().cpu().numpy().tolist()
                     print(prediction_json)
