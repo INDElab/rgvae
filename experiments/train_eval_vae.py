@@ -92,7 +92,7 @@ def train_eval_vae(batch_size, epochs, train_set, test_set, model, optimizer, da
                 result_dir + '/rgvae_dict_final.pt')
 
             print('Start interpolating the latent space and generating triples at epoch {}.'.format(epoch))
-            interpolations = interpolate_triples(i2n,i2r, 10, model)
+            interpolations = interpolate_triples(i2n, i2r, 10, model)
             wandb.log({"interpolations": interpolations, "epoch": epoch})
             interpol_file_path = result_dir + '/interpolation_e{}.json'.format(epoch)
             with open(interpol_file_path, 'w') as f:

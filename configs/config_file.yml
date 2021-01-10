@@ -1,7 +1,7 @@
 batch_size_exp2: 6
 beta: 1
 dataset_name: fb15k
-epochs: 0
+epochs: 1
 exp_name: config_file
 h_dim: 512
 k: 9
@@ -15,4 +15,5 @@ train: true
 z_dim: 100
 perm_inv: true
 final: true
-eval_generation: true
+eval_generation: false
+delta: 0.6

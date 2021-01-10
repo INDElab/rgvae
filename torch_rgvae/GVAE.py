@@ -34,7 +34,7 @@ class GVAE(nn.Module):
         self.z_dim = args['z_dim'] if 'z_dim' in args else 2
         self.h_dim = args['h_dim'] if 'h_dim' in args else 1024
         beta = args['beta'] if 'beta' in args else 1.
-        beta = args['delta'] if 'delta' in args else 0.
+        self.delta = args['delta'] if 'delta' in args else 0.
         self.beta = torch.tensor(beta)
         self.softmax_E = args['softmax_E'] if 'softmax_E' in args else True
         self.perm_inv = args['perm_inv'] if 'perm_inv' in args else True
