@@ -3,7 +3,7 @@ Obsolete since it exceeds working memory.
 """
 import torch
 import numpy as np
-from lp_utils import *
+from utils.lp_utils import *
 from tqdm import tqdm
 
 

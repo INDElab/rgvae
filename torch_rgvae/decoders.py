@@ -6,6 +6,20 @@ import torch.nn as nn
 from abc import abstractmethod
 
 
+class sRMLP(nn.Module):
+    """
+    Simple reverse multi layer perceptron.
+    """
+    def __init__(self, k, input_dim, h_dim, z_dim):
+        super().__init__()
+        self.rmlp = nn.Sequential(nn.Linear(z_dim, h_dim),
+                                    nn.ReLU(),
+                                    nn.Dropout(.2),
+                                    nn.Linear(h_dim, k*input_dim))
+
+    def forward(self, x):
+        return self.rmlp(x)
+
 class RMLP(nn.Module):
     """
     Simple reverse multi layer perceptron.

@@ -7,8 +7,8 @@ import torch.nn as nn
 from torch_rgvae.encoders import *
 from torch_rgvae.decoders import *
 from torch_rgvae.losses import *
-from utils import *
-from lp_utils import d
+from utils.utils import *
+from utils.lp_utils import d
 
 
 class GVAE(nn.Module):

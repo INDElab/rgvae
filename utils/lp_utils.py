@@ -17,7 +17,7 @@ import wandb
 
 def locate_file(filepath):
     directory = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-    return directory + '/rgvae/' + filepath
+    return directory + '/' + filepath
 
 
 def load_strings(file):

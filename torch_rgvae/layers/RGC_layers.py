@@ -1,4 +1,4 @@
-from torch_rgvae.utils import block_diag, stack_matrices, sum_sparse
+from utils.utils import block_diag, stack_matrices, sum_sparse
 from torch.nn.modules.module import Module
 from torch.nn.parameter import Parameter
 from torch import nn
@@ -104,14 +104,14 @@ class RelationalGraphConvolution(Module):
         else:
             raise NotImplementedError(f'{reset_mode} parameter initialisation method has not been implemented')
 
-    def forward(self, features=None):
+    def forward(self, triples, features=None):
         """ Perform a single pass of message propagation """
 
         assert (features is None) == (self.in_features is None), \
             "Layer has not been properly configured to take in features!"
 
         in_dim = self.in_features if self.in_features is not None else self.num_nodes
-        triples = self.triples
+        # triples = self.triples
         out_dim = self.out_features
         edge_dropout = self.edge_dropout
         weight_decomp = self.weight_decomp

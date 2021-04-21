@@ -10,7 +10,7 @@ from torch_rgvae.encoders import *
 from torch_rgvae.decoders import *
 import torch.nn as nn
 from torch_rgvae.losses import *
-from utils import *
+from utils.utils import *
 from scipy import sparse
 
 

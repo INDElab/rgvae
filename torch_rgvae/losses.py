@@ -2,7 +2,7 @@
 Collection of loss functions.
 """
 from graph_matching.MPGM import MPGM
-from utils import *
+from utils.utils import *
 import wandb, torch
 import torch.nn as nn
 

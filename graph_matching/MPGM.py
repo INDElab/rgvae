@@ -4,10 +4,10 @@ Pytorch implementation of the max-pooling graph matching algorithm.
 import numpy as np
 from numpy import array
 import torch
-from munkres import Munkres, print_matrix, make_cost_matrix
+# from munkres import Munkres, make_cost_matrix
 from scipy.optimize import linear_sum_assignment
 from utils import *
-from lp_utils import d
+from utils.lp_utils import d
 
 
 class MPGM():
@@ -170,26 +170,26 @@ class MPGM():
             X = X * 1./np.linalg.norm(X)
         return X
 
-    def hungarian(self, X_star, cost: bool=False):
-        """ 
-        Apply the hungarian or munkres algorithm to the continuous assignment matrix.
-        The output is a discrete similarity matrix.
-        Are we working with a cost or a profit matrix???
-        Args:
-            X_star: numpy array matrix of size n x k with elements in range [0,1]
-            cost: Boolean argument if to assume the input is a profit matrix and to convert is to a cost matrix or not.
-        """
-        m = Munkres()
-        if cost:
-            X_star = make_cost_matrix(X_star)
-        # Compute the indexes for the matrix for the lowest cost path.        
-        indexes = m.compute(X_star.copy())
+    # def hungarian(self, X_star, cost: bool=False):
+    #     """ 
+    #     Apply the hungarian or munkres algorithm to the continuous assignment matrix.
+    #     The output is a discrete similarity matrix.
+    #     Are we working with a cost or a profit matrix???
+    #     Args:
+    #         X_star: numpy array matrix of size n x k with elements in range [0,1]
+    #         cost: Boolean argument if to assume the input is a profit matrix and to convert is to a cost matrix or not.
+    #     """
+    #     m = Munkres()
+    #     if cost:
+    #         X_star = make_cost_matrix(X_star)
+    #     # Compute the indexes for the matrix for the lowest cost path.        
+    #     indexes = m.compute(X_star.copy())
 
-        # Now mast these indexes with 1 and the rest with 0.
-        X = np.zeros_like(X_star, dtype=int)
-        for idx in indexes:
-            X[idx] = 1
-        return X
+    #     # Now mast these indexes with 1 and the rest with 0.
+    #     X = np.zeros_like(X_star, dtype=int)
+    #     for idx in indexes:
+    #         X[idx] = 1
+    #     return X
 
     def hungarian_batch(self, Xs):
         X = Xs.clone().cpu().numpy()

@@ -5,7 +5,7 @@ from experiments.link_prediction import link_prediction
 from experiments.interpolation import interpolate_triples 
 import torch
 import numpy as np
-from lp_utils import *
+from utils.lp_utils import *
 from tqdm import tqdm
 from datetime import date
 import wandb, random

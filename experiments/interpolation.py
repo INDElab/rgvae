@@ -2,11 +2,10 @@
 Experiment: Interpolate between two subgraphs/sets of triples and print the result.
 """
 import torch
-import numpy as np
 from torch_rgvae.GVAE import GVAE
 from torch_rgvae.GCVAE import GCVAE
 from torch_rgvae.train_fn import train_sparse_batch
-from lp_utils import *
+from utils.lp_utils import *
 import pickle as pkl
 
 
@@ -35,16 +34,12 @@ def interpolate_triples(i2n, i2r, steps: int=10, model=None, model_path: str=Non
         model.load_state_dict(checkpoint['model_state_dict'])
         print('Model loaded.')
 
-    # z1 = torch.randn((1,model.z_dim), device=d())
-    # z2 = torch.randn((1,model.z_dim), device=d())
-
     z = model.reparameterize(*model.encode(batch_t2m(model.model_params['obama_mangelo'], int(model.n / 2), model.n_e, model.n_r)))
     z1, z2 = torch.split(z, 1, dim=0)
 
     pred_list = list()
     triples = list()
     interpolations = dict()
-    # interpolations['z1'] = z1
     interpolations['between2'] = dict()
     interpolations['confidence95'] = {'confi': dict(), 'text': dict()}
 

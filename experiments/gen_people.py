@@ -3,7 +3,7 @@ import torch
 import numpy as np
 from torch_rgvae.GVAE import GVAE
 from torch_rgvae.GCVAE import GCVAE
-from lp_utils import *
+from utils.lp_utils import *
 import pickle as pkl
 import wandb
 

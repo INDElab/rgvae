@@ -1,6 +1,6 @@
 from torch_rgvae.VEmbed import VLinkPredictor
-from lp_utils import d, tic, toc, get_slug, load_link_prediction_data, truedicts
-from experiments.embed_util import util
+from utils.lp_utils import d, tic, toc, get_slug, load_link_prediction_data, truedicts
+from utils.embed_util import util
 from ranger import Ranger
 
 import torch, wandb

@@ -5,7 +5,7 @@ from torch_rgvae.GVAE import TorchGVAE
 from torch_rgvae.GCVAE import GCVAE
 from torch_rgvae.losses import *
 from torch_rgvae.train_fn import train_epoch
-from utils import check_adj_logic
+from utils.utils import check_adj_logic
 import torch
 import numpy as np
 

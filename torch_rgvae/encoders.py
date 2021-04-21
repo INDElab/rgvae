@@ -56,11 +56,10 @@ class NodeClassifier(nn.Module):
                  nrel=None,
                  nfeat=None,
                  nhid=16,
-                 nlayers=2,
+                 nlayers=1,
                  nclass=None,
                  edge_dropout=None,
-                 decomposition=None,
-                 nemb=None):
+                 decomposition=None,):
         super(NodeClassifier, self).__init__()
 
         self.nlayers = nlayers
@@ -77,9 +76,9 @@ class NodeClassifier(nn.Module):
 
         triples = torch.tensor(triples, dtype=torch.long)
         with torch.no_grad():
-            self.register_buffer('triples', triples)
+            self.register_buffer('triples_plus', triples)
             # Add inverse relations and self-loops to triples
-            self.register_buffer('triples_plus', add_inverse_and_self(triples, nnodes, nrel))
+            # self.register_buffer('triples_plus', add_inverse_and_self(triples, nnodes, nrel))
 
         self.rgc1 = RelationalGraphConvolution(
             triples=self.triples_plus,
@@ -103,9 +102,14 @@ class NodeClassifier(nn.Module):
                 vertical_stacking=True
             )
 
-    def forward(self):
+    def forward(self, triples):
         """ Embed relational graph and then compute class probabilities """
-        x = self.rgc1()
+
+        triples = torch.tensor(triples, dtype=torch.long)
+        with torch.no_grad():
+            self.register_buffer('triples_plus', triples)
+
+        x = self.rgc1(triples)
 
         if self.nlayers == 2:
             x = F.relu(x)
